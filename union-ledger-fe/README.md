@@ -1,73 +1,113 @@
-# React + TypeScript + Vite
+# Union-Ledger FE
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+대학 자치기구의 결산 업무를 디지털화하고 자동화하기 위한 **Union-Ledger** 프론트엔드 레포입니다.  
+영수증 업로드부터 OCR 결과 확인, 거래내역 대조, 결산안 생성까지의 흐름을 웹에서 제공합니다.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## About
 
-## React Compiler
+**Union-Ledger**는 AI 영상 처리 기반으로 대학 자치기구의 결산 과정을 자동화하는 SaaS입니다.  
+기존의 수기 입력, 영수증 정리, 거래내역 대조처럼 반복적이고 비효율적인 회계 업무를 줄이고,  
+더 정확하고 투명한 결산 프로세스를 만드는 것을 목표로 합니다.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+프론트엔드는 다음과 같은 사용자 경험을 담당합니다.
 
-## Expanding the ESLint configuration
+- 대학 이메일 기반 회원가입 및 인증
+- 역할별 접근 제어
+- 결산안 양식 등록
+- 증빙 자료 업로드 및 OCR 결과 확인/수정
+- 거래내역 업로드 및 대조 결과 확인
+- 결산안 엑셀 / 증빙 PDF 생성
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Users
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+서비스는 크게 3가지 사용자 역할을 기준으로 동작합니다.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. 일반 학우
+
+- 소속 단과대의 최종 결산안 조회
+- 열람 전용 권한
+
+### 2. 재정담당자
+
+- 결산안 작성
+- 증빙 자료 업로드
+- OCR 결과 확인 및 수정
+- 거래내역 업로드 및 대조
+- 결산안 엑셀 / 증빙 PDF 생성
+
+### 3. 감사위원
+
+- 결산안 검토
+- 거래내역 비교 확인
+- 증빙 자료 열람
+- 감사 결과 리뷰 작성 및 전달
+
+역할은 기본적으로 분리되며, 재정담당자와 감사위원 권한은 초대 코드 기반으로 부여됩니다.
+
+---
+
+## Core Workflow
+
+재정담당자의 실제 업무 흐름을 기준으로 아래 5단계로 구성됩니다.
+
+1. **결산안 양식 등록**
+   - 학교/학과에서 사용하는 빈 결산안 엑셀(.xlsx) 업로드
+   - 셀 구조를 템플릿으로 저장
+
+2. **증빙 자료 업로드 및 OCR**
+   - 실물 영수증 / 거래명세서 / 전자영수증 업로드
+   - OCR 또는 텍스트 추출 후 결과 확인 및 수정
+
+3. **거래내역서 업로드**
+   - 은행 거래내역 엑셀 업로드
+   - 증빙 데이터와 자동 대조 수행
+
+4. **대조 결과 확인 및 수정**
+   - 정상 / 불일치 / 누락 건을 시각적으로 확인
+   - 필요 시 수동 수정
+
+5. **결산안 엑셀 / 증빙 PDF 생성**
+   - 최종 확인 후 산출물 다운로드
+
+MVP에서는 위 흐름을 중심으로 화면과 기능을 구성합니다.
+
+---
+
+## Tech Stack
+
+- React
+- TypeScript
+- pnpm
+- Vite
+
+---
+
+## Getting Started
+
+### 1. Install
+
+```bash
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Convention
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Branch Convention
+
+| Branch     | Description                          |
+| ---------- | ------------------------------------ |
+| `feat`     | 새로운 기능 개발                     |
+| `fix`      | 버그 수정                            |
+| `refactor` | 리팩토링                             |
+| `design`   | UI 및 스타일 작업                    |
+| `docs`     | 문서 작성 및 수정                    |
+| `test`     | 테스트 코드 작성 및 테스트 환경 구성 |
+| `chore`    | 설정, 패키지, 빌드 환경 등 기타 작업 |
+| `hotfix`   | 긴급 버그 수정                       |
+| `release`  | 배포 준비 및 버전 관리               |
