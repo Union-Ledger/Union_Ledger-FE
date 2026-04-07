@@ -25,8 +25,14 @@
     "noUncheckedSideEffectImports": true,
 
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@router/*": ["./src/router/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@components/*": ["./src/components/*"]
     }
   },
   "include": ["src"]
