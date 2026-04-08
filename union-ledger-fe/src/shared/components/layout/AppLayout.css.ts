@@ -107,36 +107,6 @@ export const footer = style({
 
 export const content = style({});
 
-export const contentInner = style({});
-
-export const mobileTopbar = style({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "1.2rem 1.6rem",
-  background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
-  color: vars.color.white95,
-  "@media": {
-    "(min-width: 901px)": {
-      display: "none",
-    },
-  },
-});
-
-export const mobileNav = style({
-  display: "flex",
-  gap: "0.8rem",
-  overflowX: "auto",
-  padding: "1rem 1.6rem",
-  background: vars.color.surface,
-  borderBottom: `1px solid ${vars.color.border}`,
-  "@media": {
-    "(min-width: 901px)": {
-      display: "none",
-    },
-  },
-});
-
 export const menuItem = recipe({
   base: {
     display: "flex",

@@ -43,9 +43,9 @@ const AppLayout = () => {
       </div>
 
       <main className={styles.content}>
-        <div className={styles.contentInner}>
+
           <Outlet />
-        </div>
+
       </main>
     </div>
   );
