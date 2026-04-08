@@ -8,7 +8,7 @@ globalStyle("html", {
 });
 
 globalStyle("body", {
-  minHeight: "100vh",
+  height: "100%",
   display: "flex",
   flexDirection: "column",
   background: vars.color.background,
@@ -19,6 +19,7 @@ globalStyle("body", {
 });
 
 globalStyle("#root", {
+  height: "100%",
   display: "flex",
   flexDirection: "column",
   flexGrow: 1,
