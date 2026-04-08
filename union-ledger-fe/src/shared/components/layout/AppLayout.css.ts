@@ -4,15 +4,18 @@ import { vars } from "@styles/theme.css.ts";
 
 export const container = style({
   width: "100%",
-  minHeight: "100%",
+  height: "100vh",
   display: "flex",
+  overflow: "hidden",
 });
 
 export const sidebar = style({
   display: "flex",
   flexDirection: "column",
-  minHeight: "100%",
-  maxWidth: "25.6rem",
+  width: "25.6rem",
+  minWidth: "25.6rem",
+  height: "100%",
+  flexShrink: 0,
   background: `linear-gradient(180deg, ${vars.color.gradient.sidebarFrom} 0%, ${vars.color.gradient.sidebarMid} 50%, ${vars.color.gradient.sidebarTo} 100%)`,
 });
 
@@ -106,7 +109,13 @@ export const footer = style({
   alignItems: "center",
 });
 
-export const content = style({});
+export const content = style({
+  flex: 1,
+  minWidth: 0,
+  height: "100%",
+  overflowY: "auto",
+  overflowX: "hidden",
+});
 
 export const menuItem = recipe({
   base: {
