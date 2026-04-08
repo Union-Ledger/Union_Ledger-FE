@@ -33,5 +33,5 @@ globalStyle("*", {
 });
 
 globalStyle("html, body, #root", {
-  minHeight: "100%",
+  height: "100%",
 });

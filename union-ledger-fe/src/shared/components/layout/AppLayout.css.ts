@@ -4,13 +4,14 @@ import { vars } from "@styles/theme.css.ts";
 
 export const container = style({
   width: "100%",
-  height: "100%",
+  minHeight: "100%",
   display: "flex",
 });
 
 export const sidebar = style({
   display: "flex",
   flexDirection: "column",
+  minHeight: "100%",
   maxWidth: "25.6rem",
   background: `linear-gradient(180deg, ${vars.color.gradient.sidebarFrom} 0%, ${vars.color.gradient.sidebarMid} 50%, ${vars.color.gradient.sidebarTo} 100%)`,
 });
@@ -81,12 +82,11 @@ export const dropdown = style({
 export const menuBox = style({
   display: "flex",
   width: "256px",
-  height: "554.5px",
   padding: "16px 16px 0 16px",
   flexDirection: "column",
   alignItems: "flex-start",
   gap: "4px",
-  marginBottom: "180px",
+  flex: 1,
 });
 
 export const eachmenuBox = style({
@@ -100,6 +100,7 @@ export const footer = style({
   display: "flex",
   width: "256px",
   height: "49px",
+  marginTop: "auto",
   padding: "17px 16px 0 16px",
   flexDirection: "column",
   alignItems: "center",
