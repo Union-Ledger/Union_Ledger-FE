@@ -19,7 +19,9 @@ export const titleContainer = style({
 
 export const title = style({
   ...vars.font.display_bold_30,
-  color: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
+  background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
+  WebkitBackgroundClip: "text",
+  WebkitTextFillColor: "transparent",
 });
 
 export const desc = style({
