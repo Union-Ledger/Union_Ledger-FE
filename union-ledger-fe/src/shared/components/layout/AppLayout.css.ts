@@ -105,30 +105,9 @@ export const footer = style({
   alignItems: "center",
 });
 
-export const content = style({
-  minWidth: 0,
-  padding: "2.4rem",
-  "@media": {
-    "(max-width: 900px)": {
-      padding: "1.2rem",
-    },
-  },
-});
+export const content = style({});
 
-export const contentInner = style({
-  minHeight: "calc(100vh - 4.8rem)",
-  padding: "2.4rem",
-  borderRadius: "1.6rem",
-  background: vars.color.surface,
-  border: `1px solid ${vars.color.border}`,
-  "@media": {
-    "(max-width: 900px)": {
-      minHeight: "auto",
-      padding: "1.6rem",
-      borderRadius: "1rem",
-    },
-  },
-});
+export const contentInner = style({});
 
 export const mobileTopbar = style({
   display: "flex",
