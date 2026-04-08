@@ -15,6 +15,7 @@ export const vars = createGlobalTheme(":root", {
     white95: "rgba(255, 255, 255, 0.95)",
     menuLabel: "#E0E7FF",
     footer: "#A3B3FF",
+    gray: "#45556C",
     gradient: {
       brandFrom: "#4F39F6",
       brandTo: "#9810FA",
