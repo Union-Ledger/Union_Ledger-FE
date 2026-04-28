@@ -80,6 +80,8 @@ export const dropdown = style({
   borderRadius: "10px",
   border: `1px solid ${vars.color.white20}`,
   background: vars.color.white10,
+  color: "white",
+  padding: "0 12px",
 });
 
 export const menuBox = style({

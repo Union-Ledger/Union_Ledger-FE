@@ -1,12 +1,12 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
-import Dashboard from "@pages/dashboard/Dashboard";
 import Login from "@pages/logIn/LogIn";
-import Template from "@pages/template/Template";
-import Upload from "@pages/upload/Upload";
-import Compare from "@pages/compare/Compare";
-import Create from "@pages/create/Create";
 import AppLayout from "@shared/components/layout/AppLayout";
+import Dashboard from "@/pages/treasurer/dashboard/Dashboard";
+import Template from "@/pages/treasurer/template/Template";
+import Upload from "@/pages/treasurer/upload/Upload";
+import Compare from "@/pages/treasurer/compare/Compare";
+import Create from "@/pages/treasurer/create/Create";
 
 const router = createBrowserRouter([
   {
