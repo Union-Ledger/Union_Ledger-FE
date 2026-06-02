@@ -22,8 +22,8 @@ export const treasurerLayoutMenus: LayoutMenu[] = [
 ];
 
 export const auditorLayoutMenus: LayoutMenu[] = [
-  { label: "대시보드", to: ROUTES.DASHBOARD, icon: dashboardIcon },
-  { label: "결산안 검토", to: ROUTES.COMPARE, icon: checkIcon },
+  { label: "대시보드", to: ROUTES.AUDITOR_DASHBOARD, icon: dashboardIcon },
+  { label: "결산안 검토", to: ROUTES.AUDITOR_REVIEW, icon: checkIcon },
 ];
 
 export const studentLayoutMenus: LayoutMenu[] = [

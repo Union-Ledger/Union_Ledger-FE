@@ -1,23 +1,58 @@
+import { useState } from "react";
 import UploadCard from "@/components/common/UploadCard";
+import useSettlementApi from "@/hooks/useSettlementApi";
 import * as styles from "@/pages/treasurer/compare/Compare.css";
 
 const Compare = () => {
+  const { postBankStatement } = useSettlementApi();
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleChangeFile = async (files: FileList | null) => {
+    const file = files?.[0];
+
+    if (!file) return;
+
+    const settlementId = localStorage.getItem("currentSettlementId");
+
+    if (!settlementId) {
+      alert("결산안 정보가 없습니다. 먼저 증빙 업로드 단계를 진행해주세요.");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+
+      const result = await postBankStatement({
+        settlementId,
+        file,
+      });
+
+      console.log("거래내역 업로드 성공", result);
+      alert("거래내역 업로드가 완료되었습니다.");
+    } catch (error) {
+      console.error("거래내역 업로드 실패", error);
+      alert("거래내역 업로드에 실패했습니다.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.titleContainer}>
         <span className={styles.title}>거래내역 대조</span>
-        <span className={styles.desc}>은행 거래내역과 증빙 매칭 </span>
+        <span className={styles.desc}>은행 거래내역과 증빙 매칭</span>
       </div>
+
       <div className={styles.contentContainer}>
         <span className={styles.uploadTitle}>은행 거래내역 업로드</span>
+
         <UploadCard
           iconBackground="purple"
-          title="엑셀 파일 선택"
-          desc=".xlsx, .csv"
-          accept=".xls,.csv"
-          onChangeFile={(files) => {
-            console.log(files);
-          }}
+          title={isUploading ? "업로드 중..." : "엑셀 파일 선택"}
+          desc=".xlsx, .xls, .csv"
+          accept=".xls,.xlsx,.csv"
+          onChangeFile={handleChangeFile}
         />
       </div>
     </div>

@@ -1,0 +1,110 @@
+import useApi from "./useApi";
+import { ENDPOINTS } from "../../config";
+
+interface PostTemplateData {
+  organizationId: string;
+  name: string;
+  file: File;
+  mappingSchema?: Record<string, unknown>;
+}
+
+type Semester = "1" | "2" | "summer" | "winter";
+
+interface PostSettlementData {
+  organizationId: string;
+  templateId: string;
+  title: string;
+  academicYear: number;
+  semester: Semester;
+}
+interface TemplateData {
+  id: string;
+  organization_id: string;
+  name: string;
+  original_filename: string;
+  mapping_schema: Record<string, unknown>;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface OrganizationData {
+  id: string;
+  name: string;
+  college_name: string;
+  department_name: string;
+  created_by_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+const useOrganizationApi = () => {
+  const { organizationApi } = useApi();
+
+  // 조직 목록 조회
+  const getOrganization = (): Promise<OrganizationData[] | undefined> => {
+    return organizationApi
+      .get(ENDPOINTS.ORGANIZATION.LIST)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => console.log(error));
+  };
+
+  // 결산 템플릿 업로드
+  const postTemplate = (data: PostTemplateData) => {
+    const formData = new FormData();
+
+    formData.append("name", data.name);
+    formData.append("file", data.file);
+    formData.append("mapping_schema", JSON.stringify(data.mappingSchema ?? {}));
+
+    return organizationApi
+      .post(ENDPOINTS.ORGANIZATION.TEMPLATE(data.organizationId), formData)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => console.log(error));
+  };
+
+  // 조직 템플릿 목록
+  const getTemplate = (id: string): Promise<TemplateData[] | undefined> => {
+    return organizationApi
+      .get(ENDPOINTS.ORGANIZATION.TEMPLATE(id))
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => console.log(error));
+  };
+
+  // 결산안 draft 생성
+  const postSettlement = (data: PostSettlementData) => {
+    const body = {
+      template_id: data.templateId,
+      title: data.title,
+      academic_year: data.academicYear,
+      semester: data.semester,
+    };
+
+    console.log("결산안 생성 요청 body:", body);
+
+    return organizationApi
+      .post(ENDPOINTS.ORGANIZATION.SETTLEMENT(data.organizationId), body)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("결산안 생성 실패 status:", error.response?.status);
+        console.log(
+          "결산안 생성 실패 detail:",
+          JSON.stringify(error.response?.data, null, 2),
+        );
+        console.table(error.response?.data?.detail);
+        throw error;
+      });
+  };
+
+  return { postTemplate, getTemplate, postSettlement, getOrganization };
+};
+
+export default useOrganizationApi;

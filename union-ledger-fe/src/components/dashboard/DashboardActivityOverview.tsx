@@ -1,13 +1,19 @@
 import * as styles from "@/components/dashboard/DashboardActivityOverview.css";
 
-type ActivityItem = {
+export type ActivityItem = {
   id: number;
   type: "receipt" | "expense" | "unmatched" | "audit";
   message: string;
   time: string;
 };
 
-const DashboardActivityOverview = () => {
+interface DashboardActivityOverviewProps {
+  activityData: ActivityItem[];
+}
+
+const DashboardActivityOverview = ({
+  activityData,
+}: DashboardActivityOverviewProps) => {
   return (
     <div className={styles.container}>
       <span className={styles.title}>최근 활동</span>
@@ -29,24 +35,3 @@ const DashboardActivityOverview = () => {
 };
 
 export default DashboardActivityOverview;
-
-const activityData: ActivityItem[] = [
-  {
-    id: 1,
-    type: "receipt",
-    message: "증빙 5건 OCR 완료",
-    time: "2시간 전",
-  },
-  {
-    id: 2,
-    type: "unmatched",
-    message: "거래내역 3건 매칭 필요",
-    time: "5시간 전",
-  },
-  {
-    id: 3,
-    type: "receipt",
-    message: "결산안 양식 등록됨",
-    time: "1일 전",
-  },
-];

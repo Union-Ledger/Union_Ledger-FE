@@ -50,14 +50,17 @@ export const progressDisplayText = style({
 });
 
 export const progressDisplayTextVariant = styleVariants({
-  receipt: {
+  violet: {
     color: vars.color.accent.violet,
   },
-  transaction: {
+  pink: {
     color: vars.color.accent.purple,
   },
-  audit: {
-    color: "#155DFC",
+  blue: {
+    color: vars.color.accent.blue,
+  },
+  green: {
+    color: vars.color.accent.green,
   },
 });
 
@@ -80,13 +83,16 @@ export const progressCurrentBar = style({
 });
 
 export const progressCurrentBarVariant = styleVariants({
-  receipt: {
+  violet: {
     background: `linear-gradient(90deg, ${vars.color.gradient.violetFrom} 0%, ${vars.color.gradient.violetTo} 100%)`,
   },
-  transaction: {
+  pink: {
     background: `linear-gradient(90deg, ${vars.color.gradient.pinkFrom} 0%, ${vars.color.gradient.pinkTo} 100%)`,
   },
-  audit: {
+  blue: {
     background: `linear-gradient(90deg, ${vars.color.gradient.cyanFrom} 0%, ${vars.color.gradient.cyanTo} 100%)`,
+  },
+  green: {
+    background: `linear-gradient(90deg, ${vars.color.gradient.greenFrom} 0%, ${vars.color.gradient.greenTo} 100%)`,
   },
 });
