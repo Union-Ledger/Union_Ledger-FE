@@ -159,6 +159,16 @@ export const summaryContentItemAmount = style({
   color: vars.color.accent.violet,
 });
 
+export const summaryContentEmpty = style({
+  ...vars.font.body_regular_14,
+  width: "100%",
+  padding: "16px",
+  borderRadius: "10px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  color: vars.color.description,
+  background: "rgba(255, 255, 255, 0.58)",
+});
+
 export const fileContainer = style({
   width: "100%",
   display: "flex",
@@ -282,4 +292,174 @@ export const buttonText = style({
   ...vars.font.body_medium_14,
   color: vars.color.surface,
   transform: "translateY(-1px)",
+});
+
+export const reconciliationBox = style({
+  width: "100%",
+  marginTop: "32px",
+  padding: "28px",
+  borderRadius: "14px",
+  background: vars.color.white95,
+  boxShadow:
+    "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+});
+
+export const reconciliationTitleBox = style({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "18px",
+});
+
+export const reconciliationTitle = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  ...vars.font.title_bold_18,
+  color: vars.color.summaryTitle,
+});
+
+export const reconciliationIcon = style({
+  color: vars.color.primary,
+  fontSize: "1.8rem",
+  fontWeight: "700",
+});
+
+export const reconciliationDescription = style({
+  marginTop: "8px",
+  ...vars.font.body_regular_14,
+  color: vars.color.gray,
+});
+
+export const reconciliationTabBox = style({
+  width: "520px",
+  height: "34px",
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr 1fr",
+  padding: "4px",
+  borderRadius: "999px",
+  background: vars.color.background,
+  marginBottom: "24px",
+});
+
+export const reconciliationTab = style({
+  border: "none",
+  borderRadius: "999px",
+  background: vars.color.transparent,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+  color: vars.color.summaryTitle,
+});
+
+export const reconciliationTabActive = style({
+  background: vars.color.surface,
+  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
+});
+
+export const reconciliationList = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+});
+
+export const reconciliationItem = style({
+  padding: "18px",
+  borderRadius: "10px",
+  border: "1px solid",
+});
+
+export const reconciliationItemMatched = style({
+  background: `linear-gradient(135deg, ${vars.color.mint.bgFrom} 0%, ${vars.color.mint.bgTo} 100%)`,
+  borderColor: vars.color.mint.border,
+});
+
+export const reconciliationItemIssue = style({
+  background: "linear-gradient(135deg, #FEF2F2 0%, #FFF1F2 100%)",
+  borderColor: "#FECACA",
+});
+
+export const reconciliationItemTop = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  marginBottom: "10px",
+});
+
+export const reconciliationDate = style({
+  ...vars.font.body_regular_14,
+  color: vars.color.gray,
+});
+
+export const reconciliationCategory = style({
+  padding: "3px 9px",
+  borderRadius: "7px",
+  background: vars.color.summaryTitle,
+  color: vars.color.surface,
+  ...vars.font.caption_regular_12,
+});
+
+export const reconciliationCheckIcon = style({
+  color: vars.color.accent.green,
+  ...vars.font.body_medium_14,
+  fontWeight: "700",
+});
+
+export const reconciliationWarningIcon = style({
+  color: vars.color.accent.red,
+  ...vars.font.body_medium_14,
+  fontWeight: "700",
+});
+
+export const reconciliationMerchant = style({
+  ...vars.font.title_bold_16,
+  color: vars.color.summaryTitle,
+  marginBottom: "8px",
+});
+
+export const reconciliationAmount = style({
+  ...vars.font.title_bold_18,
+  color: vars.color.summaryTitle,
+});
+
+export const reconciliationIssueMessage = style({
+  marginTop: "12px",
+  ...vars.font.caption_regular_12,
+  color: vars.color.accent.red,
+});
+
+export const reconciliationFooter = style({
+  display: "flex",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  gap: "12px",
+  marginTop: "28px",
+  paddingTop: "24px",
+  borderTop: `1px solid ${vars.color.ItemBorder}`,
+});
+
+export const reconciliationBackButton = style({
+  height: "36px",
+  padding: "0 20px",
+  borderRadius: "8px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.surface,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+  color: vars.color.summaryTitle,
+});
+
+export const reconciliationGenerateButton = style({
+  height: "36px",
+  padding: "0 20px",
+  border: "none",
+  borderRadius: "8px",
+  background: `linear-gradient(90deg, ${vars.color.gradient.violetFrom} 0%, ${vars.color.gradient.violetTo} 100%)`,
+  color: vars.color.surface,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+
+  ":disabled": {
+    opacity: 0.55,
+    cursor: "not-allowed",
+  },
 });

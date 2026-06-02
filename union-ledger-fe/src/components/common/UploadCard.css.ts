@@ -13,6 +13,13 @@ export const container = style({
   border: `2px dashed ${vars.color.footer}`,
   background:
     "linear-gradient(135deg, rgba(238, 242, 255, 0.50) 0%, rgba(250, 245, 255, 0.50) 100%)",
+  cursor: "pointer",
+  selectors: {
+    '&[aria-disabled="true"]': {
+      cursor: "not-allowed",
+      opacity: 0.65,
+    },
+  },
 });
 
 export const iconContainer = style({

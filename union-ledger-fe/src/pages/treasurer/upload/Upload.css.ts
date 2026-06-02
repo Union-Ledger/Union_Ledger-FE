@@ -78,6 +78,42 @@ export const typeCardDesc = style({
   textAlign: "start",
 });
 
+export const categoryFieldContainer = style({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+});
+
+export const categoryLabel = style({
+  ...vars.font.head_bold_16,
+  color: "#0F172B",
+});
+
+export const categoryInput = style({
+  ...vars.font.body_regular_16,
+  width: "100%",
+  height: "56px",
+  padding: "0 18px",
+  border: "2px solid #E2E8F0",
+  borderRadius: "12px",
+  background: "rgba(255, 255, 255, 0.80)",
+  color: "#0F172B",
+  outline: "none",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+  "::placeholder": {
+    color: "#94A3B8",
+  },
+  ":focus": {
+    borderColor: vars.color.accent.indigo,
+    boxShadow: "0 0 0 3px rgba(97, 95, 255, 0.16)",
+  },
+  ":disabled": {
+    cursor: "not-allowed",
+    opacity: 0.6,
+  },
+});
+
 export const cardContainer = style({
   width: "100%",
   height: "288px",

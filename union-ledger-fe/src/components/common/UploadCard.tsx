@@ -8,6 +8,7 @@ interface UploadCardProps {
   desc: string;
   accept?: string;
   multiple?: boolean;
+  disabled?: boolean;
   onChangeFile?: (files: FileList | null) => void;
 }
 
@@ -17,16 +18,20 @@ const UploadCard = ({
   desc,
   accept,
   multiple = false,
+  disabled = false,
   onChangeFile,
 }: UploadCardProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleClickCard = () => {
+    if (disabled) return;
+
     inputRef.current?.click();
   };
 
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChangeFile?.(e.target.files);
+    e.target.value = "";
   };
 
   return (
@@ -35,8 +40,11 @@ const UploadCard = ({
         className={styles.container}
         role="button"
         tabIndex={0}
+        aria-disabled={disabled}
         onClick={handleClickCard}
         onKeyDown={(e) => {
+          if (disabled) return;
+
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             handleClickCard();
@@ -57,6 +65,7 @@ const UploadCard = ({
         type="file"
         accept={accept}
         multiple={multiple}
+        disabled={disabled}
         style={{ display: "none" }}
         onChange={handleChangeFile}
       />

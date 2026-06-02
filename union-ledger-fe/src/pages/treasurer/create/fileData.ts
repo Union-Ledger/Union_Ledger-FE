@@ -1,5 +1,5 @@
-import createIcon from "@assets/create.svg";
-import templateIcon from "@assets/template.svg";
+import createIcon from "@assets/layout/create.svg";
+import templateIcon from "@assets/layout/template.svg";
 
 export type FileDataItem = {
   color: "green" | "red";

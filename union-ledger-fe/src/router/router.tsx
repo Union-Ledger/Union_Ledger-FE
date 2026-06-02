@@ -1,16 +1,25 @@
-import { createBrowserRouter, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
-import Dashboard from "@pages/dashboard/Dashboard";
 import Login from "@pages/logIn/LogIn";
-import Template from "@pages/template/Template";
-import Upload from "@pages/upload/Upload";
-import Compare from "@pages/compare/Compare";
-import Create from "@pages/create/Create";
 import AppLayout from "@shared/components/layout/AppLayout";
+import Template from "@/pages/treasurer/template/Template";
+import Upload from "@/pages/treasurer/upload/Upload";
+import Compare from "@/pages/treasurer/compare/Compare";
+import Create from "@/pages/treasurer/create/Create";
+import AuditorDashboard from "@/pages/auditor/dashboard/AuditorDashboard";
+import Dashboard from "@/pages/treasurer/dashboard/Dashboard";
+import Review from "@/pages/auditor/review/Review";
+import ReviewDetail from "@/pages/auditor/review/ReviewDetail";
+import DevAutoLogin from "@/components/common/DevAutoLogin";
 
 const router = createBrowserRouter([
   {
-    element: <Outlet />,
+    element: (
+      <>
+        {import.meta.env.DEV && <DevAutoLogin />}
+        <Outlet />
+      </>
+    ),
     children: [
       {
         path: ROUTES.LOGIN,
@@ -20,25 +29,71 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           {
-            path: ROUTES.DASHBOARD,
-            element: <Dashboard />,
+            path: "/",
+            element: <Navigate to="/treasurer/dashboard" replace />,
           },
+
+          // 재정담당자 routes
           {
-            path: ROUTES.TEMPLATE,
-            element: <Template />,
+            path: "treasurer",
+            children: [
+              {
+                path: "dashboard",
+                element: <Dashboard />,
+              },
+              {
+                path: "template",
+                element: <Template />,
+              },
+              {
+                path: "upload",
+                element: <Upload />,
+              },
+              {
+                path: "compare",
+                element: <Compare />,
+              },
+              {
+                path: "create",
+                element: <Create />,
+              },
+            ],
           },
+
+          // 감사위원 routes
           {
-            path: ROUTES.UPLOAD,
-            element: <Upload />,
+            path: "auditor",
+            children: [
+              {
+                path: "dashboard",
+                element: <AuditorDashboard />,
+              },
+              {
+                path: "review",
+                element: <Review />,
+              },
+              {
+                path: "review/detail/:id",
+                element: <ReviewDetail />,
+              },
+            ],
           },
-          {
-            path: ROUTES.COMPARE,
-            element: <Compare />,
-          },
-          {
-            path: ROUTES.CREATE,
-            element: <Create />,
-          },
+
+          // // 일반 학우 routes
+          // {
+          //   path: "student",
+          //   children: [
+          //     {
+          //       path: "dashboard",
+          //       element: <StudentDashboard />,
+          //     },
+          //     // {
+          //     //   path: "history",
+          //     //   element: <StudentHistory />,
+          //     // },
+          //   ],
+          // },
+
           {
             path: "*",
             element: <div>404 Not Found</div>,
