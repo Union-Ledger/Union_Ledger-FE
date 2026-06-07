@@ -8,7 +8,7 @@ type SubmissionStatus = "SUBMITTED" | "REVIEWING" | "APPROVED" | "REJECTED";
 type SubmissionStatusLabel = "제출됨" | "검사중" | "승인" | "반려";
 
 export interface StudentCouncilSubmission {
-  id: number;
+  id: string;
   department: string;
   semester: string;
   submittedAt: string;

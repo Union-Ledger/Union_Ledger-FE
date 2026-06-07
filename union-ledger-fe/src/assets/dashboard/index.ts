@@ -5,3 +5,8 @@ export { default as checkCircle } from "./check-circle.svg";
 export { default as alarm } from "./alarm.svg";
 export { default as comment } from "./comment.svg";
 export { default as reject } from "./reject.svg";
+export { default as callender } from "./callender.svg";
+export { default as eye } from "./eye.svg";
+export { default as check } from "./check.svg";
+export { default as questionCircle } from "./question-circle.svg";
+export { default as smallCheck } from "./small-check.svg";

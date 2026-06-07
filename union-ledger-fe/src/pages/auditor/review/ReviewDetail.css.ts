@@ -163,6 +163,14 @@ export const categoryBadge = style({
   ...vars.font.caption_regular_12,
 });
 
+export const statusBadge = style({
+  padding: "4px 10px",
+  borderRadius: "8px",
+  background: vars.color.blueSoft.bgFrom,
+  color: vars.color.blueSoft.textStrong,
+  ...vars.font.caption_regular_12,
+});
+
 export const merchantName = style({
   display: "block",
   ...vars.font.title_bold_18,
@@ -176,6 +184,13 @@ export const transactionAmount = style({
   fontWeight: "700",
   color: vars.color.summaryTitle,
   marginBottom: "20px",
+});
+
+export const reconciliationNote = style({
+  ...vars.font.body_regular_14,
+  color: vars.color.accent.red,
+  margin: 0,
+  marginBottom: "16px",
 });
 
 export const commentBox = style({
@@ -204,6 +219,37 @@ export const commentInput = style({
   "::placeholder": {
     color: vars.color.gray,
   },
+
+  ":disabled": {
+    cursor: "not-allowed",
+    opacity: 0.72,
+  },
+});
+
+export const commentSaveButton = style({
+  width: "72px",
+  height: "40px",
+  border: "none",
+  borderRadius: "8px",
+  background: vars.color.primary,
+  color: vars.color.surface,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+
+  ":disabled": {
+    cursor: "not-allowed",
+    opacity: 0.52,
+  },
+});
+
+export const stateBox = style({
+  ...vars.font.body_regular_16,
+  width: "100%",
+  padding: "20px",
+  borderRadius: "10px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.surface,
+  color: vars.color.gray,
 });
 
 export const auditPanel = style({

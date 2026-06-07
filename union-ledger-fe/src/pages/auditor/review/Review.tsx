@@ -1,9 +1,98 @@
+import { useEffect, useMemo, useState } from "react";
 import ReviewCard, {
   type StudentCouncilSubmission,
 } from "@/components/auditor/ReviewCard";
+import useAuditApi, {
+  type AuditSettlementListItem,
+} from "@/hooks/useAuditApi";
 import * as styles from "@/pages/auditor/review/Review.css";
 
+const parseAmount = (amount: string) => {
+  const parsed = Number(amount);
+
+  return Number.isFinite(parsed) ? Math.abs(parsed) : 0;
+};
+
+const getStatusMeta = (status: string) => {
+  const statusMap: Record<
+    string,
+    {
+      status: StudentCouncilSubmission["status"];
+      statusLabel: StudentCouncilSubmission["statusLabel"];
+    }
+  > = {
+    ready_for_review: { status: "SUBMITTED", statusLabel: "제출됨" },
+    submitted: { status: "SUBMITTED", statusLabel: "제출됨" },
+    resubmitted: { status: "SUBMITTED", statusLabel: "제출됨" },
+    under_audit: { status: "REVIEWING", statusLabel: "검사중" },
+    approved: { status: "APPROVED", statusLabel: "승인" },
+    rejected: { status: "REJECTED", statusLabel: "반려" },
+  };
+
+  return statusMap[status] ?? { status: "SUBMITTED", statusLabel: "제출됨" };
+};
+
+const formatDate = (date: string | null) => {
+  if (!date) return "-";
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "-";
+  }
+
+  return parsedDate.toLocaleDateString("ko-KR");
+};
+
+const createSubmission = (
+  item: AuditSettlementListItem,
+): StudentCouncilSubmission => {
+  const statusMeta = getStatusMeta(item.status);
+  const department = item.department_name || item.organization_name;
+
+  return {
+    id: item.settlement_id,
+    department,
+    semester: `${item.academic_year}-${item.semester}`,
+    submittedAt: formatDate(item.submitted_at),
+    status: statusMeta.status,
+    statusLabel: statusMeta.statusLabel,
+    totalAmount: parseAmount(item.total_evidence_amount),
+    receiptCount: item.evidence_count,
+  };
+};
+
 const Review = () => {
+  const { getAuditSettlements } = useAuditApi();
+
+  const [settlements, setSettlements] = useState<AuditSettlementListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [getAuditSettlementsOnce] = useState(() => getAuditSettlements);
+
+  useEffect(() => {
+    const loadSettlements = async () => {
+      try {
+        setIsLoading(true);
+        setErrorMessage("");
+
+        const data = await getAuditSettlementsOnce();
+        setSettlements(data);
+      } catch (error) {
+        console.error("감사 결산안 목록 조회 실패", error);
+        setErrorMessage("결산안 목록을 불러오지 못했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadSettlements();
+  }, [getAuditSettlementsOnce]);
+
+  const reviewItems = useMemo(() => {
+    return settlements.map(createSubmission);
+  }, [settlements]);
+
   return (
     <div className={styles.container}>
       <div className={styles.titleContainer}>
@@ -13,95 +102,18 @@ const Review = () => {
         </span>
       </div>
       <div className={styles.contentContainer}>
-        {dummyData.map((data) => (
-          <ReviewCard key={data.id} data={data} />
-        ))}
+        {isLoading ? (
+          <div className={styles.emptyBox}>결산안 목록을 불러오는 중입니다.</div>
+        ) : errorMessage ? (
+          <div className={styles.emptyBox}>{errorMessage}</div>
+        ) : reviewItems.length === 0 ? (
+          <div className={styles.emptyBox}>검토할 결산안이 없습니다.</div>
+        ) : (
+          reviewItems.map((data) => <ReviewCard key={data.id} data={data} />)
+        )}
       </div>
     </div>
   );
 };
 
 export default Review;
-
-const dummyData: StudentCouncilSubmission[] = [
-  {
-    id: 1,
-    department: "컴퓨터공학과 학생회",
-    semester: "2024-2학기",
-    submittedAt: "2026-03-18",
-    status: "SUBMITTED",
-    statusLabel: "제출됨",
-    totalAmount: 8420000,
-    receiptCount: 47,
-  },
-  {
-    id: 2,
-    department: "전자공학과 학생회",
-    semester: "2024-2학기",
-    submittedAt: "2026-03-15",
-    status: "REVIEWING",
-    statusLabel: "검사중",
-    totalAmount: 6200000,
-    receiptCount: 38,
-  },
-  {
-    id: 3,
-    department: "경영학과 학생회",
-    semester: "2024-2학기",
-    submittedAt: "2026-03-10",
-    status: "APPROVED",
-    statusLabel: "승인",
-    totalAmount: 9150000,
-    receiptCount: 52,
-  },
-  {
-    id: 4,
-    department: "산업공학과 학생회",
-    semester: "2024-2학기",
-    submittedAt: "2026-03-09",
-    status: "REJECTED",
-    statusLabel: "반려",
-    totalAmount: 4780000,
-    receiptCount: 29,
-  },
-  {
-    id: 5,
-    department: "화학공학과 학생회",
-    semester: "2024-2학기",
-    submittedAt: "2026-03-07",
-    status: "APPROVED",
-    statusLabel: "승인",
-    totalAmount: 7350000,
-    receiptCount: 41,
-  },
-  {
-    id: 6,
-    department: "기계공학과 학생회",
-    semester: "2024-2학기",
-    submittedAt: "2026-03-05",
-    status: "SUBMITTED",
-    statusLabel: "제출됨",
-    totalAmount: 5680000,
-    receiptCount: 33,
-  },
-  {
-    id: 7,
-    department: "신소재공학과 학생회",
-    semester: "2024-2학기",
-    submittedAt: "2026-03-03",
-    status: "REVIEWING",
-    statusLabel: "검사중",
-    totalAmount: 6890000,
-    receiptCount: 45,
-  },
-  {
-    id: 8,
-    department: "미디어커뮤니케이션학과 학생회",
-    semester: "2024-2학기",
-    submittedAt: "2026-02-28",
-    status: "APPROVED",
-    statusLabel: "승인",
-    totalAmount: 10250000,
-    receiptCount: 61,
-  },
-];

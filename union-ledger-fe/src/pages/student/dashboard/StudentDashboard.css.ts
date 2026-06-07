@@ -3,13 +3,12 @@ import { vars } from "@/styles/theme.css";
 
 export const container = style({
   width: "100%",
-  minHeight: "100vh",
+  height: "100vh",
   display: "flex",
   flexDirection: "column",
   gap: "32px",
   padding: "32px",
   background: "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%);",
-  paddingBottom: "32px",
 });
 
 export const titleContainer = style({
@@ -32,17 +31,7 @@ export const desc = style({
 
 export const contentContainer = style({
   width: "100%",
+  height: "auto",
   display: "flex",
-  flexDirection: "column",
-  gap: "24px",
-});
-
-export const emptyBox = style({
-  ...vars.font.body_regular_16,
-  width: "100%",
-  padding: "24px",
-  borderRadius: "14px",
-  background: "rgba(255, 255, 255, 0.80)",
-  border: `1px solid ${vars.color.ItemBorder}`,
-  color: vars.color.gray,
+  gap: "32px",
 });

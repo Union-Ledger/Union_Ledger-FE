@@ -84,6 +84,20 @@ export const dropdown = style({
   padding: "0 12px",
 });
 
+export const roleBadge = style({
+  ...vars.font.body_medium_14,
+  display: "flex",
+  height: "36.5px",
+  flexShrink: 0,
+  alignSelf: "stretch",
+  alignItems: "center",
+  borderRadius: "10px",
+  border: `1px solid ${vars.color.white20}`,
+  background: vars.color.white10,
+  color: "white",
+  padding: "0 12px",
+});
+
 export const menuBox = style({
   display: "flex",
   width: "256px",
@@ -109,6 +123,29 @@ export const footer = style({
   padding: "17px 16px 0 16px",
   flexDirection: "column",
   alignItems: "center",
+});
+
+export const authBox = style({
+  display: "flex",
+  width: "256px",
+  padding: "14px 16px",
+});
+
+export const authButton = style({
+  ...vars.font.body_medium_14,
+  width: "100%",
+  height: "40px",
+  border: `1px solid ${vars.color.white20}`,
+  borderRadius: "10px",
+  background: vars.color.white10,
+  color: vars.color.surface,
+  cursor: "pointer",
+  fontFamily: vars.font.body,
+  selectors: {
+    "&:hover": {
+      background: vars.color.white20,
+    },
+  },
 });
 
 export const content = style({

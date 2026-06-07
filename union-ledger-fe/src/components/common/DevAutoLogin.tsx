@@ -18,7 +18,7 @@ const DevAutoLogin = () => {
     postLogin({
       email,
       password,
-    });
+    }).catch(() => undefined);
   }, []);
 
   return null;

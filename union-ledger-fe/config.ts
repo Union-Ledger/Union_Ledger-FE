@@ -24,6 +24,8 @@ export const ENDPOINTS = {
     EVIDENCE: (settlementId: string) => `/${settlementId}/evidences`,
     EXPENSE_SUMMARY: (settlementId: string) =>
       `/${settlementId}/expense-summary`,
+    RECONCILIATION_RUN: (settlementId: string) =>
+      `/${settlementId}/reconciliation:run`,
     BANK_STATEMENT: (settlementId: string) =>
       `/${settlementId}/bank-statements`,
     BANK_TRANSACTION: (settlementId: string) =>
@@ -37,6 +39,16 @@ export const ENDPOINTS = {
   DASHBOARD: {
     TREASURER: "/treasurer",
     AUDITOR: "/auditor",
+  },
+  PUBLIC: {
+    SETTLEMENTS: "/settlements",
+    SETTLEMENT_DETAIL: (settlementId: string) => `/settlements/${settlementId}`,
+    SETTLEMENT_ITEMS: (settlementId: string) =>
+      `/settlements/${settlementId}/items`,
+    SETTLEMENT_DOWNLOAD: (settlementId: string, artifactId: string) =>
+      `/settlements/${settlementId}/downloads/${artifactId}`,
+    EVIDENCE: (evidenceId: string) => `/evidences/${evidenceId}`,
+    EVIDENCE_FILE: (evidenceId: string) => `/evidences/${evidenceId}/file`,
   },
   BASE: {
     TEMPLATE: (templateId: string) => `/templates/${templateId}`,

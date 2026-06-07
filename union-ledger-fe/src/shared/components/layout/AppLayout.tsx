@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
 import * as styles from "./AppLayout.css";
 import {
@@ -7,6 +7,7 @@ import {
   treasurerLayoutMenus,
 } from "./layoutMenu";
 import title from "@assets/sidebar-title.svg";
+import { tokenStorage } from "@/utils/token";
 import { useState } from "react";
 
 type Role = "TREASURER" | "AUDITOR" | "STUDENT";
@@ -16,8 +17,18 @@ const roleOptions = [
   { label: "일반 학우", value: "STUDENT" },
 ];
 
+const getRoleFromPath = (pathname: string): Role => {
+  if (pathname.startsWith("/auditor")) return "AUDITOR";
+  if (pathname.startsWith("/student")) return "STUDENT";
+  return "TREASURER";
+};
+
 const AppLayout = () => {
-  const [role, setRole] = useState<Role>("TREASURER");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const role = getRoleFromPath(location.pathname);
+  const roleLabel = roleOptions.find((option) => option.value === role)?.label;
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(tokenStorage.getAccessToken()));
 
   const menuByRole = () => {
     switch (role) {
@@ -31,6 +42,16 @@ const AppLayout = () => {
         return [];
     }
   };
+
+  const handleAuthClick = () => {
+    if (isLoggedIn) {
+      tokenStorage.removeAccessToken();
+      setIsLoggedIn(false);
+    }
+
+    navigate(ROUTES.LOGIN);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.sidebar}>
@@ -45,17 +66,7 @@ const AppLayout = () => {
         </div>
         <div className={styles.divider}></div>
         <div className={styles.dropdownBox}>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as Role)}
-            className={styles.dropdown}
-          >
-            {roleOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className={styles.roleBadge}>{roleLabel}</div>
         </div>
         <div className={styles.divider}></div>
 
@@ -81,6 +92,13 @@ const AppLayout = () => {
             </NavLink>
           ))}
         </nav>
+        <div className={styles.divider}></div>
+
+        <div className={styles.authBox}>
+          <button className={styles.authButton} type="button" onClick={handleAuthClick}>
+            {isLoggedIn ? "로그아웃" : "로그인"}
+          </button>
+        </div>
         <div className={styles.divider}></div>
 
         <div className={styles.footer}>© 2026 Union-Ledger</div>

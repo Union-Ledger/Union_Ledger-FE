@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance } from "axios";
 import { BASE_URL } from "../../config";
 import { tokenStorage } from "@/utils/token";
+import { useMemo } from "react";
 
 const applyAuthInterceptor = (instance: AxiosInstance) => {
   instance.interceptors.request.use((config) => {
@@ -28,37 +29,74 @@ const applyAuthInterceptor = (instance: AxiosInstance) => {
 };
 
 const useApi = () => {
-  const api = applyAuthInterceptor(
-    axios.create({
-      baseURL: BASE_URL,
-    }),
+  const api = useMemo(
+    () =>
+      applyAuthInterceptor(
+        axios.create({
+          baseURL: BASE_URL,
+        }),
+      ),
+    [],
   );
 
-  const organizationApi = applyAuthInterceptor(
-    axios.create({
-      baseURL: BASE_URL + "/organizations",
-    }),
+  const organizationApi = useMemo(
+    () =>
+      applyAuthInterceptor(
+        axios.create({
+          baseURL: BASE_URL + "/organizations",
+        }),
+      ),
+    [],
   );
 
-  const settlementApi = applyAuthInterceptor(
-    axios.create({
-      baseURL: BASE_URL + "/settlements",
-    }),
+  const settlementApi = useMemo(
+    () =>
+      applyAuthInterceptor(
+        axios.create({
+          baseURL: BASE_URL + "/settlements",
+        }),
+      ),
+    [],
   );
 
-  const auditApi = applyAuthInterceptor(
-    axios.create({
-      baseURL: BASE_URL + "/audits",
-    }),
+  const auditApi = useMemo(
+    () =>
+      applyAuthInterceptor(
+        axios.create({
+          baseURL: BASE_URL + "/audit",
+        }),
+      ),
+    [],
   );
 
-  const dashboardApi = applyAuthInterceptor(
-    axios.create({
-      baseURL: BASE_URL + "/dashboard",
-    }),
+  const dashboardApi = useMemo(
+    () =>
+      applyAuthInterceptor(
+        axios.create({
+          baseURL: BASE_URL + "/dashboard",
+        }),
+      ),
+    [],
   );
 
-  return { api, organizationApi, settlementApi, auditApi, dashboardApi };
+  const publicApi = useMemo(
+    () =>
+      applyAuthInterceptor(
+        axios.create({
+          baseURL: BASE_URL + "/public",
+        }),
+      ),
+    [],
+  );
+
+  return {
+    api,
+    organizationApi,
+    settlementApi,
+    auditApi,
+    dashboardApi,
+    publicApi,
+  };
 };
 
 export default useApi;

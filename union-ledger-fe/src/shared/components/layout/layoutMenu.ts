@@ -14,7 +14,7 @@ export type LayoutMenu = {
 };
 
 export const treasurerLayoutMenus: LayoutMenu[] = [
-  { label: "대시보드", to: ROUTES.DASHBOARD, icon: dashboardIcon },
+  { label: "대시보드", to: ROUTES.TREASURER_DASHBOARD, icon: dashboardIcon },
   { label: "양식 등록", to: ROUTES.TEMPLATE, icon: templateIcon },
   { label: "업로드", to: ROUTES.UPLOAD, icon: uploadIcon },
   { label: "거래내역 대조", to: ROUTES.COMPARE, icon: compareIcon },
@@ -27,6 +27,6 @@ export const auditorLayoutMenus: LayoutMenu[] = [
 ];
 
 export const studentLayoutMenus: LayoutMenu[] = [
-  { label: "대시보드", to: ROUTES.DASHBOARD, icon: dashboardIcon },
-  { label: "결산안 조회", to: ROUTES.COMPARE, icon: eyeIcon },
+  { label: "대시보드", to: ROUTES.STUDENT_DASHBOARD, icon: dashboardIcon },
+  { label: "결산안 조회", to: ROUTES.STUDENT_SETTLEMENTS, icon: eyeIcon },
 ];

@@ -8,7 +8,48 @@ type DashboardCardItem = {
   content: string;
 };
 
-const AuditorDashboardCards = () => {
+interface AuditorDashboardCardsProps {
+  pendingCount: number;
+  inProgressCount: number;
+  completedCount: number;
+  commentCount: number;
+  isLoading?: boolean;
+}
+
+const AuditorDashboardCards = ({
+  pendingCount,
+  inProgressCount,
+  completedCount,
+  commentCount,
+  isLoading = false,
+}: AuditorDashboardCardsProps) => {
+  const dashboardCardData: DashboardCardItem[] = [
+    {
+      id: "pendingReview",
+      icon: alarm,
+      title: "검토 대기",
+      content: isLoading ? "-" : `${pendingCount}건`,
+    },
+    {
+      id: "approved",
+      icon: alertCircle,
+      title: "진행 중",
+      content: isLoading ? "-" : `${inProgressCount}건`,
+    },
+    {
+      id: "rejected",
+      icon: reject,
+      title: "검토 완료",
+      content: isLoading ? "-" : `${completedCount}건`,
+    },
+    {
+      id: "writtenComments",
+      icon: comment,
+      title: "작성 코멘트",
+      content: isLoading ? "-" : `${commentCount}개`,
+    },
+  ];
+
   return (
     <div className={styles.container}>
       {dashboardCardData.map((card) => (
@@ -27,30 +68,3 @@ const AuditorDashboardCards = () => {
 };
 
 export default AuditorDashboardCards;
-
-const dashboardCardData: DashboardCardItem[] = [
-  {
-    id: "pendingReview",
-    icon: alarm,
-    title: "검토 대기",
-    content: "2건",
-  },
-  {
-    id: "approved",
-    icon: alertCircle,
-    title: "승인 완료",
-    content: "8건",
-  },
-  {
-    id: "rejected",
-    icon: reject,
-    title: "반려",
-    content: "1건",
-  },
-  {
-    id: "writtenComments",
-    icon: comment,
-    title: "작성 코멘트",
-    content: "12개",
-  },
-];

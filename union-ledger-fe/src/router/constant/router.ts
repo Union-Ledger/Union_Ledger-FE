@@ -1,8 +1,12 @@
 export const ROUTES = {
   // 메인 대시보드 화면
   DASHBOARD: "/",
+  // 재정담당자 대시보드 화면
+  TREASURER_DASHBOARD: "/treasurer/dashboard",
   // 로그인 화면
   LOGIN: "/treasurer/login",
+  // 회원가입 화면
+  SIGNUP: "/treasurer/signup",
   // 결산안 양식 등록 화면
   TEMPLATE: "/treasurer/template",
   // 증빙 업로드 화면
@@ -15,4 +19,8 @@ export const ROUTES = {
   AUDITOR_DASHBOARD: "/auditor/dashboard",
   // 감사위원 검토 화면
   AUDITOR_REVIEW: "/auditor/review",
+  // 학생 대시보드 화면
+  STUDENT_DASHBOARD: "/student/dashboard",
+  // 일반 학우 결산안 조회 화면
+  STUDENT_SETTLEMENTS: "/student/settlements",
 } as const;

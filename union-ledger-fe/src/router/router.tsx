@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
 import Login from "@pages/logIn/LogIn";
+import SignUp from "@pages/logIn/SignUp";
 import AppLayout from "@shared/components/layout/AppLayout";
 import Template from "@/pages/treasurer/template/Template";
 import Upload from "@/pages/treasurer/upload/Upload";
@@ -11,6 +12,8 @@ import Dashboard from "@/pages/treasurer/dashboard/Dashboard";
 import Review from "@/pages/auditor/review/Review";
 import ReviewDetail from "@/pages/auditor/review/ReviewDetail";
 import DevAutoLogin from "@/components/common/DevAutoLogin";
+import StudentDashboard from "@/pages/student/dashboard/StudentDashboard";
+import StudentSettlementLookup from "@/pages/student/settlement/StudentSettlementLookup";
 
 const router = createBrowserRouter([
   {
@@ -26,11 +29,15 @@ const router = createBrowserRouter([
         element: <Login />,
       },
       {
+        path: ROUTES.SIGNUP,
+        element: <SignUp />,
+      },
+      {
         element: <AppLayout />,
         children: [
           {
             path: "/",
-            element: <Navigate to="/treasurer/dashboard" replace />,
+            element: <Navigate to={ROUTES.TREASURER_DASHBOARD} replace />,
           },
 
           // 재정담당자 routes
@@ -79,20 +86,24 @@ const router = createBrowserRouter([
             ],
           },
 
-          // // 일반 학우 routes
-          // {
-          //   path: "student",
-          //   children: [
-          //     {
-          //       path: "dashboard",
-          //       element: <StudentDashboard />,
-          //     },
-          //     // {
-          //     //   path: "history",
-          //     //   element: <StudentHistory />,
-          //     // },
-          //   ],
-          // },
+          // 일반 학우 routes
+          {
+            path: "student",
+            children: [
+              {
+                path: "dashboard",
+                element: <StudentDashboard />,
+              },
+              {
+                path: "settlements",
+                element: <StudentSettlementLookup />,
+              },
+              // {
+              //   path: "history",
+              //   element: <StudentHistory />,
+              // },
+            ],
+          },
 
           {
             path: "*",

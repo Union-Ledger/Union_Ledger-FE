@@ -362,6 +362,15 @@ export const reconciliationList = style({
   gap: "12px",
 });
 
+export const reconciliationEmpty = style({
+  ...vars.font.body_regular_14,
+  padding: "18px",
+  borderRadius: "10px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  color: vars.color.description,
+  background: vars.color.surface,
+});
+
 export const reconciliationItem = style({
   padding: "18px",
   borderRadius: "10px",
@@ -425,6 +434,22 @@ export const reconciliationIssueMessage = style({
   marginTop: "12px",
   ...vars.font.caption_regular_12,
   color: vars.color.accent.red,
+});
+
+export const reconciliationStatsBox = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+  gap: "10px",
+  marginTop: "18px",
+});
+
+export const reconciliationStatsItem = style({
+  ...vars.font.body_regular_14,
+  padding: "12px",
+  borderRadius: "8px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  color: vars.color.description,
+  background: vars.color.surface,
 });
 
 export const reconciliationFooter = style({
