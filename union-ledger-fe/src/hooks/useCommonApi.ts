@@ -57,28 +57,7 @@ const useCommonApi = () => {
       });
   };
 
-  const patchEvidenceBudgetCategory = (
-    evidenceId: string,
-    budgetCategory: string,
-  ) => {
-    return api
-      .patch(ENDPOINTS.BASE.EVIDENCE(evidenceId), {
-        budget_category: budgetCategory,
-      })
-      .then((response) => {
-        return response.data;
-      })
-      .catch((error) => {
-        console.log("증빙 카테고리 수정 실패 status:", error.response?.status);
-        console.log(
-          "증빙 카테고리 수정 실패 detail:",
-          JSON.stringify(error.response?.data, null, 2),
-        );
-        throw error;
-      });
-  };
-
-  return { postEvidenceExtract, patchEvidence, patchEvidenceBudgetCategory };
+  return { postEvidenceExtract, patchEvidence };
 };
 
 export default useCommonApi;

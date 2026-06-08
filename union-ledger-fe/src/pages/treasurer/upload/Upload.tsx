@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import UploadCard from "@/components/common/UploadCard";
 import useOrganizationApi from "@/hooks/useOrginizationApi";
 import useSettlementApi from "@/hooks/useSettlementApi";
@@ -116,6 +116,11 @@ const Upload = () => {
     budgetCategory: "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const extractingEvidenceIdsRef = useRef(new Set<string>());
+  const extractQueueRef = useRef<
+    { evidenceId: string; fallbackBudgetCategory: string }[]
+  >([]);
+  const isExtractQueueRunningRef = useRef(false);
 
   const { getOrganization, getTemplate, postSettlement } = useOrganizationApi();
   const { postEvidence, getSettlement } = useSettlementApi();
@@ -265,30 +270,102 @@ const Upload = () => {
     status: evidence.status ?? "uploaded",
     extractedPayload: evidence.extracted_payload ?? {},
     isExtracting: true,
+    extractStatus: "pending",
   });
 
-  const applyExtractedEvidence = (evidence: EvidenceApiResponse) => {
-    setReviewItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item.id !== evidence.id) return item;
+  const applyExtractedEvidence = useCallback(
+    (evidence: EvidenceApiResponse) => {
+      setReviewItems((prevItems) =>
+        prevItems.map((item) => {
+          if (item.id !== evidence.id) return item;
 
-        return {
-          ...item,
-          evidenceDate: evidence.evidence_date ?? item.evidenceDate,
-          merchantName: evidence.merchant_name ?? item.merchantName,
-          amount:
-            evidence.amount === undefined || evidence.amount === null
-              ? item.amount
-              : formatAmount(evidence.amount),
-          paymentMethod: evidence.payment_method ?? item.paymentMethod,
-          budgetCategory: evidence.budget_category ?? item.budgetCategory,
-          status: evidence.status ?? item.status,
-          extractedPayload: evidence.extracted_payload ?? item.extractedPayload,
-          isExtracting: false,
-        };
-      }),
-    );
-  };
+          return {
+            ...item,
+            evidenceDate: evidence.evidence_date ?? item.evidenceDate,
+            merchantName: evidence.merchant_name ?? item.merchantName,
+            amount:
+              evidence.amount === undefined || evidence.amount === null
+                ? item.amount
+                : formatAmount(evidence.amount),
+            paymentMethod: evidence.payment_method ?? item.paymentMethod,
+            budgetCategory: evidence.budget_category ?? item.budgetCategory,
+            status: evidence.status ?? item.status,
+            extractedPayload:
+              evidence.extracted_payload ?? item.extractedPayload,
+            isExtracting: false,
+            extractStatus: "done",
+          };
+        }),
+      );
+    },
+    [setReviewItems],
+  );
+
+  const processExtractQueue = useCallback(async () => {
+    if (isExtractQueueRunningRef.current) return;
+
+    isExtractQueueRunningRef.current = true;
+
+    while (extractQueueRef.current.length > 0) {
+      const queueItem = extractQueueRef.current.shift();
+
+      if (!queueItem) continue;
+
+      const { evidenceId, fallbackBudgetCategory } = queueItem;
+
+      try {
+        const extractedEvidence = await postEvidenceExtractOnce(evidenceId);
+        applyExtractedEvidence({
+          ...extractedEvidence,
+          id: evidenceId,
+          budget_category:
+            extractedEvidence?.budget_category ?? fallbackBudgetCategory,
+        });
+      } catch (error) {
+        console.error("OCR/PDF 추출 실패", error);
+        setReviewItems((prevItems) =>
+          prevItems.map((item) =>
+            item.id === evidenceId
+              ? { ...item, isExtracting: false, extractStatus: "failed" }
+              : item,
+          ),
+        );
+        setUploadStatusMessage(
+          "증빙 업로드는 완료됐지만 일부 OCR/PDF 추출에 실패했습니다.",
+        );
+      } finally {
+        extractingEvidenceIdsRef.current.delete(evidenceId);
+      }
+    }
+
+    isExtractQueueRunningRef.current = false;
+  }, [applyExtractedEvidence, postEvidenceExtractOnce, setReviewItems]);
+
+  const enqueueEvidenceExtract = useCallback(
+    (evidenceId: string, fallbackBudgetCategory: string) => {
+      if (extractingEvidenceIdsRef.current.has(evidenceId)) return;
+
+      extractingEvidenceIdsRef.current.add(evidenceId);
+      setReviewItems((prevItems) =>
+        prevItems.map((item) =>
+          item.id === evidenceId
+            ? { ...item, isExtracting: true, extractStatus: "running" }
+            : item,
+        ),
+      );
+      extractQueueRef.current.push({ evidenceId, fallbackBudgetCategory });
+      void processExtractQueue();
+    },
+    [processExtractQueue, setReviewItems],
+  );
+
+  useEffect(() => {
+    reviewItems.forEach((item) => {
+      if (item.extractStatus === "pending") {
+        enqueueEvidenceExtract(item.id, item.budgetCategory);
+      }
+    });
+  }, [reviewItems, enqueueEvidenceExtract]);
 
   const openEditModal = (item: EvidenceReviewItem) => {
     setEditingItem(item);
@@ -401,42 +478,9 @@ const Upload = () => {
 
       setReviewItems((prevItems) => [...nextReviewItems, ...prevItems]);
       setUploadStatusMessage(
-        "증빙 업로드가 완료되었습니다. OCR/PDF 추출은 백그라운드에서 진행 중입니다.",
+        "증빙 업로드가 완료되었습니다. OCR은 백그라운드에서 진행되며, 기다리지 않고 바로 수정할 수 있습니다.",
       );
 
-      void Promise.allSettled(
-        uploadedEvidences.map(async (evidence) => {
-          const extractedEvidence = await postEvidenceExtractOnce(evidence.id);
-          applyExtractedEvidence({
-            ...extractedEvidence,
-            id: evidence.id,
-            budget_category:
-              extractedEvidence?.budget_category ?? trimmedBudgetCategory,
-          });
-        }),
-      ).then((extractResults) => {
-        const failedExtracts = extractResults.filter(
-          (result) => result.status === "rejected",
-        );
-
-        if (failedExtracts.length > 0) {
-          console.error("OCR/PDF 추출 실패 목록", failedExtracts);
-          setReviewItems((prevItems) =>
-            prevItems.map((item) =>
-              uploadedEvidences.some((evidence) => evidence.id === item.id)
-                ? { ...item, isExtracting: false }
-                : item,
-            ),
-          );
-          setUploadStatusMessage(
-            "증빙 업로드는 완료됐지만 일부 OCR/PDF 추출에 실패했습니다.",
-          );
-          return;
-        }
-
-        setUploadStatusMessage("OCR/PDF 추출까지 완료되었습니다.");
-        console.log("OCR/PDF 추출 요청 완료");
-      });
     } catch (error) {
       console.error("증빙 업로드 실패", error);
       setUploadStatusMessage("");
@@ -521,7 +565,9 @@ const Upload = () => {
           <div className={styles.reviewGrid}>
             {reviewItems.map((item) => (
               <article key={item.id} className={styles.reviewCard}>
-                {item.fileName.toLowerCase().endsWith(".pdf") ? (
+                {!item.previewUrl ? (
+                  <div className={styles.pdfPreview}>{item.fileName}</div>
+                ) : item.fileName.toLowerCase().endsWith(".pdf") ? (
                   <div className={styles.pdfPreview}>PDF</div>
                 ) : (
                   <img
@@ -552,9 +598,19 @@ const Upload = () => {
                   >
                     수정
                   </button>
-                  {item.isExtracting && (
+                  {item.extractStatus === "running" && (
                     <span className={styles.reviewExtractStatus}>
-                      OCR 처리 중이어도 직접 수정할 수 있습니다.
+                      OCR 처리 중입니다. 직접 수정할 수도 있습니다.
+                    </span>
+                  )}
+                  {item.extractStatus === "pending" && (
+                    <span className={styles.reviewExtractStatus}>
+                      OCR 대기 중입니다.
+                    </span>
+                  )}
+                  {item.extractStatus === "failed" && (
+                    <span className={styles.reviewExtractStatus}>
+                      OCR 실패. 직접 수정해 저장해주세요.
                     </span>
                   )}
                 </div>
@@ -582,7 +638,13 @@ const Upload = () => {
             <div className={styles.modalContent}>
               <div className={styles.originalColumn}>
                 <h3 className={styles.modalSectionTitle}>원본</h3>
-                {editingItem.fileName.toLowerCase().endsWith(".pdf") ? (
+                {!editingItem.previewUrl ? (
+                  <div className={styles.modalPdfPreview}>
+                    {editingItem.fileName}
+                    <br />
+                    새로고침 후에는 원본 미리보기를 다시 불러올 수 없습니다.
+                  </div>
+                ) : editingItem.fileName.toLowerCase().endsWith(".pdf") ? (
                   <div className={styles.modalPdfPreview}>PDF 증빙 파일</div>
                 ) : (
                   <img
