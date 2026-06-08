@@ -53,6 +53,8 @@ const reusableSettlementStatuses = new Set([
   "resubmitted",
 ]);
 
+let settlementPreparationPromise: Promise<string | null> | null = null;
+
 interface EvidenceApiResponse {
   id: string;
   evidence_date?: string | null;
@@ -129,61 +131,86 @@ const Upload = () => {
   const [getTreasurerDashboardOnce] = useState(() => getTreasurerDashboard);
 
   const createDraftSettlement = useCallback(async () => {
-    const dashboardData = await getTreasurerDashboardOnce(20);
-    const reusableSettlementId = findReusableSettlementId(dashboardData);
+    if (!settlementPreparationPromise) {
+      settlementPreparationPromise = (async () => {
+        const dashboardData = await getTreasurerDashboardOnce(20);
+        const reusableSettlementId = findReusableSettlementId(dashboardData);
 
-    if (reusableSettlementId) {
-      try {
-        await getSettlementOnce(reusableSettlementId);
-        localStorage.setItem("currentSettlementId", reusableSettlementId);
-        setSettlementId(reusableSettlementId);
-        return reusableSettlementId;
-      } catch (error) {
-        console.warn("대시보드의 결산안 ID가 유효하지 않습니다.", error);
+        if (reusableSettlementId) {
+          try {
+            await getSettlementOnce(reusableSettlementId);
+            localStorage.setItem(
+              "currentSettlementId",
+              reusableSettlementId,
+            );
+            return reusableSettlementId;
+          } catch (error) {
+            console.warn("대시보드의 결산안 ID가 유효하지 않습니다.", error);
+          }
+        }
+
+        let organizationId = localStorage.getItem("organizationId");
+        let templates =
+          organizationId === null
+            ? undefined
+            : await getTemplateOnce(organizationId);
+
+        if (!organizationId || !templates || templates.length === 0) {
+          const organizations = await getOrganizationOnce();
+
+          if (!organizations || organizations.length === 0) {
+            alert("소속된 조직이 없습니다.");
+            return null;
+          }
+
+          organizationId = organizations[0].id;
+          localStorage.setItem("organizationId", organizationId);
+          templates = await getTemplateOnce(organizationId);
+        }
+
+        if (!templates || templates.length === 0) {
+          alert(
+            "등록된 결산안 템플릿이 없습니다. 먼저 템플릿을 등록해주세요.",
+          );
+          return null;
+        }
+
+        const activeTemplate = templates.find(
+          (template: { is_active: boolean }) => template.is_active,
+        );
+
+        const templateId = activeTemplate?.id ?? templates[0].id;
+
+        const settlement = await postSettlementOnce({
+          organizationId,
+          templateId,
+          title: "2024년도 2학기 결산안",
+          academicYear: 2024,
+          semester: "2",
+        });
+
+        if (!settlement?.id) return null;
+
+        localStorage.setItem("currentSettlementId", settlement.id);
+        return settlement.id;
+      })();
+    }
+
+    const currentPromise = settlementPreparationPromise;
+
+    try {
+      const preparedSettlementId = await currentPromise;
+
+      if (preparedSettlementId) {
+        setSettlementId(preparedSettlementId);
+      }
+
+      return preparedSettlementId;
+    } finally {
+      if (settlementPreparationPromise === currentPromise) {
+        settlementPreparationPromise = null;
       }
     }
-
-    let organizationId = localStorage.getItem("organizationId");
-    let templates =
-      organizationId === null ? undefined : await getTemplateOnce(organizationId);
-
-    if (!organizationId || !templates || templates.length === 0) {
-      const organizations = await getOrganizationOnce();
-
-      if (!organizations || organizations.length === 0) {
-        alert("소속된 조직이 없습니다.");
-        return null;
-      }
-
-      organizationId = organizations[0].id;
-      localStorage.setItem("organizationId", organizationId);
-      templates = await getTemplateOnce(organizationId);
-    }
-
-    if (!templates || templates.length === 0) {
-      alert("등록된 결산안 템플릿이 없습니다. 먼저 템플릿을 등록해주세요.");
-      return null;
-    }
-
-    const activeTemplate = templates.find(
-      (template: { is_active: boolean }) => template.is_active,
-    );
-
-    const templateId = activeTemplate?.id ?? templates[0].id;
-
-    const settlement = await postSettlementOnce({
-      organizationId,
-      templateId,
-      title: "2024년도 2학기 결산안",
-      academicYear: 2024,
-      semester: "2",
-    });
-
-    if (!settlement?.id) return null;
-
-    localStorage.setItem("currentSettlementId", settlement.id);
-    setSettlementId(settlement.id);
-    return settlement.id;
   }, [
     getOrganizationOnce,
     getSettlementOnce,
