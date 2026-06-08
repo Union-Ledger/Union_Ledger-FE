@@ -39,6 +39,7 @@ export const ENDPOINTS = {
   DASHBOARD: {
     TREASURER: "/treasurer",
     AUDITOR: "/auditor",
+    STUDENT: "/student",
   },
   PUBLIC: {
     SETTLEMENTS: "/settlements",

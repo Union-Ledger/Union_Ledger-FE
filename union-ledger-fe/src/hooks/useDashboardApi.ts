@@ -65,6 +65,41 @@ export interface AuditorDashboardResponse {
   pending_settlements: AuditorPendingSettlement[];
 }
 
+export interface StudentDashboardOrganization {
+  id: string | null;
+  name: string;
+  college_name: string;
+  department_name: string;
+}
+
+export interface StudentDashboardSummary {
+  published_settlement_count: number;
+  current_period_total_amount: string;
+  last_published_at: string | null;
+  total_view_count: number;
+}
+
+export interface StudentRecentAuditResult {
+  settlement_id: string;
+  academic_year: number;
+  semester: string;
+  label: string;
+  status: string;
+  status_label: string;
+  total_amount: string;
+  audited_at: string | null;
+  published_at: string | null;
+  summary_comment: string | null;
+}
+
+export interface StudentDashboardResponse {
+  organization: StudentDashboardOrganization;
+  summary: StudentDashboardSummary;
+  current_period: Record<string, unknown>;
+  college_period_overview: Record<string, unknown>[];
+  recent_results: StudentRecentAuditResult[];
+}
+
 const useDashboardApi = () => {
   const { dashboardApi } = useApi();
 
@@ -120,9 +155,28 @@ const useDashboardApi = () => {
       });
   };
 
+  // 학생 대시보드 조회 (미지정 시 본인 학과 학생회 기준)
+  const getStudentDashboard = (
+    organizationId?: string,
+  ): Promise<StudentDashboardResponse | undefined> => {
+    return dashboardApi
+      .get(ENDPOINTS.DASHBOARD.STUDENT, {
+        params: organizationId ? { organization_id: organizationId } : {},
+      })
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("학생 대시보드 조회 실패 status:", error.response?.status);
+        console.log("학생 대시보드 조회 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   return {
     getTreasurerDashboard,
     getAuditorDashboard,
+    getStudentDashboard,
   };
 };
 

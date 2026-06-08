@@ -5,8 +5,8 @@ import xIcon from "@assets/dashboard/x-icon.svg";
 
 type SettlementStatus = "APPROVED" | "UNAPPROVED";
 
-type SettlementItem = {
-  id: number;
+export type StudentAuditResultItem = {
+  id: string;
   semester: string;
   status: SettlementStatus;
   amount: number;
@@ -14,7 +14,11 @@ type SettlementItem = {
   approvedAt: string | null;
 };
 
-const StudentDashboardAuditResult = () => {
+const StudentDashboardAuditResult = ({
+  results = [],
+}: {
+  results?: StudentAuditResultItem[];
+}) => {
   return (
     <div className={styles.container}>
       <span className={styles.title}>
@@ -22,63 +26,42 @@ const StudentDashboardAuditResult = () => {
         <span>최근 감사 결과</span>
       </span>
       <div className={styles.contentContainer}>
-        {settlementDummyData.map((item) => (
-          <div key={item.id} className={styles.resultCard}>
-            <div className={styles.resultHeader}>
-              <div className={styles.resultHeaderRight}>
-                <strong className={styles.resultSemester}>
-                  {item.semester}
+        {results.length === 0 ? (
+          <p className={styles.resultComment}>아직 공개된 감사 결과가 없습니다.</p>
+        ) : (
+          results.map((item) => (
+            <div key={item.id} className={styles.resultCard}>
+              <div className={styles.resultHeader}>
+                <div className={styles.resultHeaderRight}>
+                  <strong className={styles.resultSemester}>
+                    {item.semester}
+                  </strong>
+                  <span className={styles.resultStatus}>
+                    <img
+                      src={item.status === "APPROVED" ? smallCheck : xIcon}
+                      alt={item.status === "APPROVED" ? "승인" : "미승인"}
+                    />
+                    <span>{item.status === "APPROVED" ? "승인" : "미승인"}</span>
+                  </span>
+                </div>
+                <strong className={styles.resultAmount}>
+                  ₩{item.amount.toLocaleString("ko-KR")}
                 </strong>
-                <span className={styles.resultStatus}>
-                  <img
-                    src={item.status === "APPROVED" ? smallCheck : xIcon}
-                    alt={item.status === "APPROVED" ? "승인" : "미승인"}
-                  />
-                  <span>{item.status === "APPROVED" ? "승인" : "미승인"}</span>
-                </span>
               </div>
-              <strong className={styles.resultAmount}>
-                ₩{item.amount.toLocaleString("ko-KR")}
-              </strong>
+              {item.comment && (
+                <p className={styles.resultComment}>"{item.comment}"</p>
+              )}
+              <span className={styles.resultApprovedAt}>
+                {item.status === "APPROVED"
+                  ? `감사 완료: ${item.approvedAt ?? "-"}`
+                  : "감사 미완료"}
+              </span>
             </div>
-            <p className={styles.resultComment}>"{item.comment}"</p>
-            <span className={styles.resultApprovedAt}>
-              {item.status === "APPROVED"
-                ? `감사 완료: ${item.approvedAt}`
-                : "감사 미완료"}
-            </span>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
 };
 
 export default StudentDashboardAuditResult;
-
-const settlementDummyData: SettlementItem[] = [
-  {
-    id: 1,
-    semester: "2026-1학기",
-    status: "APPROVED",
-    amount: 8420000,
-    comment: "모든 증빙이 적절하게 처리되었습니다.",
-    approvedAt: "2026-04-25",
-  },
-  {
-    id: 2,
-    semester: "2025-2학기",
-    status: "APPROVED",
-    amount: 7650000,
-    comment: "지출 내역이 투명하게 관리되었습니다.",
-    approvedAt: "2025-12-20",
-  },
-  {
-    id: 3,
-    semester: "2025-1학기",
-    status: "UNAPPROVED",
-    amount: 6890000,
-    comment: "일부 증빙 확인이 필요합니다.",
-    approvedAt: null,
-  },
-];

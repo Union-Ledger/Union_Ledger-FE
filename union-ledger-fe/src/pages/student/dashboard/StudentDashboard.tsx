@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import useDashboardApi, {
-  type TreasurerDashboardResponse,
+  type StudentDashboardResponse,
 } from "@/hooks/useDashboardApi";
 import * as styles from "@/pages/student/dashboard/StudentDashboard.css";
 import StudentDashboardCards from "@/components/student/StudentDashboardCards";
-import StudentDashboardAuditResult from "@/components/student/StudentDashboardAuditResult";
+import StudentDashboardAuditResult, {
+  type StudentAuditResultItem,
+} from "@/components/student/StudentDashboardAuditResult";
 import StudentDashboardQuestion from "@/components/student/StudentDashboardQuestion";
 
 const parseAmount = (amount: string) => {
@@ -12,64 +14,79 @@ const parseAmount = (amount: string) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const toAuditResults = (
+  data: StudentDashboardResponse | null,
+): StudentAuditResultItem[] => {
+  return (data?.recent_results ?? []).map((result) => ({
+    id: result.settlement_id,
+    semester: result.label,
+    status: result.status === "approved" ? "APPROVED" : "UNAPPROVED",
+    amount: parseAmount(result.total_amount),
+    comment: result.summary_comment ?? "",
+    approvedAt: result.audited_at ?? result.published_at ?? null,
+  }));
+};
+
 const StudentDashboard = () => {
-  const { getTreasurerDashboard } = useDashboardApi();
+  const { getStudentDashboard } = useDashboardApi();
+  const [getStudentDashboardOnce] = useState(() => getStudentDashboard);
 
   const [dashboardData, setDashboardData] =
-    useState<TreasurerDashboardResponse | null>(null);
+    useState<StudentDashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        const data = await getTreasurerDashboard(10);
-
+        const data = await getStudentDashboardOnce();
         if (data) {
           setDashboardData(data);
-          console.log("대시보드 조회 성공", data);
         }
       } catch (error) {
-        console.error("대시보드 조회 실패", error);
+        console.error("학생 대시보드 조회 실패", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     loadDashboard();
-  }, []);
+  }, [getStudentDashboardOnce]);
 
   if (isLoading) {
     return (
       <div className={styles.container}>
         <div className={styles.titleContainer}>
-          <span className={styles.title}>대시보드</span>
-          <span className={styles.desc}>재정 현황을 불러오는 중입니다</span>
+          <span className={styles.title}>학생 대시보드</span>
+          <span className={styles.desc}>결산 내역을 불러오는 중입니다</span>
         </div>
       </div>
     );
   }
+
+  const summary = dashboardData?.summary;
 
   return (
     <div className={styles.container}>
       <div className={styles.titleContainer}>
         <span className={styles.title}>학생 대시보드</span>
         <span className={styles.desc}>
-          학생회 결산 내역을 투명하게 확인하세요
+          {dashboardData?.organization?.name
+            ? `${dashboardData.organization.name} 결산 내역을 투명하게 확인하세요`
+            : "학생회 결산 내역을 투명하게 확인하세요"}
         </span>
       </div>
 
       <StudentDashboardCards
-        totalEvidenceCount={dashboardData?.total_evidence_count ?? 0}
+        totalEvidenceCount={summary?.published_settlement_count ?? 0}
         totalEvidenceAmount={parseAmount(
-          dashboardData?.total_evidence_amount ?? "0",
+          summary?.current_period_total_amount ?? "0",
         )}
-        matchedCount={dashboardData?.matched_count ?? 0}
-        unmatchedCount={dashboardData?.unmatched_count ?? 0}
-        progressPercent={dashboardData?.progress_percent ?? 0}
+        recentApprovedAt={summary?.last_published_at ?? null}
+        viewCount={summary?.total_view_count ?? 0}
       />
 
       <div className={styles.contentContainer}>
-        <StudentDashboardAuditResult />
+        <StudentDashboardAuditResult results={toAuditResults(dashboardData)} />
         <StudentDashboardQuestion />
       </div>
     </div>

@@ -5,9 +5,9 @@ import * as styles from "@/components/student/StudentDashboardCards.css";
 interface StudentDashboardCardsProps {
   totalEvidenceCount: number;
   totalEvidenceAmount: number;
-  matchedCount: number;
-  unmatchedCount: number;
-  progressPercent: number;
+  matchedCount?: number;
+  unmatchedCount?: number;
+  progressPercent?: number;
   recentApprovedAt?: string | null;
   viewCount?: number;
 }
