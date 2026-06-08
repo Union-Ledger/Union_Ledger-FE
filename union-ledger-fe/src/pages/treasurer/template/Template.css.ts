@@ -31,7 +31,7 @@ export const desc = style({
 
 export const contentContainer = style({
   width: "672px",
-  height: "447px",
+  minHeight: "540px",
   display: "flex",
   flexDirection: "column",
   gap: "16px",
@@ -71,4 +71,33 @@ export const uploadInfoDescContainer = style({
 export const uploadInfoDesc = style({
   ...vars.font.body_regular_14,
   color: vars.color.gray,
+});
+
+export const currentTemplateBox = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+  padding: "14px 16px",
+  borderRadius: "10px",
+  border: `1px solid ${vars.color.blueSoft.border}`,
+  background: vars.color.blueSoft.bgFrom,
+});
+
+export const currentTemplateLabel = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.description,
+});
+
+export const currentTemplateName = style({
+  ...vars.font.title_bold_16,
+  color: vars.color.summaryTitle,
+});
+
+export const statusMessage = style({
+  padding: "12px 14px",
+  borderRadius: "8px",
+  border: "1px solid #B9F8CF",
+  background: "#F0FDF4",
+  color: "#0D542B",
+  ...vars.font.body_regular_14,
 });

@@ -8,6 +8,13 @@ interface PostTemplateData {
   mappingSchema?: Record<string, unknown>;
 }
 
+interface PatchTemplateData {
+  templateId: string;
+  name: string;
+  mappingSchema: Record<string, unknown>;
+  isActive: boolean;
+}
+
 type Semester = "1" | "2" | "summer" | "winter";
 
 interface PostSettlementData {
@@ -25,7 +32,7 @@ interface PostInvitationData {
   role: string;
 }
 
-interface TemplateData {
+export interface TemplateData {
   id: string;
   organization_id: string;
   name: string;
@@ -59,7 +66,7 @@ export interface OrganizationInvitation {
 }
 
 const useOrganizationApi = () => {
-  const { organizationApi } = useApi();
+  const { api, organizationApi } = useApi();
 
   // 조직 목록 조회
   const getOrganization = (): Promise<OrganizationData[] | undefined> => {
@@ -95,6 +102,22 @@ const useOrganizationApi = () => {
         return response.data;
       })
       .catch((error) => console.log(error));
+  };
+
+  // 결산 템플릿 수정
+  const patchTemplate = (data: PatchTemplateData): Promise<TemplateData> => {
+    return api
+      .patch(ENDPOINTS.BASE.TEMPLATE(data.templateId), {
+        name: data.name,
+        mapping_schema: data.mappingSchema,
+        is_active: data.isActive,
+      })
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("템플릿 수정 실패 status:", error.response?.status);
+        console.log("템플릿 수정 실패 detail:", error.response?.data);
+        throw error;
+      });
   };
 
   // 결산안 draft 생성
@@ -173,6 +196,7 @@ const useOrganizationApi = () => {
 
   return {
     postTemplate,
+    patchTemplate,
     getTemplate,
     postSettlement,
     getOrganization,
