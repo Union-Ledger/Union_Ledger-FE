@@ -10,6 +10,7 @@ import {
 } from "./layoutMenu";
 import title from "@assets/sidebar-title.svg";
 import { tokenStorage } from "@/utils/token";
+import { useEvidenceReview } from "@/contexts/EvidenceReviewContext";
 import { useState } from "react";
 
 type Role = "TREASURER" | "AUDITOR" | "STUDENT" | "PRESIDENT" | "ADMIN";
@@ -32,6 +33,7 @@ const getRoleFromPath = (pathname: string): Role => {
 const AppLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { clearReviewItems } = useEvidenceReview();
   const role = getRoleFromPath(location.pathname);
   const roleLabel = roleOptions.find((option) => option.value === role)?.label;
   const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(tokenStorage.getAccessToken()));
@@ -55,6 +57,7 @@ const AppLayout = () => {
 
   const handleAuthClick = () => {
     if (isLoggedIn) {
+      clearReviewItems();
       tokenStorage.removeAccessToken();
       setIsLoggedIn(false);
     }

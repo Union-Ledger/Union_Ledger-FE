@@ -4,6 +4,7 @@ import Login from "@pages/logIn/LogIn";
 import SignUp from "@pages/logIn/SignUp";
 import AppLayout from "@shared/components/layout/AppLayout";
 import RequireAuth from "@shared/components/auth/RequireAuth";
+import { EvidenceReviewProvider } from "@/contexts/EvidenceReviewContext";
 import Template from "@/pages/treasurer/template/Template";
 import Upload from "@/pages/treasurer/upload/Upload";
 import Compare from "@/pages/treasurer/compare/Compare";
@@ -41,7 +42,9 @@ const router = createBrowserRouter([
       {
         element: (
           <RequireAuth>
-            <AppLayout />
+            <EvidenceReviewProvider>
+              <AppLayout />
+            </EvidenceReviewProvider>
           </RequireAuth>
         ),
         children: [
