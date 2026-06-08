@@ -187,6 +187,22 @@ const useSettlementApi = () => {
       });
   };
 
+  // 결산안 공개 (회장 — 승인된 결산안을 학생에게 공개)
+  const postPublishSettlement = (
+    settlementId: string,
+  ): Promise<SettlementResponse> => {
+    return settlementApi
+      .post(ENDPOINTS.SETTLEMENT.PUBLISH(settlementId))
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("결산안 공개 실패 status:", error.response?.status);
+        console.log("결산안 공개 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   // 반려 결산안 재제출
   const postResubmitSettlement = (
     data: PostResubmitSettlementData,
@@ -230,6 +246,7 @@ const useSettlementApi = () => {
     getExpenseSummary,
     postReconciliationRun,
     postSubmitSettlement,
+    postPublishSettlement,
     postResubmitSettlement,
     postBankStatement,
   };

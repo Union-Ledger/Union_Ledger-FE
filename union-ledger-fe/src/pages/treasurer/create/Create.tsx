@@ -168,17 +168,20 @@ const Create = () => {
   >([]);
   const [resubmitMessage, setResubmitMessage] = useState("");
   const [isResubmitting, setIsResubmitting] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const {
     getExpenseSummary,
     getSettlement,
     getSettlementComments,
     postResubmitSettlement,
+    postPublishSettlement,
   } = useSettlementApi();
   const [getExpenseSummaryOnce] = useState(() => getExpenseSummary);
   const [getSettlementOnce] = useState(() => getSettlement);
   const [getSettlementCommentsOnce] = useState(() => getSettlementComments);
   const [postResubmitSettlementOnce] = useState(() => postResubmitSettlement);
+  const [postPublishSettlementOnce] = useState(() => postPublishSettlement);
 
   useEffect(() => {
     const fetchExpenseSummary = async () => {
@@ -267,8 +270,32 @@ const Create = () => {
     }
   };
 
+  const handlePublish = async () => {
+    const settlementId =
+      settlement?.id ?? localStorage.getItem("currentSettlementId");
+
+    if (!settlementId) {
+      alert("공개할 결산안 정보가 없습니다.");
+      return;
+    }
+
+    try {
+      setIsPublishing(true);
+      const data = await postPublishSettlementOnce(settlementId);
+      setSettlement(data);
+      alert("결산안이 공개되었습니다. 이제 학생들이 열람할 수 있어요.");
+    } catch (error) {
+      console.error("결산안 공개 실패", error);
+      alert("결산안 공개에 실패했습니다. (회장 권한이 필요할 수 있어요)");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   const summaryItems = expenseSummary?.by_category ?? [];
   const isRejected = settlement?.status === "rejected";
+  const isApproved = settlement?.status === "approved";
+  const isPublished = Boolean(settlement?.published_at);
 
   return (
     <div className={styles.container}>
@@ -289,6 +316,31 @@ const Create = () => {
           onMessageChange={setResubmitMessage}
           onResubmit={handleResubmit}
         />
+      )}
+
+      {isApproved && (
+        <section className={styles.publishPanel}>
+          <div className={styles.publishHeader}>
+            <span className={styles.publishTitle}>
+              {isPublished ? "공개 완료 ✅" : "감사 승인 완료 🎉"}
+            </span>
+            <span className={styles.publishDescription}>
+              {isPublished
+                ? "학생들이 결산 내역을 열람할 수 있습니다."
+                : "공개하면 학생들이 결산 내역을 열람할 수 있습니다."}
+            </span>
+          </div>
+          {!isPublished && (
+            <button
+              type="button"
+              className={styles.publishButton}
+              onClick={handlePublish}
+              disabled={isPublishing}
+            >
+              {isPublishing ? "공개 중..." : "결산안 공개하기"}
+            </button>
+          )}
+        </section>
       )}
 
       <div className={styles.summaryBox}>

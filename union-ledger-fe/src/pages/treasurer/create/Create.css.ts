@@ -360,6 +360,50 @@ export const rejectedSubmitButton = style({
   },
 });
 
+export const publishPanel = style({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  padding: "24px",
+  borderRadius: "14px",
+  border: "1px solid #86EFAC",
+  background: "linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)",
+});
+
+export const publishHeader = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+});
+
+export const publishTitle = style({
+  ...vars.font.title_bold_18,
+  color: "#15803D",
+});
+
+export const publishDescription = style({
+  ...vars.font.body_regular_14,
+  color: "#16A34A",
+});
+
+export const publishButton = style({
+  alignSelf: "flex-start",
+  height: "38px",
+  padding: "0 24px",
+  border: "none",
+  borderRadius: "8px",
+  background: "#16A34A",
+  color: vars.color.surface,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+
+  ":disabled": {
+    opacity: 0.6,
+    cursor: "not-allowed",
+  },
+});
+
 export const fileContainer = style({
   width: "100%",
   display: "flex",
