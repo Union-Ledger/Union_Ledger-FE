@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthApi from "@/hooks/useAuthApi";
 import { ROUTES } from "@/router/constant/router";
-import { getDashboardRouteByRoles } from "./authRoute";
+import { getDashboardRouteByRoles, getDashboardRouteByUser } from "./authRoute";
 import * as styles from "./Auth.css";
 
 type SignupStep = 1 | 2 | 3;
@@ -113,7 +113,7 @@ const SignUp = () => {
         return;
       }
 
-      navigate(getDashboardRouteByRoles(me.roles));
+      navigate(getDashboardRouteByUser(me));
     } catch (error) {
       console.error("회원가입 실패", error);
       setErrorMessage("회원가입에 실패했습니다.");

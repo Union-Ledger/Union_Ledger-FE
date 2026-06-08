@@ -42,6 +42,7 @@ const Upload = () => {
   const [budgetCategory, setBudgetCategory] = useState("");
   const [isPreparing, setIsPreparing] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatusMessage, setUploadStatusMessage] = useState("");
 
   const { getOrganization, getTemplate, postSettlement } = useOrganizationApi();
   const { postEvidence } = useSettlementApi();
@@ -160,29 +161,34 @@ const Upload = () => {
         return;
       }
 
-      const extractResults = await Promise.allSettled(
-        uploadedEvidences.map((evidence) => postEvidenceExtract(evidence.id)),
+      setUploadStatusMessage(
+        "증빙 업로드가 완료되었습니다. OCR/PDF 추출은 백그라운드에서 진행 중입니다.",
       );
 
-      const failedExtracts = extractResults.filter(
-        (result) => result.status === "rejected",
-      );
+      void Promise.allSettled(
+        uploadedEvidences.map(async (evidence) => {
+          await postEvidenceExtract(evidence.id);
+          await patchEvidenceBudgetCategory(evidence.id, trimmedBudgetCategory);
+        }),
+      ).then((extractResults) => {
+        const failedExtracts = extractResults.filter(
+          (result) => result.status === "rejected",
+        );
 
-      if (failedExtracts.length > 0) {
-        console.error("OCR/PDF 추출 실패 목록", failedExtracts);
-        alert("증빙 업로드는 완료됐지만, OCR/PDF 추출에 실패했습니다.");
-        return;
-      }
+        if (failedExtracts.length > 0) {
+          console.error("OCR/PDF 추출 실패 목록", failedExtracts);
+          setUploadStatusMessage(
+            "증빙 업로드는 완료됐지만 일부 OCR/PDF 추출에 실패했습니다.",
+          );
+          return;
+        }
 
-      await Promise.all(
-        uploadedEvidences.map((evidence) =>
-          patchEvidenceBudgetCategory(evidence.id, trimmedBudgetCategory),
-        ),
-      );
-
-      console.log("OCR/PDF 추출 요청 완료");
+        setUploadStatusMessage("OCR/PDF 추출까지 완료되었습니다.");
+        console.log("OCR/PDF 추출 요청 완료");
+      });
     } catch (error) {
       console.error("증빙 업로드 실패", error);
+      setUploadStatusMessage("");
       alert("증빙 업로드에 실패했습니다. 파일 용량을 확인해주세요.");
     } finally {
       setIsUploading(false);
@@ -249,6 +255,10 @@ const Upload = () => {
             onChangeFile={handleChangeFile}
           />
         </div>
+
+        {uploadStatusMessage && (
+          <div className={styles.statusMessage}>{uploadStatusMessage}</div>
+        )}
       </div>
     </div>
   );

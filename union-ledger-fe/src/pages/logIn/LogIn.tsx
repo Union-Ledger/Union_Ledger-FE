@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthApi from "@/hooks/useAuthApi";
 import { ROUTES } from "@/router/constant/router";
-import { getDashboardRouteByRoles } from "./authRoute";
+import { getDashboardRouteByUser } from "./authRoute";
 import * as styles from "./Auth.css";
 
 const Login = () => {
@@ -17,18 +17,32 @@ const Login = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedEmail || !trimmedPassword) {
+      setErrorMessage("이메일과 비밀번호를 입력해주세요.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setErrorMessage("");
 
-      // 이메일은 가입 시 소문자로 저장되므로, 입력값(모바일 자동 대문자/공백 등)을
-      // 정규화해서 보낸다. (대소문자·앞뒤 공백 때문에 로그인 실패하던 버그 수정)
-      await postLogin({ email: email.trim().toLowerCase(), password });
-      const me = await getMe();
-      navigate(getDashboardRouteByRoles(me.roles));
+      await postLogin({ email: trimmedEmail, password: trimmedPassword });
     } catch (error) {
       console.error("로그인 실패", error);
       setErrorMessage("이메일 또는 비밀번호를 확인해주세요.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const me = await getMe();
+      navigate(getDashboardRouteByUser(me));
+    } catch (error) {
+      console.error("내 정보 조회 실패", error);
+      setErrorMessage("로그인은 성공했지만 사용자 정보를 불러오지 못했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -50,7 +64,7 @@ const Login = () => {
               value={email}
               placeholder="your.name@konkuk.ac.kr"
               autoComplete="email"
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => setEmail(event.target.value.trim())}
             />
           </label>
 
@@ -66,14 +80,12 @@ const Login = () => {
             />
           </label>
 
-          {errorMessage && (
-            <p className={styles.errorText}>{errorMessage}</p>
-          )}
+          {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
 
           <button
             className={styles.primaryButton}
             type="submit"
-            disabled={!email || !password || isSubmitting}
+            disabled={!email.trim() || !password.trim() || isSubmitting}
           >
             {isSubmitting ? "로그인 중..." : "로그인"}
           </button>

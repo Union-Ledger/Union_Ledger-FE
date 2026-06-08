@@ -34,4 +34,36 @@ export const contentContainer = style({
   height: "auto",
   display: "flex",
   gap: "32px",
+  paddingBottom: "32px",
+});
+
+export const toast = style({
+  position: "fixed",
+  right: "32px",
+  bottom: "32px",
+  zIndex: 20,
+  maxWidth: "360px",
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  padding: "18px 20px",
+  borderRadius: "8px",
+  background: vars.color.surface,
+  boxShadow:
+    "0 20px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.18)",
+  color: vars.color.summaryTitle,
+  ...vars.font.body_medium_14,
+});
+
+export const toastIcon = style({
+  width: "20px",
+  height: "20px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: "999px",
+  background: vars.color.summaryTitle,
+  color: vars.color.surface,
+  flexShrink: 0,
+  fontWeight: "700",
 });

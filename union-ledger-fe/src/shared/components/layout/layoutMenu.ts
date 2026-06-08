@@ -29,4 +29,19 @@ export const auditorLayoutMenus: LayoutMenu[] = [
 export const studentLayoutMenus: LayoutMenu[] = [
   { label: "대시보드", to: ROUTES.STUDENT_DASHBOARD, icon: dashboardIcon },
   { label: "결산안 조회", to: ROUTES.STUDENT_SETTLEMENTS, icon: eyeIcon },
+  { label: "받은 초대", to: ROUTES.STUDENT_INVITATIONS, icon: checkIcon },
+  {
+    label: "회장 신청",
+    to: ROUTES.STUDENT_PRESIDENT_APPLICATION,
+    icon: createIcon,
+  },
+];
+
+export const presidentLayoutMenus: LayoutMenu[] = [
+  { label: "대시보드", to: ROUTES.PRESIDENT_DASHBOARD, icon: dashboardIcon },
+  { label: "팀원 초대", to: ROUTES.PRESIDENT_INVITE, icon: checkIcon },
+];
+
+export const adminLayoutMenus: LayoutMenu[] = [
+  { label: "회장 신청 검토", to: ROUTES.ADMIN_APPLICATIONS, icon: checkIcon },
 ];

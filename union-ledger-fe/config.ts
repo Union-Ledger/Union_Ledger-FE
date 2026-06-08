@@ -8,8 +8,26 @@ export const ENDPOINTS = {
     SIGNUP: "/auth/signup",
     ME: "/auth/me",
   },
+  INVITATION: {
+    ME: "/invitations/me",
+    ACCEPT: (invitationId: string) => `/invitations/${invitationId}/accept`,
+  },
+  ADMIN_APPLICATION: {
+    CREATE: "/admin-applications",
+    LIST: "/admin-applications",
+    DETAIL: (applicationId: string) => `/admin-applications/${applicationId}`,
+    DOCUMENT: (applicationId: string, index: number) =>
+      `/admin-applications/${applicationId}/documents/${index}`,
+    APPROVE: (applicationId: string) =>
+      `/admin-applications/${applicationId}/approve`,
+    REJECT: (applicationId: string) =>
+      `/admin-applications/${applicationId}/reject`,
+  },
   ORGANIZATION: {
     LIST: "",
+    INVITATION: (organizationId: string) => `/${organizationId}/invitations`,
+    INVITATION_DETAIL: (organizationId: string, invitationId: string) =>
+      `/${organizationId}/invitations/${invitationId}`,
     TEMPLATE: (organizationId: string) => `/${organizationId}/templates`,
     SETTLEMENT: (organizationId: string) => `/${organizationId}/settlements`,
   },

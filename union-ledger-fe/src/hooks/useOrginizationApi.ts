@@ -17,6 +17,14 @@ interface PostSettlementData {
   academicYear: number;
   semester: Semester;
 }
+
+interface PostInvitationData {
+  organizationId: string;
+  invitedEmail: string;
+  invitationType: string;
+  role: string;
+}
+
 interface TemplateData {
   id: string;
   organization_id: string;
@@ -36,6 +44,18 @@ interface OrganizationData {
   created_by_id: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface OrganizationInvitation {
+  id: string;
+  organization_id: string;
+  invited_email: string;
+  invitation_type: string;
+  role: string;
+  status: "pending" | "accepted" | "rejected";
+  expires_at: string;
+  created_at: string;
+  code: string;
 }
 
 const useOrganizationApi = () => {
@@ -104,7 +124,62 @@ const useOrganizationApi = () => {
       });
   };
 
-  return { postTemplate, getTemplate, postSettlement, getOrganization };
+  // 조직 초대 목록 조회
+  const getInvitations = (
+    organizationId: string,
+  ): Promise<OrganizationInvitation[]> => {
+    return organizationApi
+      .get(ENDPOINTS.ORGANIZATION.INVITATION(organizationId))
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("조직 초대 목록 조회 실패 status:", error.response?.status);
+        console.log("조직 초대 목록 조회 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 재정담당자/감사위원 초대 코드 발급
+  const postInvitation = (
+    data: PostInvitationData,
+  ): Promise<OrganizationInvitation> => {
+    return organizationApi
+      .post(ENDPOINTS.ORGANIZATION.INVITATION(data.organizationId), {
+        invitation_type: data.invitationType,
+        invited_email: data.invitedEmail,
+        role: data.role,
+      })
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("조직 초대 발송 실패 status:", error.response?.status);
+        console.log("조직 초대 발송 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 조직 초대 회수
+  const deleteInvitation = (
+    organizationId: string,
+    invitationId: string,
+  ): Promise<void> => {
+    return organizationApi
+      .delete(ENDPOINTS.ORGANIZATION.INVITATION_DETAIL(organizationId, invitationId))
+      .then(() => undefined)
+      .catch((error) => {
+        console.log("조직 초대 회수 실패 status:", error.response?.status);
+        console.log("조직 초대 회수 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  return {
+    postTemplate,
+    getTemplate,
+    postSettlement,
+    getOrganization,
+    getInvitations,
+    postInvitation,
+    deleteInvitation,
+  };
 };
 
 export default useOrganizationApi;

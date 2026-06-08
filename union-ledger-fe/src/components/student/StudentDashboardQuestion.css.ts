@@ -28,3 +28,31 @@ export const contentContainer = style({
   flexDirection: "column",
   gap: "16px",
 });
+
+export const faqItem = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+  paddingBottom: "16.5px",
+  borderBottom: "1px solid #E2E8F0",
+});
+
+export const question = style({
+  ...vars.font.head_bold_16,
+  color: vars.color.summaryTitle,
+});
+
+export const questionHighlight = style({
+  color: "#4F39F6",
+});
+
+export const answer = style({
+  ...vars.font.body_regular_14,
+  color: vars.color.description,
+  padding: "0 20px",
+});
+
+export const answerHighlight = style({
+  color: "#00A63E",
+  fontWeight: "600",
+});

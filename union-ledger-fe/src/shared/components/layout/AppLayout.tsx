@@ -2,7 +2,9 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
 import * as styles from "./AppLayout.css";
 import {
+  adminLayoutMenus,
   auditorLayoutMenus,
+  presidentLayoutMenus,
   studentLayoutMenus,
   treasurerLayoutMenus,
 } from "./layoutMenu";
@@ -10,14 +12,18 @@ import title from "@assets/sidebar-title.svg";
 import { tokenStorage } from "@/utils/token";
 import { useState } from "react";
 
-type Role = "TREASURER" | "AUDITOR" | "STUDENT";
+type Role = "TREASURER" | "AUDITOR" | "STUDENT" | "PRESIDENT" | "ADMIN";
 const roleOptions = [
   { label: "재정담당자", value: "TREASURER" },
   { label: "감사위원", value: "AUDITOR" },
   { label: "일반 학우", value: "STUDENT" },
+  { label: "회장", value: "PRESIDENT" },
+  { label: "운영자", value: "ADMIN" },
 ];
 
 const getRoleFromPath = (pathname: string): Role => {
+  if (pathname.startsWith("/admin")) return "ADMIN";
+  if (pathname.startsWith("/president")) return "PRESIDENT";
   if (pathname.startsWith("/auditor")) return "AUDITOR";
   if (pathname.startsWith("/student")) return "STUDENT";
   return "TREASURER";
@@ -38,6 +44,10 @@ const AppLayout = () => {
         return auditorLayoutMenus;
       case "STUDENT":
         return studentLayoutMenus;
+      case "PRESIDENT":
+        return presidentLayoutMenus;
+      case "ADMIN":
+        return adminLayoutMenus;
       default:
         return [];
     }

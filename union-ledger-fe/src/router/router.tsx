@@ -15,6 +15,11 @@ import ReviewDetail from "@/pages/auditor/review/ReviewDetail";
 import DevAutoLogin from "@/components/common/DevAutoLogin";
 import StudentDashboard from "@/pages/student/dashboard/StudentDashboard";
 import StudentSettlementLookup from "@/pages/student/settlement/StudentSettlementLookup";
+import StudentInvitations from "@/pages/student/invitations/StudentInvitations";
+import StudentPresidentApplication from "@/pages/student/presidentApplication/StudentPresidentApplication";
+import PresidentDashboard from "@/pages/president/dashboard/PresidentDashboard";
+import PresidentInvite from "@/pages/president/invite/PresidentInvite";
+import AdminApplications from "@/pages/admin/applications/AdminApplications";
 
 const router = createBrowserRouter([
   {
@@ -103,10 +108,48 @@ const router = createBrowserRouter([
                 path: "settlements",
                 element: <StudentSettlementLookup />,
               },
+              {
+                path: "invitations",
+                element: <StudentInvitations />,
+              },
+              {
+                path: "president-application",
+                element: <StudentPresidentApplication />,
+              },
               // {
               //   path: "history",
               //   element: <StudentHistory />,
               // },
+            ],
+          },
+
+          // 회장 routes
+          {
+            path: "president",
+            children: [
+              {
+                path: "dashboard",
+                element: <PresidentDashboard />,
+              },
+              {
+                path: "invite",
+                element: <PresidentInvite />,
+              },
+            ],
+          },
+
+          // 운영자 routes
+          {
+            path: "admin",
+            children: [
+              {
+                index: true,
+                element: <Navigate to={ROUTES.ADMIN_APPLICATIONS} replace />,
+              },
+              {
+                path: "applications",
+                element: <AdminApplications />,
+              },
             ],
           },
 

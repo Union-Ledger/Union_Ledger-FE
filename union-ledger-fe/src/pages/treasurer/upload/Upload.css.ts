@@ -123,3 +123,12 @@ export const cardContainer = style({
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
 });
+
+export const statusMessage = style({
+  padding: "16px 18px",
+  borderRadius: "12px",
+  border: `1px solid ${vars.color.blueSoft.border}`,
+  background: "linear-gradient(135deg, #EFF6FF 0%, #EEF2FF 100%)",
+  color: vars.color.blueSoft.text,
+  ...vars.font.body_medium_14,
+});

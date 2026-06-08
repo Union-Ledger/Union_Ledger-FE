@@ -34,6 +34,7 @@ const StudentDashboard = () => {
   const [dashboardData, setDashboardData] =
     useState<StudentDashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showApplicationToast, setShowApplicationToast] = useState(false);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -51,6 +52,25 @@ const StudentDashboard = () => {
 
     loadDashboard();
   }, [getStudentDashboardOnce]);
+
+  useEffect(() => {
+    const shouldShowToast = sessionStorage.getItem(
+      "studentPresidentApplicationSubmitted",
+    );
+
+    if (!shouldShowToast) {
+      return;
+    }
+
+    sessionStorage.removeItem("studentPresidentApplicationSubmitted");
+    setShowApplicationToast(true);
+
+    const timerId = window.setTimeout(() => {
+      setShowApplicationToast(false);
+    }, 4000);
+
+    return () => window.clearTimeout(timerId);
+  }, []);
 
   if (isLoading) {
     return (
@@ -89,6 +109,15 @@ const StudentDashboard = () => {
         <StudentDashboardAuditResult results={toAuditResults(dashboardData)} />
         <StudentDashboardQuestion />
       </div>
+
+      {showApplicationToast && (
+        <div className={styles.toast}>
+          <span className={styles.toastIcon}>✓</span>
+          <span>
+            회장 신청이 완료되었습니다. 운영자 검토까지 1~2일 소요됩니다.
+          </span>
+        </div>
+      )}
     </div>
   );
 };

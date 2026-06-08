@@ -47,6 +47,20 @@ export interface MeResponse {
   email: string;
   name: string;
   roles: string[];
+  is_operator?: boolean;
+  organization_id?: string | null;
+  organization?: {
+    id?: string | null;
+  } | null;
+  organizations?: {
+    id?: string | null;
+  }[];
+  memberships?: {
+    organization_id?: string | null;
+    organization?: {
+      id?: string | null;
+    } | null;
+  }[];
 }
 
 const useAuthApi = () => {

@@ -33,9 +33,14 @@ const StudentDashboardQuestion = () => {
       </span>
       <div className={styles.contentContainer}>
         {faqDummyData.map((item) => (
-          <div key={item.id}>
-            <p>Q. {item.question}</p>
-            <p>A. {item.answer}</p>
+          <div key={item.id} className={styles.faqItem}>
+            <p className={styles.question}>
+              <span className={styles.questionHighlight}>Q.</span>{" "}
+              {item.question}
+            </p>
+            <p className={styles.answer}>
+              <span className={styles.answerHighlight}>A.</span> {item.answer}
+            </p>
           </div>
         ))}
       </div>

@@ -23,4 +23,14 @@ export const ROUTES = {
   STUDENT_DASHBOARD: "/student/dashboard",
   // 일반 학우 결산안 조회 화면
   STUDENT_SETTLEMENTS: "/student/settlements",
+  // 일반 학우 받은 초대 화면
+  STUDENT_INVITATIONS: "/student/invitations",
+  // 일반 학우 회장 신청 화면
+  STUDENT_PRESIDENT_APPLICATION: "/student/president-application",
+  // 회장 대시보드 화면
+  PRESIDENT_DASHBOARD: "/president/dashboard",
+  // 회장 팀원 초대 화면
+  PRESIDENT_INVITE: "/president/invite",
+  // 운영자 회장 신청 검토 화면
+  ADMIN_APPLICATIONS: "/admin/applications",
 } as const;
