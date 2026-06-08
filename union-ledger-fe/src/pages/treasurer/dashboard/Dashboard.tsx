@@ -85,22 +85,25 @@ const createActivityData = (
 ): ActivityItem[] => {
   if (!dashboardData) return [];
 
-  return dashboardData.recent_settlements.map((settlement, index) => {
-    const hasUnmatched = settlement.unmatched_count > 0;
+  return dashboardData.recent_settlements
+    .slice(0, 3)
+    .map((settlement, index) => {
+      const hasUnmatched = settlement.unmatched_count > 0;
 
-    return {
-      id: index + 1,
-      type: hasUnmatched ? "unmatched" : "receipt",
-      message: hasUnmatched
-        ? `${settlement.organization_name} 거래내역 ${settlement.unmatched_count}건 매칭 필요`
-        : `${settlement.organization_name} ${getStatusLabel(settlement.status)}`,
-      time: getTimeText(settlement.submitted_at ?? settlement.audited_at),
-    };
-  });
+      return {
+        id: index + 1,
+        type: hasUnmatched ? "unmatched" : "receipt",
+        message: hasUnmatched
+          ? `${settlement.organization_name} 거래내역 ${settlement.unmatched_count}건 매칭 필요`
+          : `${settlement.organization_name} ${getStatusLabel(settlement.status)}`,
+        time: getTimeText(settlement.submitted_at ?? settlement.audited_at),
+      };
+    });
 };
 
 const Dashboard = () => {
   const { getTreasurerDashboard } = useDashboardApi();
+  const [getTreasurerDashboardOnce] = useState(() => getTreasurerDashboard);
 
   const [dashboardData, setDashboardData] =
     useState<TreasurerDashboardResponse | null>(null);
@@ -109,7 +112,7 @@ const Dashboard = () => {
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        const data = await getTreasurerDashboard(10);
+        const data = await getTreasurerDashboardOnce(3);
 
         if (data) {
           setDashboardData(data);
@@ -123,7 +126,7 @@ const Dashboard = () => {
     };
 
     loadDashboard();
-  }, []);
+  }, [getTreasurerDashboardOnce]);
 
   const progressData = useMemo(() => {
     return createProgressData(dashboardData);
