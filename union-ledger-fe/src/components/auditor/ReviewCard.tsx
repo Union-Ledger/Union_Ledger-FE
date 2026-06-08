@@ -1,5 +1,6 @@
 import buttonIcon from "@/assets/review/button-icon.svg";
 import rightArrow from "@/assets/review/right-arrow.svg";
+import eye from "@/assets/review/eye.svg";
 import * as styles from "./ReviewCard.css";
 import { useNavigate } from "react-router-dom";
 
@@ -20,6 +21,7 @@ export interface StudentCouncilSubmission {
 
 const ReviewCard = ({ data }: { data: StudentCouncilSubmission }) => {
   const navigate = useNavigate();
+  const isApproved = data.status === "APPROVED";
 
   return (
     <div className={styles.container}>
@@ -33,12 +35,16 @@ const ReviewCard = ({ data }: { data: StudentCouncilSubmission }) => {
           </div>
         </div>
         <button
-          className={styles.button}
+          className={`${styles.button} ${isApproved ? styles.resultButton : ""}`}
           onClick={() => navigate(`/auditor/review/detail/${data.id}`)}
         >
-          <img src={buttonIcon} alt="검토 시작" />
-          <span>검토 시작</span>
-          <img src={rightArrow} alt="화살표" />
+          {isApproved ? (
+            <img src={eye} alt="" aria-hidden="true" />
+          ) : (
+            <img src={buttonIcon} alt="" aria-hidden="true" />
+          )}
+          <span>{isApproved ? "결과 보기" : "검토 시작"}</span>
+          <img src={rightArrow} alt="" aria-hidden="true" />
         </button>
       </div>
 

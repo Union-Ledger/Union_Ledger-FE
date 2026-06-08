@@ -38,6 +38,18 @@ export const desc = style({
   marginTop: "8px",
 });
 
+export const approvedStatusBadge = style({
+  display: "inline-flex",
+  alignItems: "center",
+  marginLeft: "14px",
+  padding: "6px 12px",
+  borderRadius: "8px",
+  background: vars.color.accent.green,
+  color: vars.color.surface,
+  ...vars.font.body_medium_14,
+  fontWeight: "700",
+});
+
 export const totalAmountWrapper = style({
   display: "flex",
   flexDirection: "column",
@@ -261,6 +273,29 @@ export const auditPanel = style({
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
 });
 
+export const auditCompletePanel = style({
+  marginTop: "32px",
+  padding: "32px",
+  borderRadius: "14px",
+  border: `1px solid ${vars.color.mint.border}`,
+  background: `linear-gradient(135deg, ${vars.color.mint.bgFrom} 0%, ${vars.color.mint.bgTo} 100%)`,
+  boxShadow:
+    "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+});
+
+export const auditCompleteTitle = style({
+  ...vars.font.heading_medium_20,
+  fontWeight: "700",
+  color: vars.color.mint.textStrong,
+  marginBottom: "16px",
+});
+
+export const auditCompleteDescription = style({
+  ...vars.font.body_regular_16,
+  color: vars.color.description,
+  margin: 0,
+});
+
 export const auditTextarea = style({
   width: "100%",
   height: "80px",
@@ -296,6 +331,11 @@ export const approveButton = style({
   cursor: "pointer",
   ...vars.font.body_medium_14,
   fontWeight: "700",
+
+  ":disabled": {
+    opacity: 0.6,
+    cursor: "not-allowed",
+  },
 });
 
 export const rejectButton = style({
@@ -307,4 +347,9 @@ export const rejectButton = style({
   cursor: "pointer",
   ...vars.font.body_medium_14,
   fontWeight: "700",
+
+  ":disabled": {
+    opacity: 0.6,
+    cursor: "not-allowed",
+  },
 });

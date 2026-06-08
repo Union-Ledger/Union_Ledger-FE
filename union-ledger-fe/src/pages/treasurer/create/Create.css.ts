@@ -169,6 +169,197 @@ export const summaryContentEmpty = style({
   background: "rgba(255, 255, 255, 0.58)",
 });
 
+export const rejectedPanel = style({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  gap: "20px",
+  padding: "24px",
+  borderRadius: "14px",
+  border: "1px solid #FCA5A5",
+  background: "linear-gradient(135deg, #FFF7ED 0%, #FEF2F2 100%)",
+  boxShadow:
+    "0 20px 25px -5px rgba(239, 68, 68, 0.12), 0 8px 10px -6px rgba(239, 68, 68, 0.12)",
+});
+
+export const rejectedHeader = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+});
+
+export const rejectedTitleRow = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+});
+
+export const rejectedIcon = style({
+  width: "20px",
+  height: "20px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: "999px",
+  border: "2px solid #DC2626",
+  color: "#DC2626",
+  fontSize: "1.6rem",
+  fontWeight: "700",
+  lineHeight: 1,
+});
+
+export const rejectedTitle = style({
+  ...vars.font.title_bold_18,
+  color: "#B91C1C",
+});
+
+export const rejectedDescription = style({
+  ...vars.font.body_regular_14,
+  color: "#DC2626",
+});
+
+export const rejectedDetailBox = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "14px",
+  padding: "18px",
+  borderRadius: "10px",
+  border: "1px solid #FECACA",
+  background: "rgba(255, 255, 255, 0.86)",
+});
+
+export const rejectedMetaRow = style({
+  display: "flex",
+  justifyContent: "space-between",
+  gap: "16px",
+});
+
+export const rejectedReviewerBox = style({
+  textAlign: "right",
+});
+
+export const rejectedMetaLabel = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.description,
+});
+
+export const rejectedMetaValue = style({
+  ...vars.font.title_bold_14,
+  color: vars.color.summaryTitle,
+});
+
+export const rejectedSectionTitle = style({
+  ...vars.font.title_bold_14,
+  color: vars.color.summaryTitle,
+});
+
+export const rejectedQuote = style({
+  ...vars.font.body_regular_14,
+  padding: "14px 16px",
+  borderLeft: "4px solid #FB7185",
+  borderRadius: "6px",
+  background: "#FFF1F2",
+  color: vars.color.description,
+});
+
+export const rejectedIssueList = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+});
+
+export const rejectedIssueItem = style({
+  display: "flex",
+  gap: "10px",
+  padding: "12px",
+  borderRadius: "8px",
+  border: "1px solid #FECACA",
+  background: "rgba(255, 255, 255, 0.72)",
+});
+
+export const rejectedIssueIcon = style({
+  color: "#EF4444",
+  ...vars.font.body_medium_14,
+  flexShrink: 0,
+});
+
+export const rejectedIssueTitle = style({
+  ...vars.font.title_bold_14,
+  color: vars.color.summaryTitle,
+});
+
+export const rejectedIssueDescription = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.description,
+});
+
+export const rejectedDivider = style({
+  height: "1px",
+  background: "#FED7AA",
+});
+
+export const rejectedTextarea = style({
+  width: "100%",
+  minHeight: "64px",
+  resize: "vertical",
+  padding: "12px 14px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  borderRadius: "8px",
+  background: "#F8FAFC",
+  color: vars.color.summaryTitle,
+  outline: "none",
+  ...vars.font.body_regular_14,
+
+  "::placeholder": {
+    color: "#94A3B8",
+  },
+
+  ":focus": {
+    borderColor: "#FB7185",
+    boxShadow: "0 0 0 3px rgba(251, 113, 133, 0.16)",
+  },
+});
+
+export const rejectedHelper = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.description,
+});
+
+export const rejectedActionRow = style({
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "12px",
+});
+
+export const rejectedOutlineButton = style({
+  height: "38px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  borderRadius: "8px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.surface,
+  color: vars.color.summaryTitle,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+});
+
+export const rejectedSubmitButton = style({
+  height: "38px",
+  border: "none",
+  borderRadius: "8px",
+  background: `linear-gradient(90deg, ${vars.color.gradient.redTo} 0%, ${vars.color.gradient.orangeFrom} 100%)`,
+  color: vars.color.surface,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+
+  ":disabled": {
+    opacity: 0.6,
+    cursor: "not-allowed",
+  },
+});
+
 export const fileContainer = style({
   width: "100%",
   display: "flex",

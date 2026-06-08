@@ -76,6 +76,15 @@ export const button = style({
   borderRadius: "8px",
   background: "linear-gradient(90deg, #4F39F6 0%, #9810FA 100%)",
   border: "none",
+  cursor: "pointer",
+});
+
+export const resultButton = style({
+  width: "132px",
+  gap: "12px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.surface,
+  color: vars.color.summaryTitle,
 });
 
 export const desc = style({

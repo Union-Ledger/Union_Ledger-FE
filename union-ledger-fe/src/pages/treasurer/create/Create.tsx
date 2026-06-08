@@ -6,6 +6,8 @@ import eye from "@assets/eye.svg";
 import ReconciliationReview from "@pages/treasurer/create/ReconciliationReview";
 import useSettlementApi, {
   type ExpenseSummaryResponse,
+  type SettlementComment,
+  type SettlementResponse,
 } from "@/hooks/useSettlementApi";
 
 const formatMoney = (amount: string) => {
@@ -18,15 +20,165 @@ const formatMoney = (amount: string) => {
   return `₩${Math.round(parsedAmount).toLocaleString("ko-KR")}`;
 };
 
+const formatDate = (date: string | null | undefined) => {
+  if (!date) {
+    return "-";
+  }
+
+  return date.slice(0, 10);
+};
+
+interface RejectedSettlementNoticeProps {
+  settlement: SettlementResponse;
+  comments: SettlementComment[];
+  resubmitMessage: string;
+  isResubmitting: boolean;
+  onCheckSettlement: () => void;
+  onMessageChange: (message: string) => void;
+  onResubmit: () => void;
+}
+
+const RejectedSettlementNotice = ({
+  settlement,
+  comments,
+  resubmitMessage,
+  isResubmitting,
+  onCheckSettlement,
+  onMessageChange,
+  onResubmit,
+}: RejectedSettlementNoticeProps) => {
+  const primaryComment =
+    comments[0]?.comment ??
+    "감사위원의 검토 결과 일부 수정이 필요합니다. 수정 후 재제출해주세요.";
+  const reviewerName = comments[0]?.author_name ?? "감사위원";
+  const rejectedAt = formatDate(settlement.audited_at ?? settlement.updated_at);
+  const issueItems = comments.filter((comment) => comment.evidence_id);
+
+  return (
+    <section className={styles.rejectedPanel}>
+      <div className={styles.rejectedHeader}>
+        <div className={styles.rejectedTitleRow}>
+          <span className={styles.rejectedIcon}>×</span>
+          <div className={styles.rejectedTitle}>
+            결산안 반려됨 - 수정 후 재제출 필요
+          </div>
+        </div>
+        <div className={styles.rejectedDescription}>
+          감사위원의 검토 결과 일부 수정이 필요합니다
+        </div>
+      </div>
+
+      <div className={styles.rejectedDetailBox}>
+        <div className={styles.rejectedMetaRow}>
+          <div>
+            <div className={styles.rejectedMetaLabel}>반려 일시</div>
+            <div className={styles.rejectedMetaValue}>{rejectedAt}</div>
+          </div>
+          <div className={styles.rejectedReviewerBox}>
+            <div className={styles.rejectedMetaLabel}>검토자</div>
+            <div className={styles.rejectedMetaValue}>{reviewerName}</div>
+          </div>
+        </div>
+
+        <div className={styles.rejectedSectionTitle}>감사위원 코멘트:</div>
+        <div className={styles.rejectedQuote}>"{primaryComment}"</div>
+
+        <div className={styles.rejectedSectionTitle}>수정 필요 항목:</div>
+        <div className={styles.rejectedIssueList}>
+          {issueItems.length > 0 ? (
+            issueItems.map((comment) => (
+              <div key={comment.id} className={styles.rejectedIssueItem}>
+                <span className={styles.rejectedIssueIcon}>△</span>
+                <div>
+                  <div className={styles.rejectedIssueTitle}>
+                    증빙 ID: {comment.evidence_id?.slice(0, 8)}
+                  </div>
+                  <div className={styles.rejectedIssueDescription}>
+                    {comment.comment}
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className={styles.rejectedIssueItem}>
+              <span className={styles.rejectedIssueIcon}>△</span>
+              <div>
+                <div className={styles.rejectedIssueTitle}>검토 코멘트 확인</div>
+                <div className={styles.rejectedIssueDescription}>
+                  감사위원 코멘트를 확인하고 필요한 증빙과 거래내역을 수정해주세요.
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.rejectedDivider} />
+
+        <label className={styles.rejectedSectionTitle} htmlFor="resubmit-note">
+          재제출 메시지 (감사위원에게 전달)
+        </label>
+        <textarea
+          id="resubmit-note"
+          className={styles.rejectedTextarea}
+          value={resubmitMessage}
+          onChange={(event) => onMessageChange(event.target.value)}
+          placeholder="수정한 내용을 간단히 설명해주세요. 예: 증빙 금액을 거래내역과 일치하도록 수정했습니다."
+        />
+        <div className={styles.rejectedHelper}>
+          감사위원이 재검토 시 이 메시지를 참고합니다.
+        </div>
+
+        <div className={styles.rejectedActionRow}>
+          <button
+            type="button"
+            className={styles.rejectedOutlineButton}
+            onClick={onCheckSettlement}
+          >
+            <img
+              className={styles.buttonIcon}
+              src={eye}
+              alt=""
+              aria-hidden="true"
+            />
+            현재 결산안 확인
+          </button>
+          <button
+            type="button"
+            className={styles.rejectedSubmitButton}
+            onClick={onResubmit}
+            disabled={isResubmitting}
+          >
+            {isResubmitting ? "재제출 중..." : "수정 완료 - 재제출"}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const Create = () => {
   const [isReviewMode, setIsReviewMode] = useState(false);
   const [expenseSummary, setExpenseSummary] =
     useState<ExpenseSummaryResponse | null>(null);
   const [isSummaryLoading, setIsSummaryLoading] = useState(true);
   const [summaryError, setSummaryError] = useState("");
+  const [settlement, setSettlement] = useState<SettlementResponse | null>(null);
+  const [settlementComments, setSettlementComments] = useState<
+    SettlementComment[]
+  >([]);
+  const [resubmitMessage, setResubmitMessage] = useState("");
+  const [isResubmitting, setIsResubmitting] = useState(false);
 
-  const { getExpenseSummary } = useSettlementApi();
+  const {
+    getExpenseSummary,
+    getSettlement,
+    getSettlementComments,
+    postResubmitSettlement,
+  } = useSettlementApi();
   const [getExpenseSummaryOnce] = useState(() => getExpenseSummary);
+  const [getSettlementOnce] = useState(() => getSettlement);
+  const [getSettlementCommentsOnce] = useState(() => getSettlementComments);
+  const [postResubmitSettlementOnce] = useState(() => postResubmitSettlement);
 
   useEffect(() => {
     const fetchExpenseSummary = async () => {
@@ -55,7 +207,68 @@ const Create = () => {
     fetchExpenseSummary();
   }, [getExpenseSummaryOnce]);
 
+  useEffect(() => {
+    const fetchSettlementStatus = async () => {
+      const settlementId = localStorage.getItem("currentSettlementId");
+
+      if (!settlementId) {
+        return;
+      }
+
+      try {
+        const data = await getSettlementOnce(settlementId);
+        setSettlement(data);
+
+        if (data.status === "rejected") {
+          const comments = await getSettlementCommentsOnce(settlementId).catch(
+            () => [],
+          );
+          setSettlementComments(comments);
+        } else {
+          setSettlementComments([]);
+        }
+      } catch (error) {
+        console.error("결산안 상태 조회 실패", error);
+      }
+    };
+
+    fetchSettlementStatus();
+  }, [getSettlementCommentsOnce, getSettlementOnce]);
+
+  const handleResubmit = async () => {
+    const settlementId =
+      settlement?.id ?? localStorage.getItem("currentSettlementId");
+    const trimmedMessage = resubmitMessage.trim();
+
+    if (!settlementId) {
+      alert("재제출할 결산안 정보가 없습니다.");
+      return;
+    }
+
+    if (!trimmedMessage) {
+      alert("감사위원에게 전달할 재제출 메시지를 입력해주세요.");
+      return;
+    }
+
+    try {
+      setIsResubmitting(true);
+      const data = await postResubmitSettlementOnce({
+        settlementId,
+        comment: trimmedMessage,
+      });
+      setSettlement(data);
+      setResubmitMessage("");
+      alert("결산안이 재제출되었습니다.");
+    } catch (error) {
+      console.error("결산안 재제출 실패", error);
+      alert("결산안 재제출에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsResubmitting(false);
+    }
+  };
+
   const summaryItems = expenseSummary?.by_category ?? [];
+  const isRejected = settlement?.status === "rejected";
 
   return (
     <div className={styles.container}>
@@ -65,6 +278,18 @@ const Create = () => {
           모든 증빙과 거래내역 대조가 완료되면 최종 결산안을 생성하세요
         </div>
       </div>
+
+      {isRejected && (
+        <RejectedSettlementNotice
+          settlement={settlement}
+          comments={settlementComments}
+          resubmitMessage={resubmitMessage}
+          isResubmitting={isResubmitting}
+          onCheckSettlement={() => setIsReviewMode(true)}
+          onMessageChange={setResubmitMessage}
+          onResubmit={handleResubmit}
+        />
+      )}
 
       <div className={styles.summaryBox}>
         <div className={styles.summaryTitleBox}>

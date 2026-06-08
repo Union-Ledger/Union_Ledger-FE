@@ -13,6 +13,11 @@ interface PostBankStatementData {
   file: File;
 }
 
+interface PostResubmitSettlementData {
+  settlementId: string;
+  comment: string;
+}
+
 interface ExpenseSummaryCategory {
   category: string;
   count: number;
@@ -55,6 +60,32 @@ export interface ReconciliationRunResponse {
   results: ReconciliationResult[];
 }
 
+export interface SettlementResponse {
+  id: string;
+  organization_id: string;
+  template_id: string;
+  title: string;
+  academic_year: number;
+  semester: string;
+  status: string;
+  submitted_at: string | null;
+  audited_at: string | null;
+  published_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SettlementComment {
+  id: string;
+  settlement_id: string;
+  evidence_id: string | null;
+  author_membership_id: string;
+  author_name?: string | null;
+  comment: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const useSettlementApi = () => {
   const { settlementApi } = useApi();
 
@@ -74,6 +105,36 @@ const useSettlementApi = () => {
       .catch((error) => {
         console.log("증빙 업로드 실패 status:", error.response?.status);
         console.log("증빙 업로드 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 결산안 상세 조회
+  const getSettlement = (settlementId: string): Promise<SettlementResponse> => {
+    return settlementApi
+      .get(ENDPOINTS.SETTLEMENT.BASE(settlementId))
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("결산안 상세 조회 실패 status:", error.response?.status);
+        console.log("결산안 상세 조회 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 결산안 감사 코멘트 조회
+  const getSettlementComments = (
+    settlementId: string,
+  ): Promise<SettlementComment[]> => {
+    return settlementApi
+      .get(ENDPOINTS.SETTLEMENT.COMMENT(settlementId))
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("결산안 코멘트 조회 실패 status:", error.response?.status);
+        console.log("결산안 코멘트 조회 실패 detail:", error.response?.data);
         throw error;
       });
   };
@@ -110,6 +171,40 @@ const useSettlementApi = () => {
       });
   };
 
+  // 결산안 제출
+  const postSubmitSettlement = (
+    settlementId: string,
+  ): Promise<SettlementResponse> => {
+    return settlementApi
+      .post(ENDPOINTS.SETTLEMENT.SUBMIT(settlementId))
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("결산안 제출 실패 status:", error.response?.status);
+        console.log("결산안 제출 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 반려 결산안 재제출
+  const postResubmitSettlement = (
+    data: PostResubmitSettlementData,
+  ): Promise<SettlementResponse> => {
+    return settlementApi
+      .post(ENDPOINTS.SETTLEMENT.RESUBMIT(data.settlementId), {
+        comment: data.comment,
+      })
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("결산안 재제출 실패 status:", error.response?.status);
+        console.log("결산안 재제출 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   // 거래내역 엑셀 업로드 + 파싱
   const postBankStatement = (data: PostBankStatementData) => {
     const formData = new FormData();
@@ -130,8 +225,12 @@ const useSettlementApi = () => {
 
   return {
     postEvidence,
+    getSettlement,
+    getSettlementComments,
     getExpenseSummary,
     postReconciliationRun,
+    postSubmitSettlement,
+    postResubmitSettlement,
     postBankStatement,
   };
 };

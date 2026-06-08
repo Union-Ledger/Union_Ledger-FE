@@ -102,8 +102,13 @@ export interface AuditSettlementDetailResponse {
   comments: AuditComment[];
 }
 
+interface PostAuditDecisionData {
+  settlementId: string;
+  comment: string;
+}
+
 const useAuditApi = () => {
-  const { auditApi } = useApi();
+  const { auditApi, settlementApi } = useApi();
 
   const getAuditSettlements = (
     status?: string[],
@@ -148,10 +153,44 @@ const useAuditApi = () => {
       });
   };
 
+  const postApproveSettlement = ({
+    settlementId,
+    comment,
+  }: PostAuditDecisionData): Promise<AuditSettlement> => {
+    return settlementApi
+      .post(ENDPOINTS.SETTLEMENT.APPROVE(settlementId), {
+        comment,
+      })
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("결산안 승인 실패 status:", error.response?.status);
+        console.log("결산안 승인 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  const postRejectSettlement = ({
+    settlementId,
+    comment,
+  }: PostAuditDecisionData): Promise<AuditSettlement> => {
+    return settlementApi
+      .post(ENDPOINTS.SETTLEMENT.REJECT(settlementId), {
+        comment,
+      })
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("결산안 반려 실패 status:", error.response?.status);
+        console.log("결산안 반려 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   return {
     getAuditSettlements,
     getAuditSettlementDetail,
     patchAuditComment,
+    postApproveSettlement,
+    postRejectSettlement,
   };
 };
 

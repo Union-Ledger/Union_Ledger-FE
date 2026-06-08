@@ -45,10 +45,15 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
   const [reconciliationData, setReconciliationData] =
     useState<ReconciliationRunResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittedSettlementId, setSubmittedSettlementId] = useState<
+    string | null
+  >(null);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const { postReconciliationRun } = useSettlementApi();
+  const { postReconciliationRun, postSubmitSettlement } = useSettlementApi();
   const [postReconciliationRunOnce] = useState(() => postReconciliationRun);
+  const [postSubmitSettlementOnce] = useState(() => postSubmitSettlement);
 
   useEffect(() => {
     const runReconciliation = async () => {
@@ -98,12 +103,35 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
     return reconciliationItems;
   }, [reconciliationItems, selectedFilter]);
 
-  const canGenerate = !isLoading && !errorMessage && issueCount === 0;
+  const canGenerate =
+    !isLoading && !isSubmitting && !errorMessage && issueCount === 0;
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!canGenerate) return;
 
-    console.log("결산안 생성");
+    const settlementId =
+      reconciliationData?.settlement_id ||
+      localStorage.getItem("currentSettlementId");
+
+    if (!settlementId) {
+      setErrorMessage("결산안 정보가 없습니다. 먼저 증빙을 업로드해주세요.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setErrorMessage("");
+
+      const submittedSettlement =
+        await postSubmitSettlementOnce(settlementId);
+      setSubmittedSettlementId(submittedSettlement.id);
+      window.alert("결산안이 제출되었습니다.");
+    } catch (error) {
+      console.error("결산안 제출 실패", error);
+      window.alert("결산안 제출에 실패했습니다.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -239,10 +267,16 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
         <button
           type="button"
           className={styles.reconciliationGenerateButton}
-          disabled={!canGenerate}
+          disabled={!canGenerate || Boolean(submittedSettlementId)}
           onClick={handleGenerate}
         >
-          {canGenerate ? "결산안 생성하기" : "문제 해결 후 생성 가능"}
+          {submittedSettlementId
+            ? "결산안 제출 완료"
+            : isSubmitting
+              ? "제출 중"
+              : canGenerate
+                ? "결산안 생성하기"
+                : "문제 해결 후 생성 가능"}
         </button>
       </div>
     </div>
