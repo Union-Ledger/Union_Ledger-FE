@@ -21,7 +21,9 @@ const Login = () => {
       setIsSubmitting(true);
       setErrorMessage("");
 
-      await postLogin({ email, password });
+      // 이메일은 가입 시 소문자로 저장되므로, 입력값(모바일 자동 대문자/공백 등)을
+      // 정규화해서 보낸다. (대소문자·앞뒤 공백 때문에 로그인 실패하던 버그 수정)
+      await postLogin({ email: email.trim().toLowerCase(), password });
       const me = await getMe();
       navigate(getDashboardRouteByRoles(me.roles));
     } catch (error) {
