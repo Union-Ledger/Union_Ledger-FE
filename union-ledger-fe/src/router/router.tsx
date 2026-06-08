@@ -3,6 +3,7 @@ import { ROUTES } from "@router/constant/router";
 import Login from "@pages/logIn/LogIn";
 import SignUp from "@pages/logIn/SignUp";
 import AppLayout from "@shared/components/layout/AppLayout";
+import RequireAuth from "@shared/components/auth/RequireAuth";
 import Template from "@/pages/treasurer/template/Template";
 import Upload from "@/pages/treasurer/upload/Upload";
 import Compare from "@/pages/treasurer/compare/Compare";
@@ -33,7 +34,11 @@ const router = createBrowserRouter([
         element: <SignUp />,
       },
       {
-        element: <AppLayout />,
+        element: (
+          <RequireAuth>
+            <AppLayout />
+          </RequireAuth>
+        ),
         children: [
           {
             path: "/",
