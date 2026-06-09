@@ -60,6 +60,7 @@ export const ENDPOINTS = {
     TREASURER: "/treasurer",
     AUDITOR: "/auditor",
     STUDENT: "/student",
+    PRESIDENT: "/president",
   },
   PUBLIC: {
     SETTLEMENTS: "/settlements",

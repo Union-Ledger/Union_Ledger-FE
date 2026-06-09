@@ -10,3 +10,4 @@ export { default as eye } from "./eye.svg";
 export { default as check } from "./check.svg";
 export { default as questionCircle } from "./question-circle.svg";
 export { default as smallCheck } from "./small-check.svg";
+export { default as people } from "./people.svg";
