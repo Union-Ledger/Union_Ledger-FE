@@ -5,7 +5,20 @@ import useStudentApi, {
 } from "@/hooks/useStudentApi";
 import * as styles from "./StudentInvitations.css";
 
-type LocalInvitationStatus = StudentInvitationStatus | "rejected";
+const completedStatusLabel = (status: StudentInvitationStatus) => {
+  switch (status) {
+    case "accepted":
+      return "수락함";
+    case "declined":
+      return "거절함";
+    case "expired":
+      return "만료됨";
+    case "revoked":
+      return "회수됨";
+    default:
+      return status;
+  }
+};
 
 const formatDate = (date: string) => {
   const parsedDate = new Date(date);
@@ -36,11 +49,9 @@ const getDescription = (invitation: StudentInvitation) => {
 };
 
 const StudentInvitations = () => {
-  const { getMyInvitations, postAcceptInvitation } = useStudentApi();
+  const { getMyInvitations, postAcceptInvitation, postDeclineInvitation } =
+    useStudentApi();
   const [invitations, setInvitations] = useState<StudentInvitation[]>([]);
-  const [rejectedInvitationIds, setRejectedInvitationIds] = useState<string[]>(
-    [],
-  );
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [processingInvitationId, setProcessingInvitationId] = useState<
@@ -48,6 +59,7 @@ const StudentInvitations = () => {
   >(null);
   const [getMyInvitationsOnce] = useState(() => getMyInvitations);
   const [postAcceptInvitationOnce] = useState(() => postAcceptInvitation);
+  const [postDeclineInvitationOnce] = useState(() => postDeclineInvitation);
 
   useEffect(() => {
     const loadInvitations = async () => {
@@ -67,14 +79,6 @@ const StudentInvitations = () => {
 
     loadInvitations();
   }, [getMyInvitationsOnce]);
-
-  const getLocalStatus = (invitation: StudentInvitation): LocalInvitationStatus => {
-    if (rejectedInvitationIds.includes(invitation.id)) {
-      return "rejected";
-    }
-
-    return invitation.status;
-  };
 
   const handleAccept = async (invitationId: string) => {
     try {
@@ -102,15 +106,35 @@ const StudentInvitations = () => {
     }
   };
 
-  const handleReject = (invitationId: string) => {
-    setRejectedInvitationIds((prev) => [...prev, invitationId]);
+  const handleReject = async (invitationId: string) => {
+    try {
+      setProcessingInvitationId(invitationId);
+      const declined = await postDeclineInvitationOnce(invitationId);
+
+      setInvitations((prev) =>
+        prev.map((invitation) =>
+          invitation.id === invitationId
+            ? {
+                ...invitation,
+                status:
+                  declined.status === "pending" ? "declined" : declined.status,
+              }
+            : invitation,
+        ),
+      );
+    } catch (error) {
+      console.error("초대 거절 실패", error);
+      alert("초대 거절에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setProcessingInvitationId(null);
+    }
   };
 
   const pendingInvitations = invitations.filter(
-    (invitation) => getLocalStatus(invitation) === "pending",
+    (invitation) => invitation.status === "pending",
   );
   const completedInvitations = invitations.filter(
-    (invitation) => getLocalStatus(invitation) !== "pending",
+    (invitation) => invitation.status !== "pending",
   );
 
   return (
@@ -188,7 +212,9 @@ const StudentInvitations = () => {
                     disabled={processingInvitationId === invitation.id}
                     onClick={() => handleReject(invitation.id)}
                   >
-                    × 거절
+                    {processingInvitationId === invitation.id
+                      ? "처리 중..."
+                      : "× 거절"}
                   </button>
                 </div>
               </div>
@@ -205,7 +231,7 @@ const StudentInvitations = () => {
             <div className={styles.emptyBox}>응답 완료된 초대가 없습니다.</div>
           ) : (
             completedInvitations.map((invitation) => {
-              const status = getLocalStatus(invitation);
+              const status = invitation.status;
 
               return (
                 <div
@@ -221,7 +247,7 @@ const StudentInvitations = () => {
                     {getRoleLabel(invitation)}
                   </span>
                   <span className={styles.completedStatus}>
-                    {status === "accepted" ? "수락함" : "거절함"}
+                    {completedStatusLabel(status)}
                   </span>
                   <span className={styles.completedMeta}>
                     {invitation.college_name} {invitation.department_name} |

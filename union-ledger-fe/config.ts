@@ -13,6 +13,7 @@ export const ENDPOINTS = {
   INVITATION: {
     ME: "/invitations/me",
     ACCEPT: (invitationId: string) => `/invitations/${invitationId}/accept`,
+    DECLINE: (invitationId: string) => `/invitations/${invitationId}/decline`,
   },
   NOTIFICATION: {
     LIST: "/notifications",

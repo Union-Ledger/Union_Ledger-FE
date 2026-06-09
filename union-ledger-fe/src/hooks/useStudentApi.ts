@@ -1,7 +1,12 @@
 import { ENDPOINTS } from "../../config";
 import useApi from "./useApi";
 
-export type StudentInvitationStatus = "pending" | "accepted" | "rejected";
+export type StudentInvitationStatus =
+  | "pending"
+  | "accepted"
+  | "expired"
+  | "revoked"
+  | "declined";
 
 export interface StudentInvitation {
   id: string;
@@ -84,6 +89,19 @@ const useStudentApi = () => {
       });
   };
 
+  const postDeclineInvitation = (
+    invitationId: string,
+  ): Promise<AcceptedInvitation> => {
+    return api
+      .post(ENDPOINTS.INVITATION.DECLINE(invitationId))
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("초대 거절 실패 status:", error.response?.status);
+        console.log("초대 거절 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   const postAdminApplication = (
     data: PostAdminApplicationData,
   ): Promise<AdminApplication> => {
@@ -122,6 +140,7 @@ const useStudentApi = () => {
   return {
     getMyInvitations,
     postAcceptInvitation,
+    postDeclineInvitation,
     postAdminApplication,
     getAdminApplication,
   };
