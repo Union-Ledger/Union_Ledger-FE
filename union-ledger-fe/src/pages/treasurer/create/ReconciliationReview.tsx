@@ -443,6 +443,17 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
               <span className={styles.artifactStatusFailed}>생성 실패</span>
             )}
           </div>
+
+          {artifacts.excel_error && (
+            <div className={styles.artifactStatusFailed}>
+              결산안 실패 사유: {artifacts.excel_error}
+            </div>
+          )}
+          {artifacts.pdf_error && (
+            <div className={styles.artifactStatusFailed}>
+              증빙 PDF 실패 사유: {artifacts.pdf_error}
+            </div>
+          )}
         </div>
       )}
 

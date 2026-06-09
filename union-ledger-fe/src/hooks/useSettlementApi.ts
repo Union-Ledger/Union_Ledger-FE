@@ -98,6 +98,8 @@ export interface SettlementArtifact {
 export interface ArtifactGenerationResponse {
   excel: SettlementArtifact;
   pdf: SettlementArtifact;
+  excel_error?: string | null;
+  pdf_error?: string | null;
 }
 
 export interface SettlementResponse {
