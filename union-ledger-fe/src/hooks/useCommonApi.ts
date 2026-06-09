@@ -51,6 +51,20 @@ const useCommonApi = () => {
       });
   };
 
+  // 증빙 원본 파일 다운로드 (새로고침 후 미리보기 재조회용)
+  const downloadEvidenceFile = (evidenceId: string): Promise<Blob> => {
+    return api
+      .get(ENDPOINTS.BASE.EVIDENCE_FILE(evidenceId), {
+        responseType: "blob",
+      })
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("증빙 원본 조회 실패 status:", error.response?.status);
+        console.log("증빙 원본 조회 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   // 증빙 추출 필드 수정
   const patchEvidence = (data: PatchEvidenceData) => {
     return api
@@ -77,7 +91,12 @@ const useCommonApi = () => {
       });
   };
 
-  return { postEvidenceExtract, patchEvidence, deleteEvidence };
+  return {
+    postEvidenceExtract,
+    patchEvidence,
+    deleteEvidence,
+    downloadEvidenceFile,
+  };
 };
 
 export default useCommonApi;

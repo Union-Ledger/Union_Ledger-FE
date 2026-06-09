@@ -134,6 +134,10 @@ const Upload = () => {
     isRefund: false,
   });
   const [isSaving, setIsSaving] = useState(false);
+  // 편집 모달에서 새로고침 후 원본 미리보기를 서버에서 다시 불러오기 위한 상태
+  const [modalPreviewUrl, setModalPreviewUrl] = useState<string | null>(null);
+  const [modalPreviewType, setModalPreviewType] = useState("");
+  const [isModalPreviewLoading, setIsModalPreviewLoading] = useState(false);
   const [deletingEvidenceIds, setDeletingEvidenceIds] = useState(
     () => new Set<string>(),
   );
@@ -149,7 +153,8 @@ const Upload = () => {
 
   const { getOrganization, getTemplate, postSettlement } = useOrganizationApi();
   const { postEvidence, getSettlement } = useSettlementApi();
-  const { postEvidenceExtract, patchEvidence, deleteEvidence } = useCommonApi();
+  const { postEvidenceExtract, patchEvidence, deleteEvidence, downloadEvidenceFile } =
+    useCommonApi();
   const { getTreasurerDashboard } = useDashboardApi();
   const [getOrganizationOnce] = useState(() => getOrganization);
   const [getTemplateOnce] = useState(() => getTemplate);
@@ -159,6 +164,7 @@ const Upload = () => {
   const [postEvidenceExtractOnce] = useState(() => postEvidenceExtract);
   const [patchEvidenceOnce] = useState(() => patchEvidence);
   const [deleteEvidenceOnce] = useState(() => deleteEvidence);
+  const [downloadEvidenceFileOnce] = useState(() => downloadEvidenceFile);
   const [getTreasurerDashboardOnce] = useState(() => getTreasurerDashboard);
 
   const createDraftSettlement = useCallback(async () => {
@@ -472,6 +478,15 @@ const Upload = () => {
     }
   };
 
+  // modalPreviewUrl 이 바뀌거나 모달이 닫히면 이전 object URL 을 해제한다.
+  useEffect(() => {
+    return () => {
+      if (modalPreviewUrl) {
+        URL.revokeObjectURL(modalPreviewUrl);
+      }
+    };
+  }, [modalPreviewUrl]);
+
   const openEditModal = (item: EvidenceReviewItem) => {
     setEditingItem(item);
     setEditForm({
@@ -482,11 +497,30 @@ const Upload = () => {
       budgetCategory: item.budgetCategory,
       isRefund: item.isRefund,
     });
+
+    // 새로고침 후엔 blob previewUrl 이 사라지므로 서버에서 원본을 다시 불러온다.
+    setModalPreviewUrl(null);
+    setModalPreviewType("");
+    if (!item.previewUrl) {
+      setIsModalPreviewLoading(true);
+      downloadEvidenceFileOnce(item.id)
+        .then((blob) => {
+          setModalPreviewUrl(URL.createObjectURL(blob));
+          setModalPreviewType(blob.type);
+        })
+        .catch((error) => {
+          console.error("증빙 원본 재조회 실패", error);
+        })
+        .finally(() => setIsModalPreviewLoading(false));
+    }
   };
 
   const closeEditModal = () => {
     if (isSaving) return;
     setEditingItem(null);
+    setModalPreviewUrl(null);
+    setModalPreviewType("");
+    setIsModalPreviewLoading(false);
   };
 
   const handleSaveEvidence = async () => {
@@ -764,20 +798,54 @@ const Upload = () => {
             <div className={styles.modalContent}>
               <div className={styles.originalColumn}>
                 <h3 className={styles.modalSectionTitle}>원본</h3>
-                {!editingItem.previewUrl ? (
+                {editingItem.previewUrl ? (
+                  editingItem.fileName.toLowerCase().endsWith(".pdf") ? (
+                    <div className={styles.modalPdfPreview}>PDF 증빙 파일</div>
+                  ) : (
+                    <img
+                      className={styles.modalImage}
+                      src={editingItem.previewUrl}
+                      alt={editingItem.fileName}
+                    />
+                  )
+                ) : isModalPreviewLoading ? (
+                  <div className={styles.modalPdfPreview}>
+                    원본을 불러오는 중...
+                  </div>
+                ) : modalPreviewUrl ? (
+                  modalPreviewType.startsWith("image/") ? (
+                    <img
+                      className={styles.modalImage}
+                      src={modalPreviewUrl}
+                      alt={editingItem.fileName}
+                    />
+                  ) : (
+                    <div className={styles.modalPdfPreview}>
+                      PDF 증빙 파일
+                      <br />
+                      <button
+                        type="button"
+                        onClick={() => window.open(modalPreviewUrl, "_blank")}
+                        style={{
+                          marginTop: 8,
+                          padding: "6px 12px",
+                          borderRadius: 8,
+                          border: "none",
+                          background: "#7c3aed",
+                          color: "#fff",
+                          cursor: "pointer",
+                        }}
+                      >
+                        새 탭에서 원본 열기
+                      </button>
+                    </div>
+                  )
+                ) : (
                   <div className={styles.modalPdfPreview}>
                     {editingItem.fileName}
                     <br />
-                    새로고침 후에는 원본 미리보기를 다시 불러올 수 없습니다.
+                    원본을 불러오지 못했습니다.
                   </div>
-                ) : editingItem.fileName.toLowerCase().endsWith(".pdf") ? (
-                  <div className={styles.modalPdfPreview}>PDF 증빙 파일</div>
-                ) : (
-                  <img
-                    className={styles.modalImage}
-                    src={editingItem.previewUrl}
-                    alt={editingItem.fileName}
-                  />
                 )}
               </div>
 
