@@ -38,8 +38,8 @@ const receiptTypeOptions: {
 
 const evidenceTypeMap: Record<ReceiptType, string> = {
   offlineReceipt: "physical_receipt",
-  statement: "bank_statement",
-  onlineReceipt: "electronic_receipt",
+  statement: "bank_transfer_statement",
+  onlineReceipt: "e_receipt",
 };
 
 const reusableSettlementStatuses = new Set([
