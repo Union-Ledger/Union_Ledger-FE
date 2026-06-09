@@ -723,3 +723,7 @@ export const reconciliationGenerateButton = style({
     cursor: "not-allowed",
   },
 });
+
+export const reconciliationMerchantName = style({
+  fontWeight: "500",
+});

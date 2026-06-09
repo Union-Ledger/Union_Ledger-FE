@@ -42,6 +42,8 @@ export const ENDPOINTS = {
     EVIDENCE: (settlementId: string) => `/${settlementId}/evidences`,
     EXPENSE_SUMMARY: (settlementId: string) =>
       `/${settlementId}/expense-summary`,
+    RECONCILIATION: (settlementId: string) =>
+      `/${settlementId}/reconciliation`,
     RECONCILIATION_RUN: (settlementId: string) =>
       `/${settlementId}/reconciliation:run`,
     BANK_STATEMENT: (settlementId: string) =>

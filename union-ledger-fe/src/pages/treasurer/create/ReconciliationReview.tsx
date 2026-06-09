@@ -18,6 +18,7 @@ const statusLabelMap: Record<ReconciliationStatus, string> = {
   date_mismatch: "날짜 불일치",
   missing_bank_transaction: "거래내역 누락",
   missing_evidence: "증빙 누락",
+  manually_resolved: "수동 해결",
 };
 
 const formatDate = (date: string) => {
@@ -122,8 +123,7 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
       setIsSubmitting(true);
       setErrorMessage("");
 
-      const submittedSettlement =
-        await postSubmitSettlementOnce(settlementId);
+      const submittedSettlement = await postSubmitSettlementOnce(settlementId);
       setSubmittedSettlementId(submittedSettlement.id);
       window.alert("결산안이 제출되었습니다.");
     } catch (error) {
@@ -223,8 +223,16 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
                 </div>
 
                 <div className={styles.reconciliationMerchant}>
-                  증빙 {formatShortId(item.evidence_id)} · 거래내역{" "}
-                  {formatShortId(item.bank_transaction_id)}
+                  증빙{" "}
+                  <span className={styles.reconciliationMerchantName}>
+                    {item.evidence_merchant_name ||
+                      formatShortId(item.evidence_id)}
+                  </span>{" "}
+                  · 거래내역{" "}
+                  <span className={styles.reconciliationMerchantName}>
+                    {item.bank_merchant_name ||
+                      formatShortId(item.bank_transaction_id)}
+                  </span>
                 </div>
 
                 {item.notes && (

@@ -36,7 +36,8 @@ export type ReconciliationStatus =
   | "amount_mismatch"
   | "date_mismatch"
   | "missing_bank_transaction"
-  | "missing_evidence";
+  | "missing_evidence"
+  | "manually_resolved";
 
 export interface ReconciliationResult {
   id: string;
@@ -45,6 +46,8 @@ export interface ReconciliationResult {
   bank_transaction_id: string | null;
   status: ReconciliationStatus;
   notes: string | null;
+  evidence_merchant_name: string | null;
+  bank_merchant_name: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -171,6 +174,25 @@ const useSettlementApi = () => {
       });
   };
 
+  // 증빙-거래내역 대조 결과 조회
+  const getReconciliationResults = (
+    settlementId: string,
+    status?: ReconciliationStatus,
+  ): Promise<ReconciliationResult[]> => {
+    return settlementApi
+      .get(ENDPOINTS.SETTLEMENT.RECONCILIATION(settlementId), {
+        params: status ? { status } : undefined,
+      })
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("대조 결과 조회 실패 status:", error.response?.status);
+        console.log("대조 결과 조회 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   // 결산안 제출
   const postSubmitSettlement = (
     settlementId: string,
@@ -245,6 +267,7 @@ const useSettlementApi = () => {
     getSettlementComments,
     getExpenseSummary,
     postReconciliationRun,
+    getReconciliationResults,
     postSubmitSettlement,
     postPublishSettlement,
     postResubmitSettlement,
