@@ -110,6 +110,7 @@ const PresidentInvite = () => {
     getOrganization,
     getInvitations,
     postInvitation,
+    postRoleTransfer,
     deleteInvitation,
   } = useOrganizationApi();
   const { getMe } = useAuthApi();
@@ -126,9 +127,14 @@ const PresidentInvite = () => {
     string | null
   >(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [transferEmail, setTransferEmail] = useState("");
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [transferCode, setTransferCode] = useState<string | null>(null);
+  const [transferMessage, setTransferMessage] = useState("");
   const [getOrganizationOnce] = useState(() => getOrganization);
   const [getInvitationsOnce] = useState(() => getInvitations);
   const [postInvitationOnce] = useState(() => postInvitation);
+  const [postRoleTransferOnce] = useState(() => postRoleTransfer);
   const [deleteInvitationOnce] = useState(() => deleteInvitation);
   const [getMeOnce] = useState(() => getMe);
 
@@ -214,6 +220,50 @@ const PresidentInvite = () => {
     }
   };
 
+  const handleTransfer = async () => {
+    const trimmedEmail = transferEmail.trim();
+
+    if (!organizationId) {
+      alert("조직 정보를 찾을 수 없습니다.");
+      return;
+    }
+    if (!trimmedEmail) {
+      alert("후임자 이메일을 입력해주세요.");
+      return;
+    }
+    if (!trimmedEmail.endsWith("@konkuk.ac.kr")) {
+      alert("건국대학교 이메일(@konkuk.ac.kr)만 입력할 수 있습니다.");
+      return;
+    }
+    if (
+      !window.confirm(
+        `${trimmedEmail} 님에게 회장 권한을 이전합니다. 후임자가 수락하면 본인의 회장 권한은 회수됩니다. 진행할까요?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsTransferring(true);
+      setTransferMessage("");
+      setTransferCode(null);
+      const invitation = await postRoleTransferOnce(
+        organizationId,
+        trimmedEmail,
+      );
+      setTransferCode(invitation.code ?? null);
+      setTransferMessage(
+        `${trimmedEmail} 님에게 권한 이전 초대를 보냈습니다. 후임자가 수락하면 이전이 완료됩니다.`,
+      );
+      setTransferEmail("");
+    } catch (error) {
+      console.error("권한 이전 실패", error);
+      alert("권한 이전에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsTransferring(false);
+    }
+  };
+
   const handleCancel = async (invitationId: string) => {
     if (!organizationId) {
       alert("조직 정보를 찾을 수 없습니다.");
@@ -292,6 +342,64 @@ const PresidentInvite = () => {
         >
           {isSending ? "발송 중..." : "✈ 초대장 발송"}
         </button>
+      </section>
+
+      <section className={styles.formCard}>
+        <div className={styles.formHeader}>
+          <span className={styles.formIcon}>⇄</span>
+          <div>
+            <h2 className={styles.formTitle}>권한 이전 (인수인계)</h2>
+            <p className={styles.formDesc}>
+              후임 회장에게 권한을 넘깁니다. 후임자가 초대를 수락하면 본인의 회장
+              권한은 자동으로 회수됩니다.
+            </p>
+          </div>
+        </div>
+
+        <label className={styles.field}>
+          <span className={styles.label}>후임자 이메일 *</span>
+          <input
+            className={styles.input}
+            value={transferEmail}
+            placeholder="successor@konkuk.ac.kr"
+            onChange={(event) => setTransferEmail(event.target.value)}
+          />
+          <span className={styles.helper}>
+            건국대학교 이메일(@konkuk.ac.kr)만 입력 가능합니다
+          </span>
+        </label>
+
+        <button
+          type="button"
+          className={styles.sendButton}
+          disabled={isTransferring}
+          onClick={handleTransfer}
+        >
+          {isTransferring ? "이전 처리 중..." : "⇄ 권한 이전"}
+        </button>
+
+        {transferMessage && (
+          <p className={styles.helper} style={{ marginTop: 12 }}>
+            {transferMessage}
+          </p>
+        )}
+        {transferCode && (
+          <div
+            style={{
+              marginTop: 8,
+              padding: "10px 12px",
+              borderRadius: 8,
+              background: "#F5F3FF",
+              border: "1px solid #DDD6FE",
+              fontSize: 13,
+              wordBreak: "break-all",
+            }}
+          >
+            인계 코드: <strong>{transferCode}</strong>
+            <br />
+            후임자에게 이 코드를 전달하면 코드로도 수락할 수 있습니다.
+          </div>
+        )}
       </section>
 
       <section className={styles.listCard}>

@@ -195,6 +195,23 @@ const useOrganizationApi = () => {
       });
   };
 
+  // 내 역할을 후임자에게 이전 (인수인계) — 호출자 본인의 역할을 넘긴다.
+  const postRoleTransfer = (
+    organizationId: string,
+    successorEmail: string,
+  ): Promise<OrganizationInvitation> => {
+    return organizationApi
+      .post(ENDPOINTS.ORGANIZATION.ROLE_TRANSFER(organizationId), {
+        successor_email: successorEmail,
+      })
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("권한 이전 실패 status:", error.response?.status);
+        console.log("권한 이전 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   // 조직 초대 회수
   const deleteInvitation = (
     organizationId: string,
@@ -219,6 +236,7 @@ const useOrganizationApi = () => {
     getOrganization,
     getInvitations,
     postInvitation,
+    postRoleTransfer,
     deleteInvitation,
   };
 };

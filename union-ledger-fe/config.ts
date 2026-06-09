@@ -35,6 +35,8 @@ export const ENDPOINTS = {
     INVITATION: (organizationId: string) => `/${organizationId}/invitations`,
     INVITATION_DETAIL: (organizationId: string, invitationId: string) =>
       `/${organizationId}/invitations/${invitationId}`,
+    ROLE_TRANSFER: (organizationId: string) =>
+      `/${organizationId}/memberships/me/transfer`,
     TEMPLATE: (organizationId: string) => `/${organizationId}/templates`,
     SETTLEMENT: (organizationId: string) => `/${organizationId}/settlements`,
   },
