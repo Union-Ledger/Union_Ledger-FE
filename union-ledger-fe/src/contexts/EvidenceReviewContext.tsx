@@ -19,6 +19,7 @@ export interface EvidenceReviewItem {
   amount: string;
   paymentMethod: string;
   budgetCategory: string;
+  isRefund: boolean;
   status: string;
   extractedPayload: Record<string, unknown>;
   isExtracting: boolean;
@@ -36,6 +37,7 @@ const readStoredReviewItems = () => {
     const parsedValue = JSON.parse(storedValue) as EvidenceReviewItem[];
     return parsedValue.map((item) => ({
       ...item,
+      isRefund: Boolean(item.isRefund),
       previewUrl: "",
       extractStatus: item.extractStatus
         ? item.extractStatus === "running"

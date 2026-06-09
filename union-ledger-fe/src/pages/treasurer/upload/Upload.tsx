@@ -62,6 +62,7 @@ interface EvidenceApiResponse {
   amount?: string | number | null;
   payment_method?: string | null;
   budget_category?: string | null;
+  is_refund?: boolean | null;
   status?: string | null;
   extracted_payload?: Record<string, unknown> | null;
 }
@@ -130,6 +131,7 @@ const Upload = () => {
     amount: "",
     paymentMethod: "card",
     budgetCategory: "",
+    isRefund: false,
   });
   const [isSaving, setIsSaving] = useState(false);
   const extractingEvidenceIdsRef = useRef(new Set<string>());
@@ -283,6 +285,7 @@ const Upload = () => {
     amount: formatAmount(evidence.amount),
     paymentMethod: evidence.payment_method ?? "card",
     budgetCategory: evidence.budget_category ?? defaultBudgetCategory,
+    isRefund: evidence.is_refund ?? false,
     status: evidence.status ?? "uploaded",
     extractedPayload: evidence.extracted_payload ?? {},
     isExtracting: true,
@@ -305,6 +308,7 @@ const Upload = () => {
                 : formatAmount(evidence.amount),
             paymentMethod: evidence.payment_method ?? item.paymentMethod,
             budgetCategory: evidence.budget_category ?? item.budgetCategory,
+            isRefund: evidence.is_refund ?? item.isRefund,
             status: evidence.status ?? item.status,
             extractedPayload:
               evidence.extracted_payload ?? item.extractedPayload,
@@ -391,6 +395,7 @@ const Upload = () => {
       amount: item.amount,
       paymentMethod: item.paymentMethod,
       budgetCategory: item.budgetCategory,
+      isRefund: item.isRefund,
     });
   };
 
@@ -416,6 +421,7 @@ const Upload = () => {
         amount: parseAmount(editForm.amount),
         paymentMethod: editForm.paymentMethod,
         budgetCategory: editForm.budgetCategory.trim(),
+        isRefund: editForm.isRefund,
         status: editingItem.status,
         extractedPayload: editingItem.extractedPayload,
       });
@@ -609,6 +615,11 @@ const Upload = () => {
                   <span className={styles.reviewCategory}>
                     {item.budgetCategory || "카테고리 미입력"}
                   </span>
+                  {item.isRefund && (
+                    <span style={{ color: "#d9480f", fontWeight: 600 }}>
+                      🔁 환불 (총액에서 차감)
+                    </span>
+                  )}
 
                   <button
                     type="button"
@@ -769,6 +780,29 @@ const Upload = () => {
                       </option>
                     )}
                 </select>
+
+                <label
+                  htmlFor="is-refund-edit"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 12,
+                  }}
+                >
+                  <input
+                    id="is-refund-edit"
+                    type="checkbox"
+                    checked={editForm.isRefund}
+                    onChange={(event) =>
+                      setEditForm((prevForm) => ({
+                        ...prevForm,
+                        isRefund: event.target.checked,
+                      }))
+                    }
+                  />
+                  <span>환불/취소 영수증 (금액을 총액에서 차감)</span>
+                </label>
 
                 <div className={styles.modalActions}>
                   <button
