@@ -134,7 +134,14 @@ const Upload = () => {
     isRefund: false,
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingEvidenceIds, setDeletingEvidenceIds] = useState(
+    () => new Set<string>(),
+  );
   const extractingEvidenceIdsRef = useRef(new Set<string>());
+  const cancelledEvidenceIdsRef = useRef(new Set<string>());
+  const extractAbortControllersRef = useRef(
+    new Map<string, AbortController>(),
+  );
   const extractQueueRef = useRef<
     { evidenceId: string; fallbackBudgetCategory: string }[]
   >([]);
@@ -142,7 +149,7 @@ const Upload = () => {
 
   const { getOrganization, getTemplate, postSettlement } = useOrganizationApi();
   const { postEvidence, getSettlement } = useSettlementApi();
-  const { postEvidenceExtract, patchEvidence } = useCommonApi();
+  const { postEvidenceExtract, patchEvidence, deleteEvidence } = useCommonApi();
   const { getTreasurerDashboard } = useDashboardApi();
   const [getOrganizationOnce] = useState(() => getOrganization);
   const [getTemplateOnce] = useState(() => getTemplate);
@@ -151,6 +158,7 @@ const Upload = () => {
   const [getSettlementOnce] = useState(() => getSettlement);
   const [postEvidenceExtractOnce] = useState(() => postEvidenceExtract);
   const [patchEvidenceOnce] = useState(() => patchEvidence);
+  const [deleteEvidenceOnce] = useState(() => deleteEvidence);
   const [getTreasurerDashboardOnce] = useState(() => getTreasurerDashboard);
 
   const createDraftSettlement = useCallback(async () => {
@@ -332,9 +340,22 @@ const Upload = () => {
       if (!queueItem) continue;
 
       const { evidenceId, fallbackBudgetCategory } = queueItem;
+      if (cancelledEvidenceIdsRef.current.has(evidenceId)) {
+        extractingEvidenceIdsRef.current.delete(evidenceId);
+        continue;
+      }
+
+      const abortController = new AbortController();
+      extractAbortControllersRef.current.set(evidenceId, abortController);
 
       try {
-        const extractedEvidence = await postEvidenceExtractOnce(evidenceId);
+        const extractedEvidence = await postEvidenceExtractOnce(
+          evidenceId,
+          abortController.signal,
+        );
+
+        if (cancelledEvidenceIdsRef.current.has(evidenceId)) continue;
+
         applyExtractedEvidence({
           ...extractedEvidence,
           id: evidenceId,
@@ -342,6 +363,13 @@ const Upload = () => {
             extractedEvidence?.budget_category ?? fallbackBudgetCategory,
         });
       } catch (error) {
+        if (
+          abortController.signal.aborted ||
+          cancelledEvidenceIdsRef.current.has(evidenceId)
+        ) {
+          continue;
+        }
+
         console.error("OCR/PDF 추출 실패", error);
         setReviewItems((prevItems) =>
           prevItems.map((item) =>
@@ -354,6 +382,7 @@ const Upload = () => {
           "증빙 업로드는 완료됐지만 일부 OCR/PDF 추출에 실패했습니다.",
         );
       } finally {
+        extractAbortControllersRef.current.delete(evidenceId);
         extractingEvidenceIdsRef.current.delete(evidenceId);
       }
     }
@@ -386,6 +415,62 @@ const Upload = () => {
       }
     });
   }, [reviewItems, enqueueEvidenceExtract]);
+
+  const handleDeleteEvidence = async (item: EvidenceReviewItem) => {
+    if (deletingEvidenceIds.has(item.id)) return;
+
+    const shouldRestartExtraction =
+      item.extractStatus === "pending" || item.extractStatus === "running";
+
+    setDeletingEvidenceIds((prevIds) => {
+      const nextIds = new Set(prevIds);
+      nextIds.add(item.id);
+      return nextIds;
+    });
+
+    cancelledEvidenceIdsRef.current.add(item.id);
+    extractQueueRef.current = extractQueueRef.current.filter(
+      (queueItem) => queueItem.evidenceId !== item.id,
+    );
+    extractAbortControllersRef.current.get(item.id)?.abort();
+    extractingEvidenceIdsRef.current.delete(item.id);
+
+    try {
+      await deleteEvidenceOnce(item.id);
+
+      if (editingItem?.id === item.id) {
+        setEditingItem(null);
+      }
+
+      removeReviewItem(item.id);
+      setUploadStatusMessage("증빙 자료가 삭제되었습니다.");
+    } catch (error) {
+      console.error("증빙 삭제 실패", error);
+      cancelledEvidenceIdsRef.current.delete(item.id);
+
+      if (shouldRestartExtraction) {
+        setReviewItems((prevItems) =>
+          prevItems.map((reviewItem) =>
+            reviewItem.id === item.id
+              ? {
+                  ...reviewItem,
+                  isExtracting: true,
+                  extractStatus: "pending",
+                }
+              : reviewItem,
+          ),
+        );
+      }
+
+      alert("증빙 자료 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setDeletingEvidenceIds((prevIds) => {
+        const nextIds = new Set(prevIds);
+        nextIds.delete(item.id);
+        return nextIds;
+      });
+    }
+  };
 
   const openEditModal = (item: EvidenceReviewItem) => {
     setEditingItem(item);
@@ -590,6 +675,17 @@ const Upload = () => {
           <div className={styles.reviewGrid}>
             {reviewItems.map((item) => (
               <article key={item.id} className={styles.reviewCard}>
+                <button
+                  type="button"
+                  className={styles.reviewDeleteButton}
+                  aria-label={`${item.fileName} 삭제`}
+                  title="증빙 자료 삭제"
+                  disabled={deletingEvidenceIds.has(item.id)}
+                  onClick={() => void handleDeleteEvidence(item)}
+                >
+                  ×
+                </button>
+
                 {!item.previewUrl ? (
                   <div className={styles.pdfPreview}>{item.fileName}</div>
                 ) : item.fileName.toLowerCase().endsWith(".pdf") ? (

@@ -68,17 +68,27 @@ const Login = () => {
             />
           </label>
 
-          <label className={styles.field}>
-            <span className={styles.label}>비밀번호</span>
+          <div className={styles.field}>
+            <span className={styles.passwordLabelRow}>
+              <span className={styles.label}>비밀번호</span>
+              <button
+                className={styles.forgotPasswordLink}
+                type="button"
+                onClick={() => navigate(ROUTES.FORGOT_PASSWORD)}
+              >
+                비밀번호 찾기
+              </button>
+            </span>
             <input
               className={styles.input}
               type="password"
+              aria-label="비밀번호"
               value={password}
               placeholder="비밀번호"
               autoComplete="current-password"
               onChange={(event) => setPassword(event.target.value)}
             />
-          </label>
+          </div>
 
           {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
 

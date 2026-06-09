@@ -136,6 +136,22 @@ export const label = style({
   fontWeight: 700,
 });
 
+export const passwordLabelRow = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+});
+
+export const forgotPasswordLink = style({
+  border: "none",
+  background: "transparent",
+  color: vars.color.primary,
+  cursor: "pointer",
+  fontSize: "1.3rem",
+  fontWeight: 700,
+});
+
 export const input = style({
   ...vars.font.body_regular_16,
   width: "100%",

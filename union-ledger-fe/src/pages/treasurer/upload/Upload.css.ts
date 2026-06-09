@@ -158,11 +158,43 @@ export const reviewGrid = style({
 });
 
 export const reviewCard = style({
+  position: "relative",
   overflow: "hidden",
   borderRadius: "18px",
   background: "#FFFFFF",
   boxShadow:
     "0 12px 18px -8px rgba(15, 23, 43, 0.22), 0 4px 8px -6px rgba(15, 23, 43, 0.18)",
+});
+
+export const reviewDeleteButton = style({
+  position: "absolute",
+  top: "12px",
+  right: "12px",
+  zIndex: 2,
+  width: "42px",
+  height: "42px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 0,
+  border: 0,
+  borderRadius: "50%",
+  background: "#FF3347",
+  color: "#FFFFFF",
+  fontSize: "30px",
+  fontWeight: 300,
+  lineHeight: 1,
+  boxShadow: "0 8px 18px rgba(220, 38, 38, 0.28)",
+  cursor: "pointer",
+  transition: "transform 0.16s ease, opacity 0.16s ease",
+  ":hover": {
+    transform: "scale(1.05)",
+  },
+  ":disabled": {
+    cursor: "wait",
+    opacity: 0.55,
+    transform: "none",
+  },
 });
 
 export const reviewImage = style({

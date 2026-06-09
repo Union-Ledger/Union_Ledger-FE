@@ -7,6 +7,8 @@ export const ROUTES = {
   LOGIN: "/treasurer/login",
   // 회원가입 화면
   SIGNUP: "/treasurer/signup",
+  // 비밀번호 찾기 화면
+  FORGOT_PASSWORD: "/treasurer/forgot-password",
   // 결산안 양식 등록 화면
   TEMPLATE: "/treasurer/template",
   // 증빙 업로드 화면

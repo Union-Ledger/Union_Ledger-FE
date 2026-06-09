@@ -16,6 +16,17 @@ interface VerifyEmailData {
   code: string;
 }
 
+interface ForgotPasswordData {
+  email: string;
+}
+
+interface ResetPasswordData {
+  email: string;
+  code: string;
+  newPassword: string;
+  newPasswordConfirm: string;
+}
+
 interface SignupData {
   email: string;
   password: string;
@@ -40,6 +51,16 @@ interface SendVerificationCodeResponse {
 interface VerifyEmailResponse {
   message: string;
   verified: boolean;
+}
+
+interface ForgotPasswordResponse {
+  message: string;
+  expires_in_seconds: number;
+  debug_code?: string;
+}
+
+interface MessageResponse {
+  message: string;
 }
 
 export interface MeResponse {
@@ -118,6 +139,38 @@ const useAuthApi = () => {
       });
   };
 
+  const postForgotPassword = (
+    data: ForgotPasswordData,
+  ): Promise<ForgotPasswordResponse> => {
+    return api
+      .post(ENDPOINTS.AUTH.PASSWORD_FORGOT, data)
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log(
+          "비밀번호 재설정 코드 발송 실패:",
+          error.response?.data ?? error,
+        );
+        throw error;
+      });
+  };
+
+  const postResetPassword = (
+    data: ResetPasswordData,
+  ): Promise<MessageResponse> => {
+    return api
+      .post(ENDPOINTS.AUTH.PASSWORD_RESET, {
+        email: data.email,
+        code: data.code,
+        new_password: data.newPassword,
+        new_password_confirm: data.newPasswordConfirm,
+      })
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("비밀번호 재설정 실패:", error.response?.data ?? error);
+        throw error;
+      });
+  };
+
   const postSignup = (data: SignupData): Promise<TokenResponse> => {
     return api
       .post(ENDPOINTS.AUTH.SIGNUP, {
@@ -160,6 +213,8 @@ const useAuthApi = () => {
     postLogin,
     postSendVerificationCode,
     postVerifyEmail,
+    postForgotPassword,
+    postResetPassword,
     postSignup,
     getMe,
     logout,

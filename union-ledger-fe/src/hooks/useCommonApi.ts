@@ -17,9 +17,12 @@ const useCommonApi = () => {
   const { api } = useApi();
 
   // 증빙 OCR/PDF 추출 실행
-  const postEvidenceExtract = (evidenceId: string) => {
+  const postEvidenceExtract = (
+    evidenceId: string,
+    signal?: AbortSignal,
+  ) => {
     return api
-      .post(ENDPOINTS.BASE.EVIDENCE_EXTRACT(evidenceId))
+      .post(ENDPOINTS.BASE.EVIDENCE_EXTRACT(evidenceId), undefined, { signal })
       .then((response) => {
         return response.data;
       })
@@ -27,6 +30,21 @@ const useCommonApi = () => {
         console.log("OCR/PDF 추출 실패 status:", error.response?.status);
         console.log(
           "OCR/PDF 추출 실패 detail:",
+          JSON.stringify(error.response?.data, null, 2),
+        );
+        throw error;
+      });
+  };
+
+  // 증빙 삭제
+  const deleteEvidence = (evidenceId: string) => {
+    return api
+      .delete(ENDPOINTS.BASE.EVIDENCE(evidenceId))
+      .then(() => undefined)
+      .catch((error) => {
+        console.log("증빙 삭제 실패 status:", error.response?.status);
+        console.log(
+          "증빙 삭제 실패 detail:",
           JSON.stringify(error.response?.data, null, 2),
         );
         throw error;
@@ -59,7 +77,7 @@ const useCommonApi = () => {
       });
   };
 
-  return { postEvidenceExtract, patchEvidence };
+  return { postEvidenceExtract, patchEvidence, deleteEvidence };
 };
 
 export default useCommonApi;

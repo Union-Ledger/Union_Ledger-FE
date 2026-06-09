@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
 import Login from "@pages/logIn/LogIn";
 import SignUp from "@pages/logIn/SignUp";
+import ForgotPassword from "@pages/logIn/ForgotPassword";
 import AppLayout from "@shared/components/layout/AppLayout";
 import RequireAuth from "@shared/components/auth/RequireAuth";
 import { EvidenceReviewProvider } from "@/contexts/EvidenceReviewContext";
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
       {
         path: ROUTES.SIGNUP,
         element: <SignUp />,
+      },
+      {
+        path: ROUTES.FORGOT_PASSWORD,
+        element: <ForgotPassword />,
       },
       {
         element: (
