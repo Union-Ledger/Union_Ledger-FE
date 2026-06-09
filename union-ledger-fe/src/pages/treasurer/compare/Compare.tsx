@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import UploadCard from "@/components/common/UploadCard";
-import useSettlementApi from "@/hooks/useSettlementApi";
+import useSettlementApi, {
+  type BankStatementUploadResponse,
+} from "@/hooks/useSettlementApi";
 import * as styles from "@/pages/treasurer/compare/Compare.css";
 
 const BANK_STATEMENT_EXTENSIONS = [".xlsm", ".xlsx"];
@@ -14,8 +16,46 @@ const isValidBankStatementFile = (file: File) => {
 };
 
 const Compare = () => {
-  const { postBankStatement } = useSettlementApi();
+  const { postBankStatement, getBankStatements, deleteBankStatement } =
+    useSettlementApi();
+  const [currentSettlementId] = useState(() =>
+    localStorage.getItem("currentSettlementId"),
+  );
+  const [getBankStatementsOnce] = useState(() => getBankStatements);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoadingStatements, setIsLoadingStatements] = useState(
+    Boolean(currentSettlementId),
+  );
+  const [listErrorMessage, setListErrorMessage] = useState("");
+  const [deletingUploadIds, setDeletingUploadIds] = useState(
+    () => new Set<string>(),
+  );
+  const [uploadedStatements, setUploadedStatements] = useState<
+    BankStatementUploadResponse[]
+  >([]);
+
+  const refreshUploadedStatements = useCallback(async () => {
+    if (!currentSettlementId) {
+      setUploadedStatements([]);
+      setIsLoadingStatements(false);
+      return;
+    }
+
+    try {
+      setListErrorMessage("");
+      const statements = await getBankStatementsOnce(currentSettlementId);
+      setUploadedStatements(statements);
+    } catch (error) {
+      console.error("거래내역 목록 조회 실패", error);
+      setListErrorMessage("업로드한 거래내역서를 불러오지 못했습니다.");
+    } finally {
+      setIsLoadingStatements(false);
+    }
+  }, [currentSettlementId, getBankStatementsOnce]);
+
+  useEffect(() => {
+    void refreshUploadedStatements();
+  }, [refreshUploadedStatements]);
 
   const handleChangeFile = async (files: FileList | null) => {
     const file = files?.[0];
@@ -37,18 +77,44 @@ const Compare = () => {
     try {
       setIsUploading(true);
 
-      const result = await postBankStatement({
+      await postBankStatement({
         settlementId,
         file,
       });
 
-      console.log("거래내역 업로드 성공", result);
+      await refreshUploadedStatements();
       alert("거래내역 업로드가 완료되었습니다.");
     } catch (error) {
       console.error("거래내역 업로드 실패", error);
       alert("거래내역 업로드에 실패했습니다.");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDeleteStatement = async (item: BankStatementUploadResponse) => {
+    if (deletingUploadIds.has(item.id)) return;
+
+    setDeletingUploadIds((prevIds) => {
+      const nextIds = new Set(prevIds);
+      nextIds.add(item.id);
+      return nextIds;
+    });
+
+    try {
+      await deleteBankStatement(item.id);
+      setUploadedStatements((prevItems) =>
+        prevItems.filter((statement) => statement.id !== item.id),
+      );
+    } catch (error) {
+      console.error("거래내역 삭제 실패", error);
+      alert("거래내역 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setDeletingUploadIds((prevIds) => {
+        const nextIds = new Set(prevIds);
+        nextIds.delete(item.id);
+        return nextIds;
+      });
     }
   };
 
@@ -71,6 +137,53 @@ const Compare = () => {
           onChangeFile={handleChangeFile}
         />
       </div>
+
+      <section className={styles.uploadListSection}>
+        <div className={styles.uploadListHeader}>
+          <h2 className={styles.uploadListTitle}>업로드한 거래내역서</h2>
+          <span className={styles.uploadCount}>
+            {uploadedStatements.length}개
+          </span>
+        </div>
+
+        {isLoadingStatements ? (
+          <div className={styles.emptyList}>거래내역서를 불러오는 중입니다.</div>
+        ) : listErrorMessage ? (
+          <div className={styles.emptyList}>{listErrorMessage}</div>
+        ) : uploadedStatements.length === 0 ? (
+          <div className={styles.emptyList}>
+            아직 업로드한 거래내역서가 없습니다.
+          </div>
+        ) : (
+          <div className={styles.uploadList}>
+            {uploadedStatements.map((item) => (
+              <article key={item.id} className={styles.uploadItem}>
+                <div className={styles.fileIcon} aria-hidden="true">
+                  XLS
+                </div>
+                <div className={styles.fileInfo}>
+                  <strong className={styles.fileName}>
+                    {item.source_file_name}
+                  </strong>
+                  <span className={styles.uploadedAt}>
+                    {new Date(item.created_at).toLocaleString("ko-KR")}
+                    {` · ${item.parsed_rows_count.toLocaleString("ko-KR")}행`}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className={styles.deleteButton}
+                  disabled={deletingUploadIds.has(item.id)}
+                  aria-label={`${item.source_file_name} 삭제`}
+                  onClick={() => void handleDeleteStatement(item)}
+                >
+                  ×
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

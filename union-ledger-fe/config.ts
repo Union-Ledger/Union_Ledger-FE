@@ -77,6 +77,7 @@ export const ENDPOINTS = {
   BASE: {
     TEMPLATE: (templateId: string) => `/templates/${templateId}`,
     OCR: "/ocr/preview",
+    BANK_STATEMENT: (uploadId: string) => `/bank-statements/${uploadId}`,
     EVIDENCE: (evidenceId: string) => `/evidences/${evidenceId}`,
     EVIDENCE_EXTRACT: (evidenceId: string) =>
       `/evidences/${evidenceId}/extract`,

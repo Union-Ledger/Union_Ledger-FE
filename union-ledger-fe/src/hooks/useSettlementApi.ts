@@ -13,6 +13,17 @@ interface PostBankStatementData {
   file: File;
 }
 
+export interface BankStatementUploadResponse {
+  id: string;
+  settlement_id: string;
+  source_file_name: string;
+  source_file_path: string;
+  status: string;
+  parsed_rows_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 interface PostResubmitSettlementData {
   settlementId: string;
   comment: string;
@@ -90,7 +101,7 @@ export interface SettlementComment {
 }
 
 const useSettlementApi = () => {
-  const { settlementApi } = useApi();
+  const { api, settlementApi } = useApi();
 
   // 증빙 파일 업로드
   const postEvidence = (data: PostEvidenceData) => {
@@ -244,7 +255,9 @@ const useSettlementApi = () => {
   };
 
   // 거래내역 엑셀 업로드 + 파싱
-  const postBankStatement = (data: PostBankStatementData) => {
+  const postBankStatement = (
+    data: PostBankStatementData,
+  ): Promise<BankStatementUploadResponse> => {
     const formData = new FormData();
 
     formData.append("file", data.file);
@@ -261,6 +274,34 @@ const useSettlementApi = () => {
       });
   };
 
+  // 업로드한 거래내역서 목록 조회
+  const getBankStatements = (
+    settlementId: string,
+  ): Promise<BankStatementUploadResponse[]> => {
+    return settlementApi
+      .get(ENDPOINTS.SETTLEMENT.BANK_STATEMENT(settlementId))
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("거래내역 목록 조회 실패 status:", error.response?.status);
+        console.log("거래내역 목록 조회 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 업로드한 거래내역서 삭제
+  const deleteBankStatement = (uploadId: string) => {
+    return api
+      .delete(ENDPOINTS.BASE.BANK_STATEMENT(uploadId))
+      .then(() => undefined)
+      .catch((error) => {
+        console.log("거래내역 삭제 실패 status:", error.response?.status);
+        console.log("거래내역 삭제 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   return {
     postEvidence,
     getSettlement,
@@ -272,6 +313,8 @@ const useSettlementApi = () => {
     postPublishSettlement,
     postResubmitSettlement,
     postBankStatement,
+    getBankStatements,
+    deleteBankStatement,
   };
 };
 
