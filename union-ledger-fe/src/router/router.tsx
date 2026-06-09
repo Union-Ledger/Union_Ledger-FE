@@ -5,6 +5,8 @@ import SignUp from "@pages/logIn/SignUp";
 import ForgotPassword from "@pages/logIn/ForgotPassword";
 import AppLayout from "@shared/components/layout/AppLayout";
 import RequireAuth from "@shared/components/auth/RequireAuth";
+import RequireRole from "@shared/components/auth/RequireRole";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { EvidenceReviewProvider } from "@/contexts/EvidenceReviewContext";
 import Template from "@/pages/treasurer/template/Template";
 import Upload from "@/pages/treasurer/upload/Upload";
@@ -47,9 +49,11 @@ const router = createBrowserRouter([
       {
         element: (
           <RequireAuth>
-            <EvidenceReviewProvider>
-              <AppLayout />
-            </EvidenceReviewProvider>
+            <AuthProvider>
+              <EvidenceReviewProvider>
+                <AppLayout />
+              </EvidenceReviewProvider>
+            </AuthProvider>
           </RequireAuth>
         ),
         children: [
@@ -61,6 +65,11 @@ const router = createBrowserRouter([
           // 재정담당자 routes
           {
             path: "treasurer",
+            element: (
+              <RequireRole allowedRoles={["treasurer", "president"]}>
+                <Outlet />
+              </RequireRole>
+            ),
             children: [
               {
                 path: "dashboard",
@@ -88,6 +97,11 @@ const router = createBrowserRouter([
           // 감사위원 routes
           {
             path: "auditor",
+            element: (
+              <RequireRole allowedRoles={["auditor"]}>
+                <Outlet />
+              </RequireRole>
+            ),
             children: [
               {
                 path: "dashboard",
@@ -134,6 +148,11 @@ const router = createBrowserRouter([
           // 회장 routes
           {
             path: "president",
+            element: (
+              <RequireRole allowedRoles={["president"]}>
+                <Outlet />
+              </RequireRole>
+            ),
             children: [
               {
                 path: "dashboard",
@@ -149,6 +168,11 @@ const router = createBrowserRouter([
           // 운영자 routes
           {
             path: "admin",
+            element: (
+              <RequireRole allowOperator>
+                <Outlet />
+              </RequireRole>
+            ),
             children: [
               {
                 index: true,
