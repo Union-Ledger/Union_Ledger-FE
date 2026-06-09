@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useAuditApi, {
+  type AuditEvidence,
   type AuditSettlementDetailResponse,
 } from "@/hooks/useAuditApi";
 import * as styles from "@/pages/auditor/review/ReviewDetail.css";
@@ -21,6 +22,7 @@ const getStatusLabel = (status: string | undefined) => {
     date_mismatch: "날짜 불일치",
     missing_bank_transaction: "거래내역 누락",
     missing_evidence: "증빙 누락",
+    manually_resolved: "수동 해결",
   };
 
   return status ? (statusMap[status] ?? status) : "대조 전";
@@ -32,31 +34,36 @@ const getAuditStatusLabel = (status: string) => {
     rejected: "반려",
     under_audit: "검토 중",
     submitted: "검토 대기",
-    ready_for_review: "검토 대기",
     resubmitted: "재제출",
   };
 
   return statusMap[status] ?? status;
 };
 
-const transformReviewDetail = (data: AuditSettlementDetailResponse) => {
-  const totalAmount = data.evidences.reduce((sum, evidence) => {
-    return sum + parseAmount(evidence.amount);
-  }, 0);
+const formatTimestamp = (iso: string) => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("ko-KR", {
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const buildReviewData = (data: AuditSettlementDetailResponse) => {
+  const totalAmount = data.evidences.reduce(
+    (sum, evidence) => sum + parseAmount(evidence.amount),
+    0,
+  );
 
   const categoryMap = new Map<
     string,
-    {
-      category: string;
-      count: number;
-      totalAmount: number;
-    }
+    { category: string; count: number; totalAmount: number }
   >();
-
   data.evidences.forEach((evidence) => {
     const category = evidence.budget_category || "미분류";
     const prev = categoryMap.get(category);
-
     categoryMap.set(category, {
       category,
       count: (prev?.count ?? 0) + 1,
@@ -64,16 +71,14 @@ const transformReviewDetail = (data: AuditSettlementDetailResponse) => {
     });
   });
 
-  const transactions = data.evidences.map((evidence) => {
+  const evidenceRows = data.evidences.map((evidence) => {
     const reconciliation = data.reconciliation_results.find(
       (result) => result.evidence_id === evidence.id,
     );
-
     const bankTransaction = data.bank_transactions.find(
       (transaction) => transaction.id === reconciliation?.bank_transaction_id,
     );
-
-    const comment = data.comments.find(
+    const existingComment = data.comments.find(
       (comment) => comment.evidence_id === evidence.id,
     );
 
@@ -86,18 +91,36 @@ const transformReviewDetail = (data: AuditSettlementDetailResponse) => {
       amount: parseAmount(evidence.amount),
       reconciliationStatus: reconciliation?.status,
       reconciliationNotes: reconciliation?.notes,
-      commentId: comment?.id ?? null,
-      comment: comment?.comment ?? "",
+      existingCommentId: existingComment?.id ?? null,
     };
   });
 
+  // 증빙이 없는 은행 거래(누락) — 감사가 반드시 확인해야 하는 항목
+  const bankOnlyRows = data.reconciliation_results
+    .filter((result) => result.status === "missing_evidence")
+    .map((result) => {
+      const bankTransaction = data.bank_transactions.find(
+        (transaction) => transaction.id === result.bank_transaction_id,
+      );
+      return {
+        id: result.id,
+        date: bankTransaction?.transaction_date || "-",
+        description: bankTransaction?.description || "내역 없음",
+        amount: bankTransaction ? parseAmount(bankTransaction.amount) : 0,
+        notes: result.notes,
+      };
+    });
+
+  const overallComments = data.comments.filter(
+    (comment) => !comment.evidence_id,
+  );
+
   return {
-    settlement: {
-      ...data.settlement,
-      totalAmount,
-    },
+    settlement: { ...data.settlement, totalAmount },
     categorySummaries: Array.from(categoryMap.values()),
-    transactions,
+    evidenceRows,
+    bankOnlyRows,
+    overallComments,
   };
 };
 
@@ -106,27 +129,38 @@ const ReviewDetail = () => {
   const { id } = useParams<{ id: string }>();
   const {
     getAuditSettlementDetail,
+    postAuditComment,
     patchAuditComment,
+    downloadEvidenceFile,
     postApproveSettlement,
     postRejectSettlement,
   } = useAuditApi();
 
   const [detailData, setDetailData] =
     useState<AuditSettlementDetailResponse | null>(null);
-  const [commentValues, setCommentValues] = useState<Record<string, string>>(
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>(
     {},
   );
-  const [savingCommentId, setSavingCommentId] = useState<string | null>(null);
+  const [savingEvidenceId, setSavingEvidenceId] = useState<string | null>(null);
   const [auditComment, setAuditComment] = useState("");
   const [processingDecision, setProcessingDecision] = useState<
     "approve" | "reject" | null
   >(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // 증빙 이미지 모달
+  const [modalEvidence, setModalEvidence] = useState<AuditEvidence | null>(null);
+  const [modalFileUrl, setModalFileUrl] = useState<string | null>(null);
+  const [modalFileType, setModalFileType] = useState<string>("");
+  const [modalLoading, setModalLoading] = useState(false);
+
   const [getAuditSettlementDetailOnce] = useState(
     () => getAuditSettlementDetail,
   );
+  const [postAuditCommentOnce] = useState(() => postAuditComment);
   const [patchAuditCommentOnce] = useState(() => patchAuditComment);
+  const [downloadEvidenceFileOnce] = useState(() => downloadEvidenceFile);
   const [postApproveSettlementOnce] = useState(() => postApproveSettlement);
   const [postRejectSettlementOnce] = useState(() => postRejectSettlement);
 
@@ -145,14 +179,14 @@ const ReviewDetail = () => {
         const data = await getAuditSettlementDetailOnce(id);
         setDetailData(data);
 
-        const nextCommentValues = data.comments.reduce<Record<string, string>>(
-          (acc, comment) => {
-            acc[comment.id] = comment.comment;
-            return acc;
-          },
-          {},
-        );
-        setCommentValues(nextCommentValues);
+        // 항목별 기존 코멘트를 입력칸 초깃값으로 채움 (evidenceId 기준)
+        const drafts: Record<string, string> = {};
+        data.comments.forEach((comment) => {
+          if (comment.evidence_id && drafts[comment.evidence_id] === undefined) {
+            drafts[comment.evidence_id] = comment.comment;
+          }
+        });
+        setCommentDrafts(drafts);
       } catch (error) {
         console.error("감사 결산안 상세 조회 실패", error);
         setErrorMessage("결산안 상세 정보를 불러오지 못했습니다.");
@@ -165,47 +199,81 @@ const ReviewDetail = () => {
   }, [getAuditSettlementDetailOnce, id]);
 
   const reviewData = useMemo(() => {
-    return detailData ? transformReviewDetail(detailData) : null;
+    return detailData ? buildReviewData(detailData) : null;
   }, [detailData]);
   const isApproved = reviewData?.settlement.status === "approved";
 
-  const handleChangeComment = (commentId: string, comment: string) => {
-    if (isApproved) return;
+  const handleSaveEvidenceComment = async (evidenceId: string) => {
+    if (isApproved || !id || !detailData) return;
 
-    setCommentValues((prev) => ({
-      ...prev,
-      [commentId]: comment,
-    }));
-  };
+    const draft = (commentDrafts[evidenceId] ?? "").trim();
+    if (!draft) {
+      alert("코멘트 내용을 입력해주세요.");
+      return;
+    }
 
-  const handleSaveComment = async (commentId: string) => {
-    if (isApproved) return;
-
-    const nextComment = commentValues[commentId] ?? "";
+    const existing = detailData.comments.find(
+      (comment) => comment.evidence_id === evidenceId,
+    );
 
     try {
-      setSavingCommentId(commentId);
-      const updatedComment = await patchAuditCommentOnce(
-        commentId,
-        nextComment,
-      );
+      setSavingEvidenceId(evidenceId);
 
-      setDetailData((prev) => {
-        if (!prev) return prev;
-
-        return {
-          ...prev,
-          comments: prev.comments.map((comment) =>
-            comment.id === commentId ? updatedComment : comment,
-          ),
-        };
-      });
+      if (existing) {
+        const updated = await patchAuditCommentOnce(existing.id, draft);
+        setDetailData((prev) =>
+          prev
+            ? {
+                ...prev,
+                comments: prev.comments.map((comment) =>
+                  comment.id === existing.id ? updated : comment,
+                ),
+              }
+            : prev,
+        );
+      } else {
+        const created = await postAuditCommentOnce(id, draft, evidenceId);
+        setDetailData((prev) =>
+          prev ? { ...prev, comments: [...prev.comments, created] } : prev,
+        );
+      }
     } catch (error) {
-      console.error("감사 코멘트 수정 실패", error);
-      alert("감사 코멘트 수정에 실패했습니다.");
+      console.error("감사 코멘트 저장 실패", error);
+      alert("코멘트 저장에 실패했습니다. (작성자 본인만 수정할 수 있어요)");
     } finally {
-      setSavingCommentId(null);
+      setSavingEvidenceId(null);
     }
+  };
+
+  const openEvidenceModal = async (evidenceId: string) => {
+    if (!detailData) return;
+    const evidence = detailData.evidences.find((item) => item.id === evidenceId);
+    if (!evidence) return;
+
+    setModalEvidence(evidence);
+    setModalLoading(true);
+    setModalFileUrl(null);
+    setModalFileType("");
+
+    try {
+      const blob = await downloadEvidenceFileOnce(evidenceId);
+      setModalFileUrl(URL.createObjectURL(blob));
+      setModalFileType(blob.type);
+    } catch (error) {
+      console.error("증빙 원본 조회 실패", error);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const closeEvidenceModal = () => {
+    if (modalFileUrl) {
+      URL.revokeObjectURL(modalFileUrl);
+    }
+    setModalEvidence(null);
+    setModalFileUrl(null);
+    setModalFileType("");
+    setModalLoading(false);
   };
 
   const handleApprove = async () => {
@@ -214,13 +282,12 @@ const ReviewDetail = () => {
       return;
     }
 
-    const comment = auditComment.trim() || "결산안을 승인합니다.";
-
     try {
       setProcessingDecision("approve");
+      // 의견이 비어 있으면 코멘트를 남기지 않는다 (가짜 코멘트 기록 방지).
       await postApproveSettlementOnce({
         settlementId: id,
-        comment,
+        comment: auditComment.trim(),
       });
       alert("결산안이 승인되었습니다.");
       navigate("/auditor/review");
@@ -239,7 +306,6 @@ const ReviewDetail = () => {
     }
 
     const comment = auditComment.trim();
-
     if (!comment) {
       alert("반려 사유를 입력해주세요.");
       return;
@@ -247,10 +313,7 @@ const ReviewDetail = () => {
 
     try {
       setProcessingDecision("reject");
-      await postRejectSettlementOnce({
-        settlementId: id,
-        comment,
-      });
+      await postRejectSettlementOnce({ settlementId: id, comment });
       alert("결산안이 반려되었습니다.");
       navigate("/auditor/review");
     } catch (error) {
@@ -264,7 +327,9 @@ const ReviewDetail = () => {
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <div className={styles.stateBox}>결산안 상세 정보를 불러오는 중입니다.</div>
+        <div className={styles.stateBox}>
+          결산안 상세 정보를 불러오는 중입니다.
+        </div>
       </div>
     );
   }
@@ -329,7 +394,9 @@ const ReviewDetail = () => {
 
             <div className={styles.categoryList}>
               {reviewData.categorySummaries.length === 0 ? (
-                <div className={styles.stateBox}>집계된 지출 내역이 없습니다.</div>
+                <div className={styles.stateBox}>
+                  집계된 지출 내역이 없습니다.
+                </div>
               ) : (
                 reviewData.categorySummaries.map((item) => (
                   <div key={item.category} className={styles.categoryItem}>
@@ -352,50 +419,49 @@ const ReviewDetail = () => {
 
         <section className={styles.panel}>
           <div className={styles.panelHeader}>
-            <span>거래 내역 상세</span>
+            <span>증빙 · 거래 내역</span>
           </div>
 
           <div className={styles.panelBody}>
             <div className={styles.transactionList}>
-              {reviewData.transactions.length === 0 ? (
-                <div className={styles.stateBox}>거래 내역이 없습니다.</div>
+              {reviewData.evidenceRows.length === 0 ? (
+                <div className={styles.stateBox}>증빙 내역이 없습니다.</div>
               ) : (
-                reviewData.transactions.map((transaction) => {
-                  const hasEditableComment =
-                    !isApproved && Boolean(transaction.commentId);
-                  const commentValue = transaction.commentId
-                    ? (commentValues[transaction.commentId] ??
-                      transaction.comment)
-                    : transaction.comment;
+                reviewData.evidenceRows.map((row) => {
+                  const draft = commentDrafts[row.id] ?? "";
 
                   return (
-                    <div
-                      key={transaction.id}
-                      className={styles.transactionItem}
-                    >
+                    <div key={row.id} className={styles.transactionItem}>
                       <div className={styles.transactionTop}>
                         <span className={styles.transactionDate}>
-                          {transaction.date}
+                          {row.date}
                         </span>
                         <span className={styles.categoryBadge}>
-                          {transaction.category}
+                          {row.category}
                         </span>
                         <span className={styles.statusBadge}>
-                          {getStatusLabel(transaction.reconciliationStatus)}
+                          {getStatusLabel(row.reconciliationStatus)}
                         </span>
+                        <button
+                          type="button"
+                          className={styles.viewEvidenceButton}
+                          onClick={() => openEvidenceModal(row.id)}
+                        >
+                          증빙 보기
+                        </button>
                       </div>
 
                       <strong className={styles.merchantName}>
-                        {transaction.merchantName}
+                        {row.merchantName}
                       </strong>
 
                       <strong className={styles.transactionAmount}>
-                        {formatMoney(transaction.amount)}
+                        {formatMoney(row.amount)}
                       </strong>
 
-                      {transaction.reconciliationNotes && (
+                      {row.reconciliationNotes && (
                         <p className={styles.reconciliationNote}>
-                          {transaction.reconciliationNotes}
+                          {row.reconciliationNotes}
                         </p>
                       )}
 
@@ -403,33 +469,26 @@ const ReviewDetail = () => {
                         <span className={styles.commentIcon}>▱</span>
                         <input
                           className={styles.commentInput}
-                          placeholder="이 항목에 대한 코멘트"
-                          value={commentValue}
-                          disabled={isApproved || !hasEditableComment}
-                          onChange={(event) => {
-                            if (!transaction.commentId) return;
-                            handleChangeComment(
-                              transaction.commentId,
-                              event.target.value,
-                            );
-                          }}
+                          placeholder="이 항목에 대한 코멘트 작성"
+                          value={draft}
+                          disabled={isApproved}
+                          onChange={(event) =>
+                            setCommentDrafts((prev) => ({
+                              ...prev,
+                              [row.id]: event.target.value,
+                            }))
+                          }
                         />
                         {!isApproved && (
                           <button
                             type="button"
                             className={styles.commentSaveButton}
                             disabled={
-                              !transaction.commentId ||
-                              savingCommentId === transaction.commentId
+                              savingEvidenceId === row.id || !draft.trim()
                             }
-                            onClick={() => {
-                              if (!transaction.commentId) return;
-                              handleSaveComment(transaction.commentId);
-                            }}
+                            onClick={() => handleSaveEvidenceComment(row.id)}
                           >
-                            {savingCommentId === transaction.commentId
-                              ? "저장 중"
-                              : "저장"}
+                            {savingEvidenceId === row.id ? "저장 중" : "저장"}
                           </button>
                         )}
                       </div>
@@ -437,10 +496,53 @@ const ReviewDetail = () => {
                   );
                 })
               )}
+
+              {reviewData.bankOnlyRows.length > 0 && (
+                <>
+                  <h3 className={styles.subSectionTitle}>
+                    증빙 없는 거래내역 ({reviewData.bankOnlyRows.length})
+                  </h3>
+                  {reviewData.bankOnlyRows.map((row) => (
+                    <div key={row.id} className={styles.missingItem}>
+                      <div className={styles.transactionTop}>
+                        <span className={styles.transactionDate}>
+                          {row.date}
+                        </span>
+                        <span className={styles.missingBadge}>증빙 누락</span>
+                      </div>
+                      <strong className={styles.merchantName}>
+                        {row.description}
+                      </strong>
+                      <strong className={styles.transactionAmount}>
+                        {formatMoney(row.amount)}
+                      </strong>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         </section>
       </div>
+
+      {reviewData.overallComments.length > 0 && (
+        <section className={styles.auditPanel}>
+          <h2 className={styles.sectionTitle}>전체 감사 의견 기록</h2>
+          <div className={styles.overallCommentsPanel}>
+            {reviewData.overallComments.map((comment) => (
+              <div key={comment.id} className={styles.overallCommentItem}>
+                <div className={styles.overallCommentMeta}>
+                  {comment.author_name ?? "감사위원"} ·{" "}
+                  {formatTimestamp(comment.created_at)}
+                </div>
+                <div className={styles.overallCommentText}>
+                  {comment.comment}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {isApproved ? (
         <section className={styles.auditCompletePanel}>
@@ -481,6 +583,93 @@ const ReviewDetail = () => {
             </button>
           </div>
         </section>
+      )}
+
+      {modalEvidence && (
+        <div className={styles.modalOverlay} onClick={closeEvidenceModal}>
+          <div
+            className={styles.modalCard}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.modalTitleRow}>
+              <span className={styles.modalTitle}>
+                {modalEvidence.merchant_name || "증빙 상세"}
+              </span>
+              <button
+                type="button"
+                className={styles.modalCloseButton}
+                onClick={closeEvidenceModal}
+              >
+                ✕
+              </button>
+            </div>
+
+            {modalLoading ? (
+              <div className={styles.modalStateText}>
+                원본을 불러오는 중입니다.
+              </div>
+            ) : modalFileUrl ? (
+              modalFileType.startsWith("image/") ? (
+                <div className={styles.modalImageWrap}>
+                  <img
+                    className={styles.modalImage}
+                    src={modalFileUrl}
+                    alt="증빙 원본"
+                  />
+                </div>
+              ) : (
+                <div className={styles.modalStateText}>
+                  이미지로 표시할 수 없는 파일입니다 (예: PDF).
+                  <br />
+                  <button
+                    type="button"
+                    className={styles.modalOpenLink}
+                    onClick={() => window.open(modalFileUrl, "_blank")}
+                  >
+                    새 탭에서 원본 열기
+                  </button>
+                </div>
+              )
+            ) : (
+              <div className={styles.modalStateText}>
+                원본 파일을 불러올 수 없습니다.
+              </div>
+            )}
+
+            <div className={styles.modalFields}>
+              <div className={styles.modalFieldRow}>
+                <span className={styles.modalFieldLabel}>날짜</span>
+                <span className={styles.modalFieldValue}>
+                  {modalEvidence.evidence_date || "-"}
+                </span>
+              </div>
+              <div className={styles.modalFieldRow}>
+                <span className={styles.modalFieldLabel}>금액</span>
+                <span className={styles.modalFieldValue}>
+                  {formatMoney(parseAmount(modalEvidence.amount))}
+                </span>
+              </div>
+              <div className={styles.modalFieldRow}>
+                <span className={styles.modalFieldLabel}>결제수단</span>
+                <span className={styles.modalFieldValue}>
+                  {modalEvidence.payment_method || "-"}
+                </span>
+              </div>
+              <div className={styles.modalFieldRow}>
+                <span className={styles.modalFieldLabel}>예산 항목</span>
+                <span className={styles.modalFieldValue}>
+                  {modalEvidence.budget_category || "미분류"}
+                </span>
+              </div>
+              <div className={styles.modalFieldRow}>
+                <span className={styles.modalFieldLabel}>파일명</span>
+                <span className={styles.modalFieldValue}>
+                  {modalEvidence.source_file_name || "-"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

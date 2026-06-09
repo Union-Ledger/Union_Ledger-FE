@@ -87,8 +87,9 @@ export interface AuditReconciliationResult {
 export interface AuditComment {
   id: string;
   settlement_id: string;
-  evidence_id: string;
-  author_membership_id: string;
+  evidence_id: string | null;
+  author_membership_id: string | null;
+  author_name?: string | null;
   comment: string;
   created_at: string;
   updated_at: string;
@@ -108,7 +109,7 @@ interface PostAuditDecisionData {
 }
 
 const useAuditApi = () => {
-  const { auditApi, settlementApi } = useApi();
+  const { auditApi, settlementApi, api } = useApi();
 
   const getAuditSettlements = (
     status?: string[],
@@ -136,6 +137,39 @@ const useAuditApi = () => {
       .catch((error) => {
         console.log("감사 결산안 상세 조회 실패 status:", error.response?.status);
         console.log("감사 결산안 상세 조회 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 감사 코멘트 신규 작성 (항목별: evidenceId 지정 / 전체: 생략)
+  const postAuditComment = (
+    settlementId: string,
+    comment: string,
+    evidenceId?: string | null,
+  ): Promise<AuditComment> => {
+    return settlementApi
+      .post(ENDPOINTS.SETTLEMENT.COMMENT(settlementId), {
+        comment,
+        evidence_id: evidenceId ?? null,
+      })
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("감사 코멘트 작성 실패 status:", error.response?.status);
+        console.log("감사 코멘트 작성 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 증빙 원본 파일 다운로드 (조직 멤버 — 감사 모달용)
+  const downloadEvidenceFile = (evidenceId: string): Promise<Blob> => {
+    return api
+      .get(ENDPOINTS.BASE.EVIDENCE_FILE(evidenceId), {
+        responseType: "blob",
+      })
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("증빙 파일 다운로드 실패 status:", error.response?.status);
+        console.log("증빙 파일 다운로드 실패 detail:", error.response?.data);
         throw error;
       });
   };
@@ -188,6 +222,8 @@ const useAuditApi = () => {
   return {
     getAuditSettlements,
     getAuditSettlementDetail,
+    postAuditComment,
+    downloadEvidenceFile,
     patchAuditComment,
     postApproveSettlement,
     postRejectSettlement,

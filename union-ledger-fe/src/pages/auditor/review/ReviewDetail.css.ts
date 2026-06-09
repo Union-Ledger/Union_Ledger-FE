@@ -353,3 +353,164 @@ export const rejectButton = style({
     cursor: "not-allowed",
   },
 });
+
+export const viewEvidenceButton = style({
+  marginLeft: "auto",
+  padding: "4px 12px",
+  borderRadius: "8px",
+  border: `1px solid ${vars.color.primary}`,
+  background: vars.color.surface,
+  color: vars.color.primary,
+  cursor: "pointer",
+  ...vars.font.caption_regular_12,
+});
+
+export const missingItem = style({
+  padding: "24px",
+  borderRadius: "10px",
+  border: "1px solid #FECACA",
+  background: "linear-gradient(135deg, #FEF2F2 0%, #FFF1F2 100%)",
+});
+
+export const missingBadge = style({
+  padding: "4px 10px",
+  borderRadius: "8px",
+  background: vars.color.accent.red,
+  color: vars.color.surface,
+  ...vars.font.caption_regular_12,
+});
+
+export const subSectionTitle = style({
+  ...vars.font.title_bold_14,
+  color: vars.color.summaryTitle,
+  margin: "24px 0 12px",
+});
+
+export const overallCommentsPanel = style({
+  marginTop: "20px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px",
+});
+
+export const overallCommentItem = style({
+  padding: "14px 16px",
+  borderRadius: "10px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.surface,
+});
+
+export const overallCommentMeta = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.gray,
+  marginBottom: "4px",
+});
+
+export const overallCommentText = style({
+  ...vars.font.body_regular_14,
+  color: vars.color.summaryTitle,
+});
+
+export const modalOverlay = style({
+  position: "fixed",
+  inset: 0,
+  zIndex: 100,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "24px",
+  background: "rgba(15, 23, 42, 0.55)",
+});
+
+export const modalCard = style({
+  width: "100%",
+  maxWidth: "560px",
+  maxHeight: "86vh",
+  overflowY: "auto",
+  padding: "24px",
+  borderRadius: "14px",
+  background: vars.color.surface,
+  boxShadow: "0 24px 48px -12px rgba(0, 0, 0, 0.35)",
+});
+
+export const modalTitleRow = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: "16px",
+});
+
+export const modalTitle = style({
+  ...vars.font.title_bold_18,
+  color: vars.color.summaryTitle,
+});
+
+export const modalCloseButton = style({
+  width: "32px",
+  height: "32px",
+  borderRadius: "8px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.surface,
+  color: vars.color.summaryTitle,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+});
+
+export const modalImageWrap = style({
+  display: "flex",
+  justifyContent: "center",
+  marginBottom: "18px",
+  borderRadius: "10px",
+  background: vars.color.background,
+  padding: "12px",
+});
+
+export const modalImage = style({
+  maxWidth: "100%",
+  maxHeight: "420px",
+  borderRadius: "6px",
+});
+
+export const modalStateText = style({
+  ...vars.font.body_regular_14,
+  color: vars.color.gray,
+  textAlign: "center",
+  padding: "32px 0",
+});
+
+export const modalOpenLink = style({
+  display: "inline-block",
+  marginTop: "8px",
+  padding: "8px 16px",
+  borderRadius: "8px",
+  background: vars.color.primary,
+  color: vars.color.surface,
+  cursor: "pointer",
+  border: "none",
+  ...vars.font.body_medium_14,
+});
+
+export const modalFields = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+});
+
+export const modalFieldRow = style({
+  display: "flex",
+  justifyContent: "space-between",
+  gap: "16px",
+  padding: "10px 0",
+  borderBottom: `1px solid ${vars.color.ItemBorder}`,
+});
+
+export const modalFieldLabel = style({
+  ...vars.font.body_regular_14,
+  color: vars.color.gray,
+});
+
+export const modalFieldValue = style({
+  ...vars.font.body_medium_14,
+  color: vars.color.summaryTitle,
+  textAlign: "right",
+});

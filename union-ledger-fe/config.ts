@@ -88,6 +88,7 @@ export const ENDPOINTS = {
     EVIDENCE: (evidenceId: string) => `/evidences/${evidenceId}`,
     EVIDENCE_EXTRACT: (evidenceId: string) =>
       `/evidences/${evidenceId}/extract`,
+    EVIDENCE_FILE: (evidenceId: string) => `/evidences/${evidenceId}/file`,
     ARTIFACT_DOWNLOAD: (artifactId: string) =>
       `/artifacts/${artifactId}/download`,
     RECONCILIATION_RESULT: (matchId: string) => `/reconciliation/${matchId}`,
