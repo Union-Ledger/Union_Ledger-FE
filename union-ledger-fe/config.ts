@@ -14,6 +14,10 @@ export const ENDPOINTS = {
     ME: "/invitations/me",
     ACCEPT: (invitationId: string) => `/invitations/${invitationId}/accept`,
   },
+  NOTIFICATION: {
+    LIST: "/notifications",
+    READ: (notificationId: string) => `/notifications/${notificationId}/read`,
+  },
   ADMIN_APPLICATION: {
     CREATE: "/admin-applications",
     LIST: "/admin-applications",
@@ -52,6 +56,9 @@ export const ENDPOINTS = {
       `/${settlementId}/bank-statements`,
     BANK_TRANSACTION: (settlementId: string) =>
       `/${settlementId}/bank-transactions`,
+    ARTIFACT_GENERATE: (settlementId: string) =>
+      `/${settlementId}/artifacts:generate`,
+    ARTIFACT_LIST: (settlementId: string) => `/${settlementId}/artifacts`,
   },
   AUDIT: {
     SETTLEMENT: "/settlements",
@@ -81,6 +88,9 @@ export const ENDPOINTS = {
     EVIDENCE: (evidenceId: string) => `/evidences/${evidenceId}`,
     EVIDENCE_EXTRACT: (evidenceId: string) =>
       `/evidences/${evidenceId}/extract`,
+    ARTIFACT_DOWNLOAD: (artifactId: string) =>
+      `/artifacts/${artifactId}/download`,
+    RECONCILIATION_RESULT: (matchId: string) => `/reconciliation/${matchId}`,
   },
 } as const;
 

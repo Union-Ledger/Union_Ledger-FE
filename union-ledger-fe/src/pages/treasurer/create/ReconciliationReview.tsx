@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import * as styles from "./Create.css";
 import useSettlementApi, {
+  type ArtifactGenerationResponse,
   type ReconciliationResult,
   type ReconciliationRunResponse,
   type ReconciliationStatus,
+  type SettlementArtifact,
 } from "@/hooks/useSettlementApi";
 
 type ReviewFilter = "all" | "matched" | "issue";
@@ -37,8 +39,22 @@ const formatShortId = (id: string | null) => {
   return id.slice(0, 8);
 };
 
-const isIssueResult = (item: ReconciliationResult) => {
-  return item.status !== "matched";
+// 매칭됐거나 수동으로 해결된 행은 더 이상 '문제'가 아니다.
+const isResolvedResult = (item: ReconciliationResult) =>
+  item.status === "matched" || item.status === "manually_resolved";
+
+const isIssueResult = (item: ReconciliationResult) => !isResolvedResult(item);
+
+// 상호명이 있으면 상호명을, 없으면 ID 일부를, 둘 다 없으면 빈 라벨을 보여준다.
+const sideLabel = (
+  name: string | null,
+  id: string | null,
+  fallbackPrefix: string,
+  emptyLabel: string,
+) => {
+  if (name) return name;
+  if (id) return `${fallbackPrefix} ${formatShortId(id)}`;
+  return emptyLabel;
 };
 
 const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
@@ -51,10 +67,29 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
     string | null
   >(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [artifacts, setArtifacts] = useState<ArtifactGenerationResponse | null>(
+    null,
+  );
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [downloadingArtifactId, setDownloadingArtifactId] = useState<
+    string | null
+  >(null);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
 
-  const { postReconciliationRun, postSubmitSettlement } = useSettlementApi();
+  const {
+    postReconciliationRun,
+    patchReconciliationResult,
+    postSubmitSettlement,
+    postGenerateArtifacts,
+    downloadArtifact,
+  } = useSettlementApi();
   const [postReconciliationRunOnce] = useState(() => postReconciliationRun);
+  const [patchReconciliationResultOnce] = useState(
+    () => patchReconciliationResult,
+  );
   const [postSubmitSettlementOnce] = useState(() => postSubmitSettlement);
+  const [postGenerateArtifactsOnce] = useState(() => postGenerateArtifacts);
+  const [downloadArtifactOnce] = useState(() => downloadArtifact);
 
   useEffect(() => {
     const runReconciliation = async () => {
@@ -86,15 +121,15 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
   const reconciliationItems = useMemo(() => {
     return reconciliationData?.results ?? [];
   }, [reconciliationData]);
+  // 매칭 + 수동해결을 모두 '해결됨'으로 보고 결과 배열에서 직접 집계한다.
+  // (수동 해결 시 issueCount 가 즉시 줄어들어 생성 게이트가 풀린다.)
   const totalCount = reconciliationData?.total ?? reconciliationItems.length;
-  const matchedCount =
-    reconciliationData?.matched ??
-    reconciliationItems.filter((item) => item.status === "matched").length;
-  const issueCount = Math.max(totalCount - matchedCount, 0);
+  const resolvedCount = reconciliationItems.filter(isResolvedResult).length;
+  const issueCount = Math.max(totalCount - resolvedCount, 0);
 
   const filteredItems = useMemo(() => {
     if (selectedFilter === "matched") {
-      return reconciliationItems.filter((item) => item.status === "matched");
+      return reconciliationItems.filter(isResolvedResult);
     }
 
     if (selectedFilter === "issue") {
@@ -105,14 +140,53 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
   }, [reconciliationItems, selectedFilter]);
 
   const canGenerate =
-    !isLoading && !isSubmitting && !errorMessage && issueCount === 0;
+    !isLoading &&
+    !isGenerating &&
+    !isSubmitting &&
+    !errorMessage &&
+    issueCount === 0;
 
+  const resolveSettlementId = () =>
+    reconciliationData?.settlement_id ||
+    localStorage.getItem("currentSettlementId");
+
+  // 결산안 Excel + 증빙 PDF 생성 (제출과 분리된 단계)
   const handleGenerate = async () => {
     if (!canGenerate) return;
 
-    const settlementId =
-      reconciliationData?.settlement_id ||
-      localStorage.getItem("currentSettlementId");
+    const settlementId = resolveSettlementId();
+
+    if (!settlementId) {
+      setErrorMessage("결산안 정보가 없습니다. 먼저 증빙을 업로드해주세요.");
+      return;
+    }
+
+    try {
+      setIsGenerating(true);
+      setErrorMessage("");
+
+      const result = await postGenerateArtifactsOnce(settlementId);
+      setArtifacts(result);
+
+      if (
+        result.excel.status === "failed" ||
+        result.pdf.status === "failed"
+      ) {
+        window.alert(
+          "일부 산출물 생성에 실패했습니다. 아래 상태를 확인해주세요.",
+        );
+      }
+    } catch (error) {
+      console.error("산출물 생성 실패", error);
+      window.alert("산출물 생성에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // 감사위원에게 제출 (산출물 생성 후)
+  const handleSubmit = async () => {
+    const settlementId = resolveSettlementId();
 
     if (!settlementId) {
       setErrorMessage("결산안 정보가 없습니다. 먼저 증빙을 업로드해주세요.");
@@ -125,12 +199,65 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
 
       const submittedSettlement = await postSubmitSettlementOnce(settlementId);
       setSubmittedSettlementId(submittedSettlement.id);
-      window.alert("결산안이 제출되었습니다.");
+      window.alert("결산안이 감사위원에게 제출되었습니다.");
     } catch (error) {
       console.error("결산안 제출 실패", error);
       window.alert("결산안 제출에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // 불일치/누락 건을 수동으로 '해결됨' 처리 (PATCH /reconciliation/{id})
+  const handleResolve = async (item: ReconciliationResult) => {
+    try {
+      setResolvingId(item.id);
+
+      const updated = await patchReconciliationResultOnce(item.id, {
+        status: "manually_resolved",
+        notes: item.notes ?? "재정담당자가 수동으로 확인 처리했습니다.",
+      });
+
+      setReconciliationData((prev) =>
+        prev
+          ? {
+              ...prev,
+              results: prev.results.map((row) =>
+                row.id === updated.id ? updated : row,
+              ),
+            }
+          : prev,
+      );
+    } catch (error) {
+      console.error("대조 결과 수동 처리 실패", error);
+      window.alert("수동 처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
+  // 생성된 산출물 다운로드
+  const handleDownload = async (
+    artifact: SettlementArtifact,
+    filename: string,
+  ) => {
+    try {
+      setDownloadingArtifactId(artifact.id);
+
+      const blob = await downloadArtifactOnce(artifact.id);
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("산출물 다운로드 실패", error);
+      window.alert("산출물 다운로드에 실패했습니다.");
+    } finally {
+      setDownloadingArtifactId(null);
     }
   };
 
@@ -166,7 +293,7 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
           }`}
           onClick={() => setSelectedFilter("matched")}
         >
-          매칭 ({matchedCount})
+          매칭 ({resolvedCount})
         </button>
 
         <button
@@ -193,13 +320,13 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
           </div>
         ) : (
           filteredItems.map((item) => {
-            const isMatched = item.status === "matched";
+            const isResolved = isResolvedResult(item);
 
             return (
               <div
                 key={item.id}
                 className={`${styles.reconciliationItem} ${
-                  isMatched
+                  isResolved
                     ? styles.reconciliationItemMatched
                     : styles.reconciliationItemIssue
                 }`}
@@ -213,32 +340,46 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
                   </span>
                   <span
                     className={
-                      isMatched
+                      isResolved
                         ? styles.reconciliationCheckIcon
                         : styles.reconciliationWarningIcon
                     }
                   >
-                    {isMatched ? "✓" : "△"}
+                    {isResolved ? "✓" : "△"}
                   </span>
                 </div>
 
                 <div className={styles.reconciliationMerchant}>
-                  증빙{" "}
-                  <span className={styles.reconciliationMerchantName}>
-                    {item.evidence_merchant_name ||
-                      formatShortId(item.evidence_id)}
-                  </span>{" "}
-                  · 거래내역{" "}
-                  <span className={styles.reconciliationMerchantName}>
-                    {item.bank_merchant_name ||
-                      formatShortId(item.bank_transaction_id)}
-                  </span>
+                  {sideLabel(
+                    item.evidence_merchant_name,
+                    item.evidence_id,
+                    "증빙",
+                    "증빙 없음",
+                  )}{" "}
+                  ·{" "}
+                  {sideLabel(
+                    item.bank_merchant_name,
+                    item.bank_transaction_id,
+                    "거래내역",
+                    "거래내역 없음",
+                  )}
                 </div>
 
                 {item.notes && (
                   <div className={styles.reconciliationIssueMessage}>
-                    {isMatched ? "메모" : "△"} {item.notes}
+                    {isResolved ? "메모" : "△"} {item.notes}
                   </div>
+                )}
+
+                {!isResolved && !submittedSettlementId && (
+                  <button
+                    type="button"
+                    className={styles.reconciliationResolveButton}
+                    disabled={resolvingId === item.id}
+                    onClick={() => handleResolve(item)}
+                  >
+                    {resolvingId === item.id ? "처리 중..." : "수동 해결 처리"}
+                  </button>
                 )}
               </div>
             );
@@ -263,6 +404,48 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
         </div>
       )}
 
+      {artifacts && (
+        <div className={styles.artifactPanel}>
+          <div className={styles.artifactPanelTitle}>생성된 산출물</div>
+
+          <div className={styles.artifactRow}>
+            <span className={styles.artifactName}>결산안 (Excel)</span>
+            {artifacts.excel.status === "completed" ? (
+              <button
+                type="button"
+                className={styles.artifactDownloadButton}
+                disabled={downloadingArtifactId === artifacts.excel.id}
+                onClick={() => handleDownload(artifacts.excel, "결산안.xlsx")}
+              >
+                {downloadingArtifactId === artifacts.excel.id
+                  ? "다운로드 중..."
+                  : "다운로드"}
+              </button>
+            ) : (
+              <span className={styles.artifactStatusFailed}>생성 실패</span>
+            )}
+          </div>
+
+          <div className={styles.artifactRow}>
+            <span className={styles.artifactName}>증빙 모음 (PDF)</span>
+            {artifacts.pdf.status === "completed" ? (
+              <button
+                type="button"
+                className={styles.artifactDownloadButton}
+                disabled={downloadingArtifactId === artifacts.pdf.id}
+                onClick={() => handleDownload(artifacts.pdf, "증빙.pdf")}
+              >
+                {downloadingArtifactId === artifacts.pdf.id
+                  ? "다운로드 중..."
+                  : "다운로드"}
+              </button>
+            ) : (
+              <span className={styles.artifactStatusFailed}>생성 실패</span>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className={styles.reconciliationFooter}>
         <button
           type="button"
@@ -272,20 +455,33 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
           뒤로
         </button>
 
-        <button
-          type="button"
-          className={styles.reconciliationGenerateButton}
-          disabled={!canGenerate || Boolean(submittedSettlementId)}
-          onClick={handleGenerate}
-        >
-          {submittedSettlementId
-            ? "결산안 제출 완료"
-            : isSubmitting
-              ? "제출 중"
+        {!artifacts ? (
+          <button
+            type="button"
+            className={styles.reconciliationGenerateButton}
+            disabled={!canGenerate}
+            onClick={handleGenerate}
+          >
+            {isGenerating
+              ? "생성 중..."
               : canGenerate
                 ? "결산안 생성하기"
                 : "문제 해결 후 생성 가능"}
-        </button>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className={styles.reconciliationGenerateButton}
+            disabled={isSubmitting || Boolean(submittedSettlementId)}
+            onClick={handleSubmit}
+          >
+            {submittedSettlementId
+              ? "제출 완료"
+              : isSubmitting
+                ? "제출 중..."
+                : "감사위원에게 제출"}
+          </button>
+        )}
       </div>
     </div>
   );

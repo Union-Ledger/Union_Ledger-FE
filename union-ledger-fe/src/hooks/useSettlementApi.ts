@@ -71,7 +71,33 @@ export interface ReconciliationRunResponse {
   date_mismatch: number;
   missing_bank_transaction: number;
   missing_evidence: number;
+  manually_resolved: number;
   results: ReconciliationResult[];
+}
+
+export interface ReconciliationUpdatePayload {
+  evidence_id?: string | null;
+  bank_transaction_id?: string | null;
+  status?: ReconciliationStatus;
+  notes?: string | null;
+}
+
+export type ArtifactType = "settlement_excel" | "evidence_pdf";
+export type ArtifactStatus = "queued" | "processing" | "completed" | "failed";
+
+export interface SettlementArtifact {
+  id: string;
+  settlement_id: string;
+  artifact_type: ArtifactType;
+  status: ArtifactStatus;
+  file_path: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ArtifactGenerationResponse {
+  excel: SettlementArtifact;
+  pdf: SettlementArtifact;
 }
 
 export interface SettlementResponse {
@@ -204,6 +230,23 @@ const useSettlementApi = () => {
       });
   };
 
+  // 대조 결과 수동 조정 (PATCH /reconciliation/{matchId})
+  const patchReconciliationResult = (
+    matchId: string,
+    payload: ReconciliationUpdatePayload,
+  ): Promise<ReconciliationResult> => {
+    return api
+      .patch(ENDPOINTS.BASE.RECONCILIATION_RESULT(matchId), payload)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("대조 결과 수정 실패 status:", error.response?.status);
+        console.log("대조 결과 수정 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   // 결산안 제출
   const postSubmitSettlement = (
     settlementId: string,
@@ -250,6 +293,54 @@ const useSettlementApi = () => {
       .catch((error) => {
         console.log("결산안 재제출 실패 status:", error.response?.status);
         console.log("결산안 재제출 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 결산안 산출물(Excel + 증빙 PDF) 생성
+  const postGenerateArtifacts = (
+    settlementId: string,
+  ): Promise<ArtifactGenerationResponse> => {
+    return settlementApi
+      .post(ENDPOINTS.SETTLEMENT.ARTIFACT_GENERATE(settlementId))
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("산출물 생성 실패 status:", error.response?.status);
+        console.log("산출물 생성 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 결산안 산출물 목록 조회
+  const getArtifacts = (
+    settlementId: string,
+  ): Promise<SettlementArtifact[]> => {
+    return settlementApi
+      .get(ENDPOINTS.SETTLEMENT.ARTIFACT_LIST(settlementId))
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("산출물 목록 조회 실패 status:", error.response?.status);
+        console.log("산출물 목록 조회 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 산출물 파일 다운로드 (멤버 전용, /artifacts/{id}/download)
+  const downloadArtifact = (artifactId: string): Promise<Blob> => {
+    return api
+      .get(ENDPOINTS.BASE.ARTIFACT_DOWNLOAD(artifactId), {
+        responseType: "blob",
+      })
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.log("산출물 다운로드 실패 status:", error.response?.status);
+        console.log("산출물 다운로드 실패 detail:", error.response?.data);
         throw error;
       });
   };
@@ -309,12 +400,16 @@ const useSettlementApi = () => {
     getExpenseSummary,
     postReconciliationRun,
     getReconciliationResults,
+    patchReconciliationResult,
     postSubmitSettlement,
     postPublishSettlement,
     postResubmitSettlement,
     postBankStatement,
     getBankStatements,
     deleteBankStatement,
+    postGenerateArtifacts,
+    getArtifacts,
+    downloadArtifact,
   };
 };
 

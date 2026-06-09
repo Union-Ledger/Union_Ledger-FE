@@ -727,3 +727,73 @@ export const reconciliationGenerateButton = style({
 export const reconciliationMerchantName = style({
   fontWeight: "500",
 });
+
+export const artifactPanel = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+  marginTop: "18px",
+  padding: "18px",
+  borderRadius: "10px",
+  border: `1px solid ${vars.color.mint.border}`,
+  background: `linear-gradient(135deg, ${vars.color.mint.bgFrom} 0%, ${vars.color.mint.bgTo} 100%)`,
+});
+
+export const artifactPanelTitle = style({
+  ...vars.font.title_bold_16,
+  color: vars.color.summaryTitle,
+});
+
+export const artifactRow = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+  padding: "12px 14px",
+  borderRadius: "8px",
+  background: "rgba(255, 255, 255, 0.86)",
+  border: `1px solid ${vars.color.ItemBorder}`,
+});
+
+export const artifactName = style({
+  ...vars.font.body_medium_14,
+  color: vars.color.summaryTitle,
+});
+
+export const artifactDownloadButton = style({
+  height: "34px",
+  padding: "0 16px",
+  borderRadius: "8px",
+  border: `1px solid ${vars.color.primary}`,
+  background: vars.color.surface,
+  color: vars.color.primary,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+
+  ":disabled": {
+    opacity: 0.55,
+    cursor: "not-allowed",
+  },
+});
+
+export const artifactStatusFailed = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.accent.red,
+});
+
+export const reconciliationResolveButton = style({
+  marginTop: "12px",
+  height: "32px",
+  padding: "0 14px",
+  borderRadius: "8px",
+  border: `1px solid ${vars.color.accent.violet}`,
+  background: vars.color.surface,
+  color: vars.color.accent.violet,
+  cursor: "pointer",
+  ...vars.font.caption_regular_12,
+
+  ":disabled": {
+    opacity: 0.55,
+    cursor: "not-allowed",
+  },
+});

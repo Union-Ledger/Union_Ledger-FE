@@ -12,6 +12,7 @@ import title from "@assets/sidebar-title.svg";
 import { tokenStorage } from "@/utils/token";
 import { useEvidenceReview } from "@/contexts/EvidenceReviewContext";
 import { useState } from "react";
+import NotificationBell from "@/components/common/NotificationBell";
 
 type Role = "TREASURER" | "AUDITOR" | "STUDENT" | "PRESIDENT" | "ADMIN";
 const roleOptions = [
@@ -105,6 +106,9 @@ const AppLayout = () => {
             </NavLink>
           ))}
         </nav>
+        <div className={styles.divider}></div>
+
+        <NotificationBell />
         <div className={styles.divider}></div>
 
         <div className={styles.authBox}>

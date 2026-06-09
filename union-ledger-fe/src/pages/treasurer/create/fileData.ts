@@ -29,9 +29,8 @@ export const fileData: FileDataItem[] = [
     description: "모든 증빙을 하나의 PDF로 통합",
     bulletPoints: [
       "날짜순으로 자동 정렬",
-      "증빙 유형에 따른 최적 레이아웃",
-      "가상 품질 방식 적용",
-      "감사 제출용 표준 형식",
+      "이미지·PDF 증빙을 하나로 병합",
+      "감사 제출용 단일 PDF로 생성",
     ],
   },
 ];
