@@ -96,6 +96,22 @@ const findReusableSettlementId = (
   )?.settlement_id;
 };
 
+// 영수증 지출 카테고리 — 서버의 RECEIPT_CATEGORIES / GET /evidences/categories와
+// 동일하게 유지(목록이 바뀌면 양쪽 함께 수정). 업로드 시 비우면 AI가 자동 분류한다.
+const RECEIPT_CATEGORIES = [
+  "식비",
+  "다과/간식",
+  "음료/카페",
+  "교통비",
+  "사무용품/비품",
+  "인쇄/홍보물",
+  "행사/행사물품",
+  "회의비",
+  "기념품/경품",
+  "장소대여",
+  "기타",
+];
+
 const Upload = () => {
   const [selectedType, setSelectedType] =
     useState<ReceiptType>("offlineReceipt");
@@ -422,12 +438,9 @@ const Upload = () => {
       return;
     }
 
+    // 카테고리는 선택사항 — 비워두면 서버(Gemini)가 영수증별로 자동 분류하고,
+    // 재정담당자는 업로드 후 검수 단계에서 확인/수정하면 된다.
     const trimmedBudgetCategory = budgetCategory.trim();
-
-    if (!trimmedBudgetCategory) {
-      alert("카테고리를 입력한 후 업로드해주세요.");
-      return;
-    }
 
     const fileList = Array.from(files);
     const uploadFiles = (targetSettlementId: string) =>
@@ -521,16 +534,22 @@ const Upload = () => {
 
         <div className={styles.categoryFieldContainer}>
           <label className={styles.categoryLabel} htmlFor="budget-category">
-            카테고리
+            카테고리 (선택)
           </label>
-          <input
+          <select
             id="budget-category"
             className={styles.categoryInput}
             value={budgetCategory}
-            placeholder="예: 행사비, 사무용품비"
             disabled={isPreparing || isUploading}
             onChange={(e) => setBudgetCategory(e.target.value)}
-          />
+          >
+            <option value="">AI 자동 분류 (권장)</option>
+            {RECEIPT_CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className={styles.cardContainer}>
@@ -726,18 +745,30 @@ const Upload = () => {
                 <label className={styles.formLabel} htmlFor="budget-category-edit">
                   항목
                 </label>
-                <input
+                <select
                   id="budget-category-edit"
                   className={styles.formInput}
                   value={editForm.budgetCategory}
-                  placeholder="예: 행사비"
                   onChange={(event) =>
                     setEditForm((prevForm) => ({
                       ...prevForm,
                       budgetCategory: event.target.value,
                     }))
                   }
-                />
+                >
+                  <option value="">미분류</option>
+                  {RECEIPT_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                  {editForm.budgetCategory &&
+                    !RECEIPT_CATEGORIES.includes(editForm.budgetCategory) && (
+                      <option value={editForm.budgetCategory}>
+                        {editForm.budgetCategory} (기존)
+                      </option>
+                    )}
+                </select>
 
                 <div className={styles.modalActions}>
                   <button
