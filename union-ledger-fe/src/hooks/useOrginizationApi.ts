@@ -79,7 +79,7 @@ const useOrganizationApi = () => {
   };
 
   // 결산 템플릿 업로드
-  const postTemplate = (data: PostTemplateData) => {
+  const postTemplate = (data: PostTemplateData): Promise<TemplateData> => {
     const formData = new FormData();
 
     formData.append("name", data.name);
@@ -91,7 +91,11 @@ const useOrganizationApi = () => {
       .then((response) => {
         return response.data;
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        console.log("템플릿 업로드 실패 status:", error.response?.status);
+        console.log("템플릿 업로드 실패 detail:", error.response?.data);
+        throw error;
+      });
   };
 
   // 조직 템플릿 목록
@@ -116,6 +120,18 @@ const useOrganizationApi = () => {
       .catch((error) => {
         console.log("템플릿 수정 실패 status:", error.response?.status);
         console.log("템플릿 수정 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
+  // 결산 템플릿 삭제 (soft delete — is_active=false)
+  const deleteTemplate = (templateId: string): Promise<void> => {
+    return api
+      .delete(ENDPOINTS.BASE.TEMPLATE(templateId))
+      .then(() => undefined)
+      .catch((error) => {
+        console.log("템플릿 삭제 실패 status:", error.response?.status);
+        console.log("템플릿 삭제 실패 detail:", error.response?.data);
         throw error;
       });
   };
@@ -197,6 +213,7 @@ const useOrganizationApi = () => {
   return {
     postTemplate,
     patchTemplate,
+    deleteTemplate,
     getTemplate,
     postSettlement,
     getOrganization,

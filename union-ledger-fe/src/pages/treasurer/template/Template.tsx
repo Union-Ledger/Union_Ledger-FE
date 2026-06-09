@@ -4,16 +4,20 @@ import useOrganizationApi, { type TemplateData } from "@/hooks/useOrginizationAp
 import * as styles from "@/pages/treasurer/template/Template.css";
 
 const Template = () => {
-  const { getOrganization, getTemplate, postTemplate } = useOrganizationApi();
+  const { getOrganization, getTemplate, postTemplate, patchTemplate, deleteTemplate } =
+    useOrganizationApi();
 
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [currentTemplate, setCurrentTemplate] = useState<TemplateData | null>(null);
   const [isLoadingOrganization, setIsLoadingOrganization] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [getOrganizationOnce] = useState(() => getOrganization);
   const [getTemplateOnce] = useState(() => getTemplate);
   const [postTemplateOnce] = useState(() => postTemplate);
+  const [patchTemplateOnce] = useState(() => patchTemplate);
+  const [deleteTemplateOnce] = useState(() => deleteTemplate);
 
   const applyTemplateToForm = (template: TemplateData) => {
     setCurrentTemplate(template);
@@ -61,6 +65,8 @@ const Template = () => {
       return;
     }
 
+    const previousTemplate = currentTemplate;
+
     try {
       setIsUploading(true);
       setStatusMessage("");
@@ -69,21 +75,60 @@ const Template = () => {
         organizationId,
         name: file.name.replace(/\.[^/.]+$/, ""),
         file,
-        mappingSchema: currentTemplate?.mapping_schema ?? {},
+        mappingSchema: previousTemplate?.mapping_schema ?? {},
       });
+
+      // 새 양식이 활성화되면 이전 활성 양식은 비활성화한다.
+      // (예전엔 매번 새 row 만 만들어 활성 양식이 중복으로 쌓였음)
+      if (previousTemplate && previousTemplate.id !== data.id) {
+        try {
+          await patchTemplateOnce({
+            templateId: previousTemplate.id,
+            name: previousTemplate.name,
+            mappingSchema: previousTemplate.mapping_schema,
+            isActive: false,
+          });
+        } catch (deactivateError) {
+          console.error("이전 양식 비활성화 실패", deactivateError);
+        }
+      }
 
       applyTemplateToForm(data);
       setStatusMessage(
-        currentTemplate
-          ? "양식 수정이 완료되었습니다."
+        previousTemplate
+          ? "양식이 수정되었습니다. 이전 양식은 보관 처리되었습니다."
           : "양식 업로드가 완료되었습니다. 이제 등록된 양식을 수정할 수 있습니다.",
       );
-      console.log("업로드 성공", data);
     } catch (error) {
       console.error("업로드 실패", error);
       alert("양식 업로드에 실패했습니다.");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleDeleteTemplate = async () => {
+    if (!currentTemplate) return;
+
+    if (
+      !window.confirm(
+        "등록된 양식을 삭제할까요? 이미 생성된 결산안에는 영향을 주지 않습니다.",
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      setStatusMessage("");
+      await deleteTemplateOnce(currentTemplate.id);
+      setCurrentTemplate(null);
+      setStatusMessage("양식이 삭제되었습니다. 새 양식을 업로드할 수 있습니다.");
+    } catch (error) {
+      console.error("양식 삭제 실패", error);
+      alert("양식 삭제에 실패했습니다.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -112,9 +157,18 @@ const Template = () => {
               title={isUploading ? "수정 중..." : "수정하기"}
               desc=".xlsx, .xls"
               accept=".xls,.xlsx"
-              disabled={isLoadingOrganization || isUploading}
+              disabled={isLoadingOrganization || isUploading || isDeleting}
               onChangeFile={handleChangeFile}
             />
+
+            <button
+              type="button"
+              className={styles.deleteTemplateButton}
+              disabled={isUploading || isDeleting}
+              onClick={handleDeleteTemplate}
+            >
+              {isDeleting ? "삭제 중..." : "양식 삭제"}
+            </button>
           </>
         ) : (
           <>

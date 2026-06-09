@@ -101,3 +101,19 @@ export const statusMessage = style({
   color: "#0D542B",
   ...vars.font.body_regular_14,
 });
+
+export const deleteTemplateButton = style({
+  alignSelf: "flex-start",
+  padding: "8px 16px",
+  borderRadius: "8px",
+  border: "1px solid #FCA5A5",
+  background: vars.color.surface,
+  color: "#DC2626",
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+
+  ":disabled": {
+    opacity: 0.55,
+    cursor: "not-allowed",
+  },
+});
