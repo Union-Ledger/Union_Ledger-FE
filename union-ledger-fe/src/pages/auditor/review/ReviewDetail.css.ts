@@ -459,16 +459,93 @@ export const modalCloseButton = style({
 export const modalImageWrap = style({
   display: "flex",
   justifyContent: "center",
-  marginBottom: "18px",
+  alignItems: "center",
+  marginBottom: "10px",
   borderRadius: "10px",
   background: vars.color.background,
   padding: "12px",
+  overflow: "hidden",
+  touchAction: "none",
+  userSelect: "none",
 });
 
 export const modalImage = style({
   maxWidth: "100%",
   maxHeight: "420px",
   borderRadius: "6px",
+  transformOrigin: "center center",
+  willChange: "transform",
+});
+
+export const zoomControls = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  marginBottom: "18px",
+  flexWrap: "wrap",
+});
+
+export const zoomButton = style({
+  ...vars.font.body_medium_14,
+  minWidth: "36px",
+  height: "32px",
+  padding: "0 10px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  borderRadius: vars.radius.sm,
+  background: vars.color.surface,
+  color: vars.color.summaryTitle,
+  cursor: "pointer",
+  ":hover": {
+    background: vars.color.background,
+  },
+  ":disabled": {
+    opacity: 0.4,
+    cursor: "not-allowed",
+  },
+});
+
+export const zoomLevel = style({
+  ...vars.font.body_medium_14,
+  minWidth: "48px",
+  textAlign: "center",
+  color: vars.color.summaryTitle,
+  fontVariantNumeric: "tabular-nums",
+});
+
+export const zoomHint = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.gray,
+  marginLeft: "auto",
+});
+
+export const topRow = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+});
+
+export const queueBadge = style({
+  ...vars.font.body_medium_14,
+  padding: "4px 12px",
+  borderRadius: vars.radius.full,
+  background: vars.color.blueSoft.bgFrom,
+  border: `1px solid ${vars.color.blueSoft.border}`,
+  color: vars.color.blueSoft.textStrong,
+  whiteSpace: "nowrap",
+});
+
+export const loadingBox = style({
+  ...vars.font.body_regular_16,
+  width: "100%",
+  padding: "20px",
+  borderRadius: "10px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.surface,
+  color: vars.color.gray,
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
 });
 
 export const modalStateText = style({

@@ -1,9 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useAuditApi, {
   type AuditEvidence,
   type AuditSettlementDetailResponse,
 } from "@/hooks/useAuditApi";
+import {
+  ErrorState,
+  Spinner,
+  useConfirm,
+  useToast,
+} from "@shared/components/feedback";
 import * as styles from "@/pages/auditor/review/ReviewDetail.css";
 
 const parseAmount = (amount: string) => {
@@ -145,7 +151,15 @@ const buildReviewData = (data: AuditSettlementDetailResponse) => {
 
 const ReviewDetail = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams<{ id: string }>();
+  const toast = useToast();
+  const confirm = useConfirm();
+  // 목록에서 넘어온 검토 큐 위치 (직접 URL 진입 시 없음)
+  const queueState = (location.state ?? null) as {
+    reviewIndex?: number;
+    reviewTotal?: number;
+  } | null;
   const {
     getAuditSettlementDetail,
     postAuditComment,
@@ -176,6 +190,17 @@ const ReviewDetail = () => {
   const [modalFileType, setModalFileType] = useState<string>("");
   const [modalErrorMessage, setModalErrorMessage] = useState("");
   const [modalLoading, setModalLoading] = useState(false);
+
+  // 증빙 이미지 줌/팬
+  const [imageScale, setImageScale] = useState(1);
+  const [imageOffset, setImageOffset] = useState({ x: 0, y: 0 });
+  const imageWrapRef = useRef<HTMLDivElement | null>(null);
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    originX: number;
+    originY: number;
+  } | null>(null);
 
   const [getAuditSettlementDetailOnce] = useState(
     () => getAuditSettlementDetail,
@@ -228,12 +253,29 @@ const ReviewDetail = () => {
   }, [detailData]);
   const isApproved = reviewData?.settlement.status === "approved";
 
+  // 입력만 하고 저장하지 않은 항목 코멘트 — 승인/반려 시 유실 경고에 사용
+  const hasUnsavedDrafts = useMemo(() => {
+    if (!detailData) return false;
+
+    return Object.entries(commentDrafts).some(([evidenceId, draft]) => {
+      const trimmed = draft.trim();
+      if (!trimmed) return false;
+
+      const saved =
+        detailData.comments.find(
+          (comment) => comment.evidence_id === evidenceId,
+        )?.comment ?? "";
+
+      return trimmed !== saved.trim();
+    });
+  }, [commentDrafts, detailData]);
+
   const handleSaveEvidenceComment = async (evidenceId: string) => {
     if (isApproved || !id || !detailData) return;
 
     const draft = (commentDrafts[evidenceId] ?? "").trim();
     if (!draft) {
-      alert("코멘트 내용을 입력해주세요.");
+      toast.error("코멘트 내용을 입력해주세요.");
       return;
     }
 
@@ -262,9 +304,10 @@ const ReviewDetail = () => {
           prev ? { ...prev, comments: [...prev.comments, created] } : prev,
         );
       }
+      toast.success("코멘트가 저장되었습니다.");
     } catch (error) {
       console.error("감사 코멘트 저장 실패", error);
-      alert("코멘트 저장에 실패했습니다. (작성자 본인만 수정할 수 있어요)");
+      toast.error("코멘트 저장에 실패했습니다. (작성자 본인만 수정할 수 있어요)");
     } finally {
       setSavingEvidenceId(null);
     }
@@ -282,6 +325,8 @@ const ReviewDetail = () => {
     setModalFileUrl(null);
     setModalFileType("");
     setModalErrorMessage("");
+    setImageScale(1);
+    setImageOffset({ x: 0, y: 0 });
 
     try {
       const blob = await downloadEvidenceFileOnce(evidenceId);
@@ -301,7 +346,7 @@ const ReviewDetail = () => {
     }
   };
 
-  const closeEvidenceModal = () => {
+  const closeEvidenceModal = useCallback(() => {
     if (modalFileUrl) {
       URL.revokeObjectURL(modalFileUrl);
     }
@@ -310,13 +355,104 @@ const ReviewDetail = () => {
     setModalFileType("");
     setModalErrorMessage("");
     setModalLoading(false);
+    setImageScale(1);
+    setImageOffset({ x: 0, y: 0 });
+  }, [modalFileUrl]);
+
+  // 모달 ESC 닫기
+  useEffect(() => {
+    if (!modalEvidence) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeEvidenceModal();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [modalEvidence, closeEvidenceModal]);
+
+  // 휠 줌 — React onWheel은 passive라 preventDefault가 막히므로 직접 등록
+  useEffect(() => {
+    const node = imageWrapRef.current;
+    if (!node || !modalFileUrl || !modalFileType.startsWith("image/")) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      setImageScale((prev) =>
+        Math.min(
+          4,
+          Math.max(
+            1,
+            Math.round((prev + (event.deltaY > 0 ? -0.25 : 0.25)) * 100) / 100,
+          ),
+        ),
+      );
+    };
+
+    node.addEventListener("wheel", handleWheel, { passive: false });
+    return () => node.removeEventListener("wheel", handleWheel);
+  }, [modalFileUrl, modalFileType]);
+
+  const zoomBy = (delta: number) => {
+    const next = Math.min(
+      4,
+      Math.max(1, Math.round((imageScale + delta) * 100) / 100),
+    );
+    setImageScale(next);
+    if (next <= 1) {
+      setImageOffset({ x: 0, y: 0 });
+    }
+  };
+
+  const resetImageView = () => {
+    setImageScale(1);
+    setImageOffset({ x: 0, y: 0 });
+  };
+
+  const handleImagePointerDown = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    if (imageScale <= 1) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: imageOffset.x,
+      originY: imageOffset.y,
+    };
+  };
+
+  const handleImagePointerMove = (
+    event: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    if (!dragRef.current) return;
+    setImageOffset({
+      x: dragRef.current.originX + (event.clientX - dragRef.current.startX),
+      y: dragRef.current.originY + (event.clientY - dragRef.current.startY),
+    });
+  };
+
+  const handleImagePointerEnd = () => {
+    dragRef.current = null;
   };
 
   const handleApprove = async () => {
     if (!id) {
-      alert("승인할 결산안 정보가 없습니다.");
+      toast.error("승인할 결산안 정보가 없습니다.");
       return;
     }
+
+    const ok = await confirm({
+      title: "결산안을 승인하시겠습니까?",
+      description: hasUnsavedDrafts
+        ? "저장하지 않은 항목 코멘트가 있습니다. 승인하면 해당 코멘트는 저장되지 않습니다."
+        : "승인하면 감사가 완료 처리되어 더 이상 코멘트를 수정할 수 없습니다.",
+      confirmLabel: "승인",
+    });
+    if (!ok) return;
 
     try {
       setProcessingDecision("approve");
@@ -325,11 +461,11 @@ const ReviewDetail = () => {
         settlementId: id,
         comment: auditComment.trim(),
       });
-      alert("결산안이 승인되었습니다.");
+      toast.success("결산안이 승인되었습니다.");
       navigate("/auditor/review");
     } catch (error) {
       console.error("결산안 승인 실패", error);
-      alert("결산안 승인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("결산안 승인에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setProcessingDecision(null);
     }
@@ -337,24 +473,44 @@ const ReviewDetail = () => {
 
   const handleReject = async () => {
     if (!id) {
-      alert("반려할 결산안 정보가 없습니다.");
+      toast.error("반려할 결산안 정보가 없습니다.");
       return;
     }
 
     const comment = auditComment.trim();
     if (!comment) {
-      alert("반려 사유를 입력해주세요.");
+      toast.error("반려 사유를 입력해주세요.");
       return;
     }
+
+    const ok = await confirm({
+      title: "결산안을 반려하시겠습니까?",
+      description: (
+        <>
+          반려하면 조직이 결산안을 수정해 다시 제출해야 합니다.
+          {hasUnsavedDrafts && (
+            <>
+              <br />
+              저장하지 않은 항목 코멘트는 함께 사라집니다.
+            </>
+          )}
+          <br />
+          반려 사유: “{comment}”
+        </>
+      ),
+      confirmLabel: "반려",
+      tone: "danger",
+    });
+    if (!ok) return;
 
     try {
       setProcessingDecision("reject");
       await postRejectSettlementOnce({ settlementId: id, comment });
-      alert("결산안이 반려되었습니다.");
+      toast.success("결산안이 반려되었습니다.");
       navigate("/auditor/review");
     } catch (error) {
       console.error("결산안 반려 실패", error);
-      alert("결산안 반려에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("결산안 반려에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setProcessingDecision(null);
     }
@@ -363,7 +519,8 @@ const ReviewDetail = () => {
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <div className={styles.stateBox}>
+        <div className={styles.loadingBox}>
+          <Spinner size="sm" />
           결산안 상세 정보를 불러오는 중입니다.
         </div>
       </div>
@@ -380,22 +537,30 @@ const ReviewDetail = () => {
         >
           ← 목록으로
         </button>
-        <div className={styles.stateBox}>
-          {errorMessage || "결산안 상세 정보가 없습니다."}
-        </div>
+        <ErrorState
+          description={errorMessage || "결산안 상세 정보가 없습니다."}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }
 
   return (
     <div className={styles.container}>
-      <button
-        type="button"
-        className={styles.backButton}
-        onClick={() => navigate("/auditor/review")}
-      >
-        ← 목록으로
-      </button>
+      <div className={styles.topRow}>
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={() => navigate("/auditor/review")}
+        >
+          ← 목록으로
+        </button>
+        {queueState?.reviewIndex && queueState?.reviewTotal ? (
+          <span className={styles.queueBadge}>
+            검토 {queueState.reviewIndex} / {queueState.reviewTotal}
+          </span>
+        ) : null}
+      </div>
 
       <div className={styles.headerContainer}>
         <div>
@@ -646,13 +811,68 @@ const ReviewDetail = () => {
               </div>
             ) : modalFileUrl ? (
               modalFileType.startsWith("image/") ? (
-                <div className={styles.modalImageWrap}>
-                  <img
-                    className={styles.modalImage}
-                    src={modalFileUrl}
-                    alt="증빙 원본"
-                  />
-                </div>
+                <>
+                  <div
+                    ref={imageWrapRef}
+                    className={styles.modalImageWrap}
+                    onPointerDown={handleImagePointerDown}
+                    onPointerMove={handleImagePointerMove}
+                    onPointerUp={handleImagePointerEnd}
+                    onPointerLeave={handleImagePointerEnd}
+                    onDoubleClick={() =>
+                      imageScale > 1 ? resetImageView() : zoomBy(1)
+                    }
+                  >
+                    <img
+                      className={styles.modalImage}
+                      src={modalFileUrl}
+                      alt="증빙 원본"
+                      draggable={false}
+                      style={{
+                        transform: `translate(${imageOffset.x}px, ${imageOffset.y}px) scale(${imageScale})`,
+                        cursor: imageScale > 1 ? "grab" : "zoom-in",
+                      }}
+                    />
+                  </div>
+                  <div className={styles.zoomControls}>
+                    <button
+                      type="button"
+                      className={styles.zoomButton}
+                      onClick={() => zoomBy(-0.5)}
+                      disabled={imageScale <= 1}
+                      aria-label="축소"
+                    >
+                      −
+                    </button>
+                    <span className={styles.zoomLevel}>
+                      {Math.round(imageScale * 100)}%
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.zoomButton}
+                      onClick={() => zoomBy(0.5)}
+                      disabled={imageScale >= 4}
+                      aria-label="확대"
+                    >
+                      ＋
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.zoomButton}
+                      onClick={resetImageView}
+                      disabled={
+                        imageScale === 1 &&
+                        imageOffset.x === 0 &&
+                        imageOffset.y === 0
+                      }
+                    >
+                      원본 크기
+                    </button>
+                    <span className={styles.zoomHint}>
+                      휠 확대 · 드래그 이동 · 더블클릭 전환
+                    </span>
+                  </div>
+                </>
               ) : (
                 <div className={styles.modalStateText}>
                   이미지로 표시할 수 없는 파일입니다 (예: PDF).

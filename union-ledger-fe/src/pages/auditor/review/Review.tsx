@@ -109,7 +109,13 @@ const Review = () => {
         ) : reviewItems.length === 0 ? (
           <div className={styles.emptyBox}>검토할 결산안이 없습니다.</div>
         ) : (
-          reviewItems.map((data) => <ReviewCard key={data.id} data={data} />)
+          reviewItems.map((data, index) => (
+            <ReviewCard
+              key={data.id}
+              data={data}
+              queue={{ index: index + 1, total: reviewItems.length }}
+            />
+          ))
         )}
       </div>
     </div>

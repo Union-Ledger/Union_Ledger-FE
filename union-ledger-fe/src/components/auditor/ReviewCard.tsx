@@ -19,7 +19,13 @@ export interface StudentCouncilSubmission {
   receiptCount: number;
 }
 
-const ReviewCard = ({ data }: { data: StudentCouncilSubmission }) => {
+interface ReviewCardProps {
+  data: StudentCouncilSubmission;
+  /** 검토 큐 위치 — 상세 화면의 "검토 N / M" 표시에 사용 */
+  queue?: { index: number; total: number };
+}
+
+const ReviewCard = ({ data, queue }: ReviewCardProps) => {
   const navigate = useNavigate();
   const isApproved = data.status === "APPROVED";
 
@@ -36,7 +42,13 @@ const ReviewCard = ({ data }: { data: StudentCouncilSubmission }) => {
         </div>
         <button
           className={`${styles.button} ${isApproved ? styles.resultButton : ""}`}
-          onClick={() => navigate(`/auditor/review/detail/${data.id}`)}
+          onClick={() =>
+            navigate(`/auditor/review/detail/${data.id}`, {
+              state: queue
+                ? { reviewIndex: queue.index, reviewTotal: queue.total }
+                : undefined,
+            })
+          }
         >
           {isApproved ? (
             <img src={eye} alt="" aria-hidden="true" />
