@@ -6,7 +6,10 @@ import usePublicSettlementApi, {
   type PublicSettlementItem,
   type PublicSettlementListItem,
 } from "@/hooks/usePublicSettlementApi";
+import { useToast } from "@shared/components/feedback";
 import * as styles from "./StudentSettlementLookup.css";
+
+const ITEMS_PER_PAGE = 10;
 
 type CategorySummary = {
   name: string;
@@ -134,6 +137,10 @@ const StudentSettlementLookup = () => {
   const [detailErrorMessage, setDetailErrorMessage] = useState("");
   const [activeEvidenceId, setActiveEvidenceId] = useState<string | null>(null);
   const [activeArtifactId, setActiveArtifactId] = useState<string | null>(null);
+  // 모달 내 거래 내역 검색·페이지네이션 (전체 내역 열람용)
+  const [itemSearch, setItemSearch] = useState("");
+  const [itemsPage, setItemsPage] = useState(1);
+  const toast = useToast();
 
   useEffect(() => {
     let ignore = false;
@@ -241,11 +248,35 @@ const StudentSettlementLookup = () => {
     () => categorySummary.reduce((sum, category) => sum + category.amount, 0),
     [categorySummary],
   );
-  const recentItems = useMemo(() => items.slice(0, 4), [items]);
+
+  const filteredItems = useMemo(() => {
+    const query = itemSearch.trim().toLowerCase();
+    if (!query) return items;
+
+    return items.filter(
+      (item) =>
+        (item.merchant_name ?? "").toLowerCase().includes(query) ||
+        (item.group_name ?? "").toLowerCase().includes(query),
+    );
+  }, [items, itemSearch]);
+
+  const totalItemPages = Math.max(
+    1,
+    Math.ceil(filteredItems.length / ITEMS_PER_PAGE),
+  );
+  const currentItemPage = Math.min(itemsPage, totalItemPages);
+  const pagedItems = useMemo(
+    () =>
+      filteredItems.slice(
+        (currentItemPage - 1) * ITEMS_PER_PAGE,
+        currentItemPage * ITEMS_PER_PAGE,
+      ),
+    [filteredItems, currentItemPage],
+  );
 
   const handleEvidenceFileOpen = async (item: PublicSettlementItem) => {
     if (!item.has_evidence_file) {
-      window.alert("공개된 증빙 원본 파일이 없습니다.");
+      toast.info("공개된 증빙 원본 파일이 없습니다.");
       return;
     }
 
@@ -255,13 +286,13 @@ const StudentSettlementLookup = () => {
       const blob = await downloadPublicEvidenceFile(item.evidence_id);
 
       if (!metadata.has_evidence_file) {
-        window.alert("공개된 증빙 원본 파일이 없습니다.");
+        toast.info("공개된 증빙 원본 파일이 없습니다.");
         return;
       }
 
       openBlob(blob);
     } catch {
-      window.alert("증빙 원본 파일을 열지 못했습니다.");
+      toast.error("증빙 원본 파일을 열지 못했습니다.");
     } finally {
       setActiveEvidenceId(null);
     }
@@ -281,7 +312,7 @@ const StudentSettlementLookup = () => {
       const artifact = getArtifactByType(settlementDetail.artifacts, type);
 
       if (!artifact) {
-        window.alert(`${type === "excel" ? "엑셀" : "PDF"} 산출물이 아직 없습니다.`);
+        toast.info(`${type === "excel" ? "엑셀" : "PDF"} 산출물이 아직 없습니다.`);
         return;
       }
 
@@ -290,8 +321,9 @@ const StudentSettlementLookup = () => {
       const title = getTitle(settlement).replace(/[\\/:*?"<>|]/g, "_");
 
       saveBlob(blob, `${title}_${getSemesterText(settlement.academic_year, settlement.semester)}.${extension}`);
+      toast.success(`${type === "excel" ? "엑셀" : "PDF"} 다운로드를 시작했습니다.`);
     } catch {
-      window.alert(`${type === "excel" ? "엑셀" : "PDF"} 산출물 다운로드에 실패했습니다.`);
+      toast.error(`${type === "excel" ? "엑셀" : "PDF"} 산출물 다운로드에 실패했습니다.`);
     } finally {
       setActiveArtifactId(null);
     }
@@ -362,7 +394,11 @@ const StudentSettlementLookup = () => {
                 <button
                   className={styles.detailButton}
                   type="button"
-                  onClick={() => setSelectedSettlement(settlement)}
+                  onClick={() => {
+                    setSelectedSettlement(settlement);
+                    setItemSearch("");
+                    setItemsPage(1);
+                  }}
                 >
                   <img className={styles.buttonIcon} src={eye} alt="" />
                   상세 보기
@@ -445,7 +481,22 @@ const StudentSettlementLookup = () => {
                 </div>
 
                 <section>
-                  <h3 className={styles.sectionTitle}>거래 내역 (최근 4건)</h3>
+                  <div className={styles.tableToolbar}>
+                    <h3 className={styles.sectionTitle}>
+                      거래 내역 ({filteredItems.length}건)
+                    </h3>
+                    <input
+                      className={styles.tableSearchInput}
+                      type="search"
+                      placeholder="적요·구분 검색"
+                      aria-label="거래 내역 검색"
+                      value={itemSearch}
+                      onChange={(event) => {
+                        setItemSearch(event.target.value);
+                        setItemsPage(1);
+                      }}
+                    />
+                  </div>
                   <div className={styles.tableWrap}>
                     <table className={styles.table}>
                       <thead className={styles.tableHeader}>
@@ -458,14 +509,16 @@ const StudentSettlementLookup = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {recentItems.length === 0 && (
+                        {pagedItems.length === 0 && (
                           <tr>
                             <td className={styles.tableCell} colSpan={5}>
-                              최근 거래 내역이 없습니다.
+                              {itemSearch.trim()
+                                ? "검색 결과가 없습니다."
+                                : "거래 내역이 없습니다."}
                             </td>
                           </tr>
                         )}
-                        {recentItems.map((item) => (
+                        {pagedItems.map((item) => (
                           <tr key={item.evidence_id}>
                             <td className={styles.tableCell}>{getDateText(item.evidence_date)}</td>
                             <td className={styles.tableCell}>{item.merchant_name || "-"}</td>
@@ -490,6 +543,29 @@ const StudentSettlementLookup = () => {
                       </tbody>
                     </table>
                   </div>
+                  {totalItemPages > 1 && (
+                    <div className={styles.pagination}>
+                      <button
+                        className={styles.pageButton}
+                        type="button"
+                        disabled={currentItemPage <= 1}
+                        onClick={() => setItemsPage(currentItemPage - 1)}
+                      >
+                        이전
+                      </button>
+                      <span className={styles.pageInfo}>
+                        {currentItemPage} / {totalItemPages}
+                      </span>
+                      <button
+                        className={styles.pageButton}
+                        type="button"
+                        disabled={currentItemPage >= totalItemPages}
+                        onClick={() => setItemsPage(currentItemPage + 1)}
+                      >
+                        다음
+                      </button>
+                    </div>
+                  )}
                 </section>
 
                 <div className={styles.modalActions}>

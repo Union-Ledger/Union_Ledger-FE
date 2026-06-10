@@ -383,6 +383,69 @@ export const sectionTitle = style({
   color: "#0F172A",
 });
 
+export const tableToolbar = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+  flexWrap: "wrap",
+  marginBottom: "12px",
+});
+
+export const tableSearchInput = style({
+  ...vars.font.body_regular_14,
+  width: "min(24rem, 100%)",
+  height: "38px",
+  padding: "0 14px",
+  border: "1px solid #E2E8F0",
+  borderRadius: vars.radius.md,
+  background: "#F8FAFC",
+  color: "#0F172A",
+  outline: "none",
+  ":focus": {
+    borderColor: vars.color.primary,
+    boxShadow: `0 0 0 3px ${vars.color.focusRing}`,
+    background: vars.color.surface,
+  },
+  "::placeholder": {
+    color: "#94A3B8",
+  },
+});
+
+export const pagination = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "12px",
+  marginTop: "14px",
+});
+
+export const pageButton = style({
+  ...vars.font.body_medium_14,
+  minWidth: "64px",
+  height: "34px",
+  padding: "0 14px",
+  border: "1px solid #E2E8F0",
+  borderRadius: vars.radius.md,
+  background: vars.color.surface,
+  color: "#0F172A",
+  cursor: "pointer",
+  fontWeight: 700,
+  ":hover": {
+    background: "#F8FAFC",
+  },
+  ":disabled": {
+    opacity: 0.4,
+    cursor: "not-allowed",
+  },
+});
+
+export const pageInfo = style({
+  ...vars.font.body_medium_14,
+  color: "#475569",
+  fontVariantNumeric: "tabular-nums",
+});
+
 export const tableWrap = style({
   border: "1px solid #E2E8F0",
   borderRadius: "10px",
