@@ -81,8 +81,6 @@ export interface AuditReconciliationResult {
   bank_transaction_id: string | null;
   status: string;
   notes: string | null;
-  evidence_merchant_name?: string | null;
-  bank_merchant_name?: string | null;
   created_at: string;
   updated_at: string;
 }
