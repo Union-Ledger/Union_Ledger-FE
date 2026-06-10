@@ -10,6 +10,7 @@ import {
   useEvidenceReview,
   type EvidenceReviewItem,
 } from "@/contexts/EvidenceReviewContext";
+import { Spinner, useConfirm, useToast } from "@shared/components/feedback";
 import * as styles from "@/pages/treasurer/upload/Upload.css";
 
 type ReceiptType = "offlineReceipt" | "statement" | "onlineReceipt";
@@ -99,6 +100,8 @@ const findReusableSettlementId = (
 };
 
 const Upload = () => {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [selectedType, setSelectedType] =
     useState<ReceiptType>("offlineReceipt");
   const [settlementId, setSettlementId] = useState<string | null>(null);
@@ -185,7 +188,7 @@ const Upload = () => {
           const organizations = await getOrganizationOnce();
 
           if (!organizations || organizations.length === 0) {
-            alert("소속된 조직이 없습니다.");
+            toast.error("소속된 조직이 없습니다.");
             return null;
           }
 
@@ -195,7 +198,7 @@ const Upload = () => {
         }
 
         if (!templates || templates.length === 0) {
-          alert(
+          toast.error(
             "등록된 결산안 템플릿이 없습니다. 먼저 템플릿을 등록해주세요.",
           );
           return null;
@@ -243,6 +246,7 @@ const Upload = () => {
     getTemplateOnce,
     getTreasurerDashboardOnce,
     postSettlementOnce,
+    toast,
   ]);
 
   useEffect(() => {
@@ -425,6 +429,14 @@ const Upload = () => {
   const handleDeleteEvidence = async (item: EvidenceReviewItem) => {
     if (deletingEvidenceIds.has(item.id)) return;
 
+    const ok = await confirm({
+      title: "증빙 자료를 삭제할까요?",
+      description: `${item.fileName} 파일이 결산안에서 제거됩니다.`,
+      confirmLabel: "삭제",
+      tone: "danger",
+    });
+    if (!ok) return;
+
     const shouldRestartExtraction =
       item.extractStatus === "pending" || item.extractStatus === "running";
 
@@ -449,7 +461,7 @@ const Upload = () => {
       }
 
       removeReviewItem(item.id);
-      setUploadStatusMessage("증빙 자료가 삭제되었습니다.");
+      toast.success("증빙 자료가 삭제되었습니다.");
     } catch (error) {
       console.error("증빙 삭제 실패", error);
       cancelledEvidenceIdsRef.current.delete(item.id);
@@ -468,7 +480,7 @@ const Upload = () => {
         );
       }
 
-      alert("증빙 자료 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("증빙 자료 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setDeletingEvidenceIds((prevIds) => {
         const nextIds = new Set(prevIds);
@@ -516,8 +528,33 @@ const Upload = () => {
     }
   };
 
-  const closeEditModal = () => {
+  // 편집 모달에서 입력했지만 저장하지 않은 변경이 있는지
+  const isEditFormDirty = () => {
+    if (!editingItem) return false;
+
+    return (
+      editForm.evidenceDate !== editingItem.evidenceDate ||
+      editForm.merchantName !== editingItem.merchantName ||
+      editForm.amount !== editingItem.amount ||
+      editForm.paymentMethod !== editingItem.paymentMethod ||
+      editForm.groupName !== editingItem.groupName ||
+      editForm.isRefund !== editingItem.isRefund
+    );
+  };
+
+  const closeEditModal = async () => {
     if (isSaving) return;
+
+    if (isEditFormDirty()) {
+      const ok = await confirm({
+        title: "수정 중인 내용이 있습니다",
+        description: "저장하지 않고 닫으면 변경한 내용이 사라집니다.",
+        confirmLabel: "저장 안 함",
+        cancelLabel: "계속 수정",
+      });
+      if (!ok) return;
+    }
+
     setEditingItem(null);
     setModalPreviewUrl(null);
     setModalPreviewType("");
@@ -528,7 +565,7 @@ const Upload = () => {
     if (!editingItem) return;
 
     if (!editForm.evidenceDate || !editForm.merchantName || !editForm.amount) {
-      alert("날짜, 상호명, 금액을 모두 입력해주세요.");
+      toast.error("날짜, 상호명, 금액을 모두 입력해주세요.");
       return;
     }
 
@@ -549,9 +586,10 @@ const Upload = () => {
 
       removeReviewItem(editingItem.id);
       setEditingItem(null);
+      toast.success("증빙 정보가 저장되었습니다.");
     } catch (error) {
       console.error("증빙 수정 저장 실패", error);
-      alert("증빙 수정 저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("증빙 수정 저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsSaving(false);
     }
@@ -561,7 +599,7 @@ const Upload = () => {
     if (!files || files.length === 0) return;
 
     if (!settlementId) {
-      alert("결산안 생성이 완료된 후 다시 업로드해주세요.");
+      toast.error("결산안 생성이 완료된 후 다시 업로드해주세요.");
       return;
     }
 
@@ -610,7 +648,7 @@ const Upload = () => {
       ) as EvidenceApiResponse[];
 
       if (uploadedEvidences.length === 0) {
-        alert("업로드된 증빙이 없습니다.");
+        toast.error("업로드된 증빙이 없습니다.");
         return;
       }
 
@@ -624,6 +662,7 @@ const Upload = () => {
       );
 
       setReviewItems((prevItems) => [...nextReviewItems, ...prevItems]);
+      toast.success(`증빙 ${uploadedEvidences.length}건이 업로드되었습니다.`);
       setUploadStatusMessage(
         "증빙 업로드가 완료되었습니다. OCR은 백그라운드에서 진행되며, 기다리지 않고 바로 수정할 수 있습니다.",
       );
@@ -631,11 +670,30 @@ const Upload = () => {
     } catch (error) {
       console.error("증빙 업로드 실패", error);
       setUploadStatusMessage("");
-      alert("증빙 업로드에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("증빙 업로드에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsUploading(false);
     }
   };
+
+  // OCR 큐 진행 현황 — 업로드 목록 헤더에 표시
+  const extractSummary = useMemo(() => {
+    const running = reviewItems.filter(
+      (item) => item.extractStatus === "running",
+    ).length;
+    const pending = reviewItems.filter(
+      (item) => item.extractStatus === "pending",
+    ).length;
+    const failed = reviewItems.filter(
+      (item) => item.extractStatus === "failed",
+    ).length;
+
+    return {
+      active: running + pending,
+      done: reviewItems.length - running - pending,
+      failed,
+    };
+  }, [reviewItems]);
 
   return (
     <div className={styles.container}>
@@ -711,9 +769,23 @@ const Upload = () => {
 
       {reviewItems.length > 0 && (
         <section className={styles.reviewSection}>
-          <h2 className={styles.reviewTitle}>
-            업로드 목록 ({reviewItems.length})
-          </h2>
+          <div className={styles.reviewTitleRow}>
+            <h2 className={styles.reviewTitle}>
+              업로드 목록 ({reviewItems.length})
+            </h2>
+            {extractSummary.active > 0 && (
+              <span className={styles.extractProgress}>
+                <Spinner size="sm" label="OCR 진행 중" />
+                OCR 처리 중 {extractSummary.done}/{reviewItems.length}
+              </span>
+            )}
+            {extractSummary.active === 0 && extractSummary.failed > 0 && (
+              <span className={styles.extractFailedSummary}>
+                OCR 실패 {extractSummary.failed}건 — 카드에서 다시 시도할 수
+                있습니다
+              </span>
+            )}
+          </div>
 
           <div className={styles.reviewGrid}>
             {reviewItems.map((item) => (
@@ -755,8 +827,8 @@ const Upload = () => {
                     {item.groupName ? `구분: ${item.groupName}` : "구분 미입력"}
                   </span>
                   {item.isRefund && (
-                    <span style={{ color: "#d9480f", fontWeight: 600 }}>
-                      🔁 환불 (총액에서 차감)
+                    <span className={styles.refundBadge}>
+                      환불/취소 (총액에서 차감)
                     </span>
                   )}
 
@@ -769,17 +841,28 @@ const Upload = () => {
                   </button>
                   {item.extractStatus === "running" && (
                     <span className={styles.reviewExtractStatus}>
+                      <Spinner size="sm" label="OCR 처리 중" />
                       OCR 처리 중입니다. 직접 수정할 수도 있습니다.
                     </span>
                   )}
                   {item.extractStatus === "pending" && (
                     <span className={styles.reviewExtractStatus}>
+                      <Spinner size="sm" label="OCR 대기 중" />
                       OCR 대기 중입니다.
                     </span>
                   )}
                   {item.extractStatus === "failed" && (
                     <span className={styles.reviewExtractStatus}>
-                      OCR 실패. 직접 수정해 저장해주세요.
+                      OCR 실패. 직접 수정하거나
+                      <button
+                        type="button"
+                        className={styles.retryExtractButton}
+                        onClick={() =>
+                          enqueueEvidenceExtract(item.id, item.budgetCategory)
+                        }
+                      >
+                        다시 시도
+                      </button>
                     </span>
                   )}
                 </div>
@@ -797,7 +880,7 @@ const Upload = () => {
               <button
                 type="button"
                 className={styles.modalCloseButton}
-                onClick={closeEditModal}
+                onClick={() => void closeEditModal()}
                 aria-label="닫기"
               >
                 ×
@@ -978,7 +1061,7 @@ const Upload = () => {
                   <button
                     type="button"
                     className={styles.cancelButton}
-                    onClick={closeEditModal}
+                    onClick={() => void closeEditModal()}
                     disabled={isSaving}
                   >
                     취소

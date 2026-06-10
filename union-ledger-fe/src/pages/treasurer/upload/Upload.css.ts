@@ -266,7 +266,65 @@ export const reviewButton = style({
 export const reviewExtractStatus = style({
   ...vars.font.caption_regular_12,
   color: "#64748B",
-  textAlign: "center",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "6px",
+  flexWrap: "wrap",
+});
+
+export const reviewTitleRow = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "16px",
+  flexWrap: "wrap",
+});
+
+export const extractProgress = style({
+  ...vars.font.body_medium_14,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "8px",
+  padding: "6px 14px",
+  borderRadius: vars.radius.full,
+  border: `1px solid ${vars.color.blueSoft.border}`,
+  background: vars.color.blueSoft.bgFrom,
+  color: vars.color.blueSoft.textStrong,
+});
+
+export const extractFailedSummary = style({
+  ...vars.font.body_medium_14,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "8px",
+  padding: "6px 14px",
+  borderRadius: vars.radius.full,
+  border: `1px solid ${vars.color.semantic.danger.border}`,
+  background: vars.color.semantic.danger.bg,
+  color: vars.color.semantic.danger.text,
+});
+
+export const retryExtractButton = style({
+  ...vars.font.caption_regular_12,
+  border: "none",
+  background: "transparent",
+  color: vars.color.primary,
+  cursor: "pointer",
+  fontWeight: 700,
+  padding: "2px 4px",
+  textDecoration: "underline",
+});
+
+export const refundBadge = style({
+  ...vars.font.caption_regular_12,
+  alignSelf: "center",
+  padding: "3px 10px",
+  borderRadius: vars.radius.full,
+  border: `1px solid ${vars.color.semantic.warning.border}`,
+  background: vars.color.semantic.warning.bg,
+  color: vars.color.semantic.warning.text,
+  fontWeight: 700,
 });
 
 export const modalOverlay = style({
