@@ -10,20 +10,29 @@ import {
 } from "./layoutMenu";
 import title from "@assets/sidebar-title.svg";
 import { tokenStorage } from "@/utils/token";
+import { useAuth } from "@/contexts/AuthContext";
 import { useEvidenceReview } from "@/contexts/EvidenceReviewContext";
-import { useState } from "react";
 import NotificationBell from "@/components/common/NotificationBell";
 
 type Role = "TREASURER" | "AUDITOR" | "STUDENT" | "PRESIDENT" | "ADMIN";
-const roleOptions = [
-  { label: "재정담당자", value: "TREASURER" },
-  { label: "감사위원", value: "AUDITOR" },
-  { label: "일반 학우", value: "STUDENT" },
-  { label: "회장", value: "PRESIDENT" },
-  { label: "운영자", value: "ADMIN" },
-];
 
-const getRoleFromPath = (pathname: string): Role => {
+const SECTION_LABELS: Record<Role, string> = {
+  TREASURER: "재정담당자",
+  AUDITOR: "감사위원",
+  STUDENT: "일반 학우",
+  PRESIDENT: "회장",
+  ADMIN: "운영자",
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  president: "회장",
+  treasurer: "재정담당자",
+  auditor: "감사위원",
+  student: "일반 학우",
+};
+
+// 현재 보고 있는 메뉴 영역(섹션)은 URL 기준 — 사용자 실제 권한과는 별개다.
+const getSectionFromPath = (pathname: string): Role => {
   if (pathname.startsWith("/admin")) return "ADMIN";
   if (pathname.startsWith("/president")) return "PRESIDENT";
   if (pathname.startsWith("/auditor")) return "AUDITOR";
@@ -34,13 +43,19 @@ const getRoleFromPath = (pathname: string): Role => {
 const AppLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { me } = useAuth();
   const { clearReviewItems } = useEvidenceReview();
-  const role = getRoleFromPath(location.pathname);
-  const roleLabel = roleOptions.find((option) => option.value === role)?.label;
-  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(tokenStorage.getAccessToken()));
+  const section = getSectionFromPath(location.pathname);
+
+  const myRoleLabels = me
+    ? [
+        ...(me.is_operator ? ["운영자"] : []),
+        ...(me.roles ?? []).map((role) => ROLE_LABELS[role] ?? role),
+      ]
+    : [];
 
   const menuByRole = () => {
-    switch (role) {
+    switch (section) {
       case "TREASURER":
         return treasurerLayoutMenus;
       case "AUDITOR":
@@ -56,13 +71,10 @@ const AppLayout = () => {
     }
   };
 
-  const handleAuthClick = () => {
-    if (isLoggedIn) {
-      clearReviewItems();
-      tokenStorage.removeAccessToken();
-      setIsLoggedIn(false);
-    }
-
+  const handleLogout = () => {
+    clearReviewItems();
+    tokenStorage.removeAccessToken();
+    localStorage.removeItem("organizationId");
     navigate(ROUTES.LOGIN);
   };
 
@@ -80,7 +92,7 @@ const AppLayout = () => {
         </div>
         <div className={styles.divider}></div>
         <div className={styles.dropdownBox}>
-          <div className={styles.roleBadge}>{roleLabel}</div>
+          <div className={styles.roleBadge}>{SECTION_LABELS[section]}</div>
         </div>
         <div className={styles.divider}></div>
 
@@ -111,9 +123,33 @@ const AppLayout = () => {
         <NotificationBell />
         <div className={styles.divider}></div>
 
+        {me && (
+          <>
+            <div className={styles.profileBox}>
+              <div className={styles.profileAvatar} aria-hidden="true">
+                {me.name?.charAt(0) || "?"}
+              </div>
+              <div className={styles.profileInfo}>
+                <span className={styles.profileName}>{me.name}</span>
+                <span className={styles.profileEmail}>{me.email}</span>
+                {myRoleLabels.length > 0 && (
+                  <div className={styles.profileRoles}>
+                    {myRoleLabels.map((label) => (
+                      <span key={label} className={styles.profileRoleChip}>
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className={styles.divider}></div>
+          </>
+        )}
+
         <div className={styles.authBox}>
-          <button className={styles.authButton} type="button" onClick={handleAuthClick}>
-            {isLoggedIn ? "로그아웃" : "로그인"}
+          <button className={styles.authButton} type="button" onClick={handleLogout}>
+            로그아웃
           </button>
         </div>
         <div className={styles.divider}></div>

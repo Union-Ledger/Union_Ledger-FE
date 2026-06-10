@@ -8,6 +8,7 @@ import { ROUTES } from "@router/constant/router";
 import AppLayout from "@shared/components/layout/AppLayout";
 import RequireAuth from "@shared/components/auth/RequireAuth";
 import RequireRole from "@shared/components/auth/RequireRole";
+import RoleHomeRedirect from "@shared/components/auth/RoleHomeRedirect";
 import RouteTitle from "@shared/components/RouteTitle";
 import NotFoundPage from "@pages/error/NotFoundPage";
 import RouteErrorPage from "@pages/error/RouteErrorPage";
@@ -75,7 +76,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: "/",
-            element: <Navigate to={ROUTES.TREASURER_DASHBOARD} replace />,
+            element: <RoleHomeRedirect />,
           },
 
           // 재정담당자 routes

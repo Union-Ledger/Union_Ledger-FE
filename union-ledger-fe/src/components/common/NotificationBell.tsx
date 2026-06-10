@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import * as styles from "./NotificationBell.css";
 import useNotificationApi, {
@@ -31,6 +31,31 @@ const NotificationBell = () => {
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [unread, setUnread] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // 패널 밖 클릭 또는 ESC로 닫기
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleMouseDown = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
 
   const refresh = useCallback(() => {
     getNotificationsOnce({ limit: 50 })
@@ -83,12 +108,13 @@ const NotificationBell = () => {
   };
 
   return (
-    <div className={styles.wrapper}>
+    <div ref={wrapperRef} className={styles.wrapper}>
       <button
         type="button"
         className={styles.bellButton}
         onClick={handleToggle}
         aria-label="알림"
+        aria-expanded={isOpen}
       >
         <span>🔔 알림</span>
         {unread > 0 && (

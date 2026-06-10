@@ -125,6 +125,68 @@ export const footer = style({
   alignItems: "center",
 });
 
+export const profileBox = style({
+  display: "flex",
+  width: "256px",
+  padding: "14px 16px",
+  gap: "12px",
+  alignItems: "flex-start",
+});
+
+export const profileAvatar = style({
+  ...vars.font.body_medium_14,
+  width: "36px",
+  height: "36px",
+  flexShrink: 0,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: vars.radius.full,
+  background: `linear-gradient(135deg, ${vars.color.gradient.skyFrom} 0%, ${vars.color.gradient.skyTo} 100%)`,
+  color: vars.color.surface,
+  fontWeight: 700,
+});
+
+export const profileInfo = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "2px",
+  minWidth: 0,
+});
+
+export const profileName = style({
+  ...vars.font.body_medium_14,
+  color: vars.color.surface,
+  fontWeight: 700,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+export const profileEmail = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.subtitle,
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+export const profileRoles = style({
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "4px",
+  marginTop: "4px",
+});
+
+export const profileRoleChip = style({
+  ...vars.font.caption_regular_12,
+  padding: "1px 8px",
+  borderRadius: vars.radius.full,
+  border: `1px solid ${vars.color.white20}`,
+  background: vars.color.white10,
+  color: vars.color.menuLabel,
+});
+
 export const authBox = style({
   display: "flex",
   width: "256px",
