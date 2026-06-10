@@ -69,7 +69,8 @@ const createCategorySummary = (items: PublicSettlementItem[]) => {
   const summary = new Map<string, number>();
 
   items.forEach((item) => {
-    const category = item.budget_category || "미분류";
+    // 구분(행사/용도) 기준 분포 — 카테고리는 배경 데이터로만 유지.
+    const category = item.group_name || "미분류";
     summary.set(category, (summary.get(category) || 0) + getNumericAmount(item.amount));
   });
 
@@ -469,7 +470,7 @@ const StudentSettlementLookup = () => {
                             <td className={styles.tableCell}>{getDateText(item.evidence_date)}</td>
                             <td className={styles.tableCell}>{item.merchant_name || "-"}</td>
                             <td className={styles.tableCell}>
-                              <span className={styles.categoryChip}>{item.budget_category || "미분류"}</span>
+                              <span className={styles.categoryChip}>{item.group_name || "미분류"}</span>
                             </td>
                             <td className={styles.tableCell}>
                               <button

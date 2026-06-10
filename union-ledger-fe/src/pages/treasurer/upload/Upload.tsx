@@ -98,29 +98,13 @@ const findReusableSettlementId = (
   )?.settlement_id;
 };
 
-// 영수증 지출 카테고리 — 서버의 RECEIPT_CATEGORIES / GET /evidences/categories와
-// 동일하게 유지(목록이 바뀌면 양쪽 함께 수정). 업로드 시 비우면 AI가 자동 분류한다.
-const RECEIPT_CATEGORIES = [
-  "식비",
-  "다과/간식",
-  "음료/카페",
-  "교통비",
-  "사무용품/비품",
-  "인쇄/홍보물",
-  "행사/행사물품",
-  "회의비",
-  "기념품/경품",
-  "장소대여",
-  "기타",
-];
-
 const Upload = () => {
   const [selectedType, setSelectedType] =
     useState<ReceiptType>("offlineReceipt");
   const [settlementId, setSettlementId] = useState<string | null>(null);
-  const [budgetCategory, setBudgetCategory] = useState("");
   // 구분 — 이 배치의 영수증들이 속한 행사/용도 (예: 중간고사 간식행사).
   // 영수증만으로는 알 수 없는 정보라 업로드 시 사람이 한 번 입력한다.
+  // (카테고리는 사용자 입력 없이 항상 AI가 배경에서 자동 분류한다.)
   const [groupName, setGroupName] = useState("");
   const [isPreparing, setIsPreparing] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -581,9 +565,8 @@ const Upload = () => {
       return;
     }
 
-    // 카테고리는 선택사항 — 비워두면 서버(Gemini)가 영수증별로 자동 분류하고,
-    // 재정담당자는 업로드 후 검수 단계에서 확인/수정하면 된다.
-    const trimmedBudgetCategory = budgetCategory.trim();
+    // 카테고리는 항상 비워서 보낸다 — 서버(Gemini)가 영수증별로 자동 분류한다.
+    const trimmedBudgetCategory = "";
     // 구분은 이 배치 전체에 일괄 적용된다 (행사 단위 업로드 전제).
     const trimmedGroupName = groupName.trim();
 
@@ -703,26 +686,6 @@ const Upload = () => {
           </datalist>
         </div>
 
-        <div className={styles.categoryFieldContainer}>
-          <label className={styles.categoryLabel} htmlFor="budget-category">
-            카테고리 (선택)
-          </label>
-          <select
-            id="budget-category"
-            className={styles.categoryInput}
-            value={budgetCategory}
-            disabled={isPreparing || isUploading}
-            onChange={(e) => setBudgetCategory(e.target.value)}
-          >
-            <option value="">AI 자동 분류 (권장)</option>
-            {RECEIPT_CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className={styles.cardContainer}>
           <UploadCard
             iconBackground="purple"
@@ -790,9 +753,6 @@ const Upload = () => {
                   </span>
                   <span className={styles.reviewCategory}>
                     {item.groupName ? `구분: ${item.groupName}` : "구분 미입력"}
-                  </span>
-                  <span className={styles.reviewCategory}>
-                    {item.budgetCategory || "카테고리 미입력"}
                   </span>
                   {item.isRefund && (
                     <span style={{ color: "#d9480f", fontWeight: 600 }}>
@@ -982,34 +942,6 @@ const Upload = () => {
                     }))
                   }
                 />
-
-                <label className={styles.formLabel} htmlFor="budget-category-edit">
-                  항목
-                </label>
-                <select
-                  id="budget-category-edit"
-                  className={styles.formInput}
-                  value={editForm.budgetCategory}
-                  onChange={(event) =>
-                    setEditForm((prevForm) => ({
-                      ...prevForm,
-                      budgetCategory: event.target.value,
-                    }))
-                  }
-                >
-                  <option value="">미분류</option>
-                  {RECEIPT_CATEGORIES.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                  {editForm.budgetCategory &&
-                    !RECEIPT_CATEGORIES.includes(editForm.budgetCategory) && (
-                      <option value={editForm.budgetCategory}>
-                        {editForm.budgetCategory} (기존)
-                      </option>
-                    )}
-                </select>
 
                 <label
                   htmlFor="is-refund-edit"

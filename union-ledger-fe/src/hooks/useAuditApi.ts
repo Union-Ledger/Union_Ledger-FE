@@ -60,6 +60,7 @@ export interface AuditEvidence {
   amount: string;
   payment_method: string;
   budget_category: string;
+  group_name: string | null;
   created_at: string;
   updated_at: string;
 }

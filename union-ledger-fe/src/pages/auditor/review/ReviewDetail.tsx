@@ -75,12 +75,13 @@ const buildReviewData = (data: AuditSettlementDetailResponse) => {
     0,
   );
 
+  // 구분(행사/용도) 기준 집계 — 카테고리는 배경 데이터로만 유지한다.
   const categoryMap = new Map<
     string,
     { category: string; count: number; totalAmount: number }
   >();
   data.evidences.forEach((evidence) => {
-    const category = evidence.budget_category || "미분류";
+    const category = evidence.group_name || "미분류";
     const prev = categoryMap.get(category);
     categoryMap.set(category, {
       category,
@@ -103,7 +104,7 @@ const buildReviewData = (data: AuditSettlementDetailResponse) => {
     return {
       id: evidence.id,
       date: evidence.evidence_date || bankTransaction?.transaction_date || "-",
-      category: evidence.budget_category || "미분류",
+      category: evidence.group_name || "미분류",
       merchantName:
         evidence.merchant_name || bankTransaction?.description || "내역 없음",
       amount: parseAmount(evidence.amount),
@@ -425,7 +426,7 @@ const ReviewDetail = () => {
           </div>
 
           <div className={styles.panelBody}>
-            <h2 className={styles.sectionTitle}>항목별 지출 내역</h2>
+            <h2 className={styles.sectionTitle}>구분별 지출 내역</h2>
 
             <div className={styles.categoryList}>
               {reviewData.categorySummaries.length === 0 ? (
@@ -692,9 +693,9 @@ const ReviewDetail = () => {
                 </span>
               </div>
               <div className={styles.modalFieldRow}>
-                <span className={styles.modalFieldLabel}>예산 항목</span>
+                <span className={styles.modalFieldLabel}>구분</span>
                 <span className={styles.modalFieldValue}>
-                  {modalEvidence.budget_category || "미분류"}
+                  {modalEvidence.group_name || "미분류"}
                 </span>
               </div>
               <div className={styles.modalFieldRow}>

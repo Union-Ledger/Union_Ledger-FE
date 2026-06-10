@@ -37,6 +37,7 @@ export interface PublicSettlementItem {
   amount: string;
   payment_method: string | null;
   budget_category: string | null;
+  group_name: string | null;
   has_evidence_file: boolean;
 }
 
@@ -49,6 +50,7 @@ export interface PublicEvidenceMetadata {
   amount: string;
   payment_method: string | null;
   budget_category: string | null;
+  group_name: string | null;
   source_file_name: string | null;
   has_evidence_file: boolean;
 }

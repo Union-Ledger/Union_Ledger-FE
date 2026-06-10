@@ -337,7 +337,7 @@ const Create = () => {
         </div>
 
         <div className={styles.summaryContentBox}>
-          <div className={styles.summaryContentTitle}>항목별 지출 내역</div>
+          <div className={styles.summaryContentTitle}>구분별 지출 내역</div>
           {isSummaryLoading ? (
             <div className={styles.summaryContentEmpty}>
               지출 집계를 불러오는 중입니다.
