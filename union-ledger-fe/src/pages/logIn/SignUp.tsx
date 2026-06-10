@@ -9,6 +9,27 @@ type SignupStep = 1 | 2 | 3;
 
 const KONKUK_EMAIL_DOMAIN = "@konkuk.ac.kr";
 
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  const apiError = error as {
+    message?: string;
+    response?: {
+      data?: {
+        detail?: string | Array<{ msg?: string }>;
+        message?: string;
+      };
+    };
+  };
+  const data = apiError.response?.data;
+
+  if (typeof data?.detail === "string") return data.detail;
+  if (Array.isArray(data?.detail)) {
+    const message = data.detail.find((item) => item.msg)?.msg;
+    if (message) return message;
+  }
+
+  return data?.message || apiError.message || fallback;
+};
+
 const SignUp = () => {
   const navigate = useNavigate();
   const { postSendVerificationCode, postVerifyEmail, postSignup, getMe } =
@@ -62,7 +83,10 @@ const SignUp = () => {
       showToast();
     } catch (error) {
       console.error("인증 코드 발송 실패", error);
-      setErrorMessage("인증 코드 발송에 실패했습니다.");
+      setCodeSent(false);
+      setErrorMessage(
+        getApiErrorMessage(error, "인증 코드 발송에 실패했습니다."),
+      );
     } finally {
       setIsSendingCode(false);
     }
@@ -81,7 +105,9 @@ const SignUp = () => {
       setStep(3);
     } catch (error) {
       console.error("이메일 인증 실패", error);
-      setErrorMessage("인증 코드를 확인해주세요.");
+      setErrorMessage(
+        getApiErrorMessage(error, "인증 코드를 확인해주세요."),
+      );
     } finally {
       setIsVerifying(false);
     }
@@ -116,7 +142,7 @@ const SignUp = () => {
       navigate(getDashboardRouteByUser(me));
     } catch (error) {
       console.error("회원가입 실패", error);
-      setErrorMessage("회원가입에 실패했습니다.");
+      setErrorMessage(getApiErrorMessage(error, "회원가입에 실패했습니다."));
     } finally {
       setIsSubmitting(false);
     }
@@ -154,7 +180,11 @@ const SignUp = () => {
                     type="email"
                     value={email}
                     placeholder="your.name@konkuk.ac.kr"
-                    onChange={(event) => setEmail(event.target.value)}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      setCodeSent(false);
+                      setErrorMessage("");
+                    }}
                   />
                   <button
                     className={styles.primaryButton}
