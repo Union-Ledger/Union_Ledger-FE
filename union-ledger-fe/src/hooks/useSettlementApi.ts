@@ -37,6 +37,10 @@ interface ExpenseSummaryCategory {
 
 export interface ExpenseSummaryResponse {
   settlement_id: string;
+  academic_year: number;
+  semester: string;
+  period_start: string;
+  period_end: string;
   total_count: number;
   total_amount: string;
   by_category: ExpenseSummaryCategory[];

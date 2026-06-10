@@ -28,6 +28,18 @@ const formatDate = (date: string | null | undefined) => {
   return date.slice(0, 10);
 };
 
+const formatSummaryDate = (date: string) => date.replaceAll("-", ".");
+
+const formatExpenseSummaryPeriod = (summary: ExpenseSummaryResponse) => {
+  const semester = summary.semester.includes("학기")
+    ? summary.semester
+    : `${summary.semester}학기`;
+
+  return `${summary.academic_year}학년도 ${semester} (${formatSummaryDate(
+    summary.period_start,
+  )} - ${formatSummaryDate(summary.period_end)})`;
+};
+
 interface RejectedSettlementNoticeProps {
   settlement: SettlementResponse;
   comments: SettlementComment[];
@@ -347,7 +359,11 @@ const Create = () => {
         <div className={styles.summaryTitleBox}>
           <div className={styles.summaryTitle}>결산안 요약</div>
           <div className={styles.summaryDescription}>
-            2024학년도 2학기 (2024.09.01 - 2025.02.28)
+            {isSummaryLoading
+              ? "-"
+              : expenseSummary
+                ? formatExpenseSummaryPeriod(expenseSummary)
+                : "결산 기간 정보가 없습니다."}
           </div>
         </div>
 

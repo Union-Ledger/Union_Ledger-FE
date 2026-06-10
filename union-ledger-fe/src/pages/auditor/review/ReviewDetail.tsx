@@ -150,7 +150,9 @@ const ReviewDetail = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   // 증빙 이미지 모달
-  const [modalEvidence, setModalEvidence] = useState<AuditEvidence | null>(null);
+  const [modalEvidence, setModalEvidence] = useState<AuditEvidence | null>(
+    null,
+  );
   const [modalFileUrl, setModalFileUrl] = useState<string | null>(null);
   const [modalFileType, setModalFileType] = useState<string>("");
   const [modalLoading, setModalLoading] = useState(false);
@@ -182,7 +184,10 @@ const ReviewDetail = () => {
         // 항목별 기존 코멘트를 입력칸 초깃값으로 채움 (evidenceId 기준)
         const drafts: Record<string, string> = {};
         data.comments.forEach((comment) => {
-          if (comment.evidence_id && drafts[comment.evidence_id] === undefined) {
+          if (
+            comment.evidence_id &&
+            drafts[comment.evidence_id] === undefined
+          ) {
             drafts[comment.evidence_id] = comment.comment;
           }
         });
@@ -247,7 +252,9 @@ const ReviewDetail = () => {
 
   const openEvidenceModal = async (evidenceId: string) => {
     if (!detailData) return;
-    const evidence = detailData.evidences.find((item) => item.id === evidenceId);
+    const evidence = detailData.evidences.find(
+      (item) => item.id === evidenceId,
+    );
     if (!evidence) return;
 
     setModalEvidence(evidence);
