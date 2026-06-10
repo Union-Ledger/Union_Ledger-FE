@@ -5,6 +5,7 @@ interface PostEvidenceData {
   settlementId: string;
   evidenceType: string;
   budgetCategory: string;
+  groupName: string;
   file: File;
 }
 
@@ -141,6 +142,7 @@ const useSettlementApi = () => {
 
     formData.append("evidence_type", data.evidenceType);
     formData.append("budget_category", data.budgetCategory);
+    formData.append("group_name", data.groupName);
     formData.append("file", data.file);
 
     return settlementApi

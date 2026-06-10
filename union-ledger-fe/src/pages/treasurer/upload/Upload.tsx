@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import UploadCard from "@/components/common/UploadCard";
 import useOrganizationApi from "@/hooks/useOrginizationApi";
 import useSettlementApi from "@/hooks/useSettlementApi";
@@ -62,6 +62,7 @@ interface EvidenceApiResponse {
   amount?: string | number | null;
   payment_method?: string | null;
   budget_category?: string | null;
+  group_name?: string | null;
   is_refund?: boolean | null;
   status?: string | null;
   extracted_payload?: Record<string, unknown> | null;
@@ -118,6 +119,9 @@ const Upload = () => {
     useState<ReceiptType>("offlineReceipt");
   const [settlementId, setSettlementId] = useState<string | null>(null);
   const [budgetCategory, setBudgetCategory] = useState("");
+  // 구분 — 이 배치의 영수증들이 속한 행사/용도 (예: 중간고사 간식행사).
+  // 영수증만으로는 알 수 없는 정보라 업로드 시 사람이 한 번 입력한다.
+  const [groupName, setGroupName] = useState("");
   const [isPreparing, setIsPreparing] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatusMessage, setUploadStatusMessage] = useState("");
@@ -131,6 +135,7 @@ const Upload = () => {
     amount: "",
     paymentMethod: "card",
     budgetCategory: "",
+    groupName: "",
     isRefund: false,
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -286,10 +291,19 @@ const Upload = () => {
     prepareSettlement();
   }, [createDraftSettlement, getSettlementOnce]);
 
+  // 이미 입력한 구분들 — 다음 배치 입력 시 자동완성으로 제안한다.
+  const groupNameSuggestions = useMemo(() => {
+    const names = reviewItems
+      .map((item) => item.groupName.trim())
+      .filter((name) => name.length > 0);
+    return Array.from(new Set(names));
+  }, [reviewItems]);
+
   const createReviewItem = (
     evidence: EvidenceApiResponse,
     file: File,
     defaultBudgetCategory: string,
+    defaultGroupName: string,
   ): EvidenceReviewItem => ({
     id: evidence.id,
     fileName: file.name,
@@ -299,6 +313,7 @@ const Upload = () => {
     amount: formatAmount(evidence.amount),
     paymentMethod: evidence.payment_method ?? "card",
     budgetCategory: evidence.budget_category ?? defaultBudgetCategory,
+    groupName: evidence.group_name ?? defaultGroupName,
     isRefund: evidence.is_refund ?? false,
     status: evidence.status ?? "uploaded",
     extractedPayload: evidence.extracted_payload ?? {},
@@ -322,6 +337,7 @@ const Upload = () => {
                 : formatAmount(evidence.amount),
             paymentMethod: evidence.payment_method ?? item.paymentMethod,
             budgetCategory: evidence.budget_category ?? item.budgetCategory,
+            groupName: evidence.group_name ?? item.groupName,
             isRefund: evidence.is_refund ?? item.isRefund,
             status: evidence.status ?? item.status,
             extractedPayload:
@@ -495,6 +511,7 @@ const Upload = () => {
       amount: item.amount,
       paymentMethod: item.paymentMethod,
       budgetCategory: item.budgetCategory,
+      groupName: item.groupName,
       isRefund: item.isRefund,
     });
 
@@ -540,6 +557,7 @@ const Upload = () => {
         amount: parseAmount(editForm.amount),
         paymentMethod: editForm.paymentMethod,
         budgetCategory: editForm.budgetCategory.trim(),
+        groupName: editForm.groupName.trim(),
         isRefund: editForm.isRefund,
         status: editingItem.status,
         extractedPayload: editingItem.extractedPayload,
@@ -566,6 +584,8 @@ const Upload = () => {
     // 카테고리는 선택사항 — 비워두면 서버(Gemini)가 영수증별로 자동 분류하고,
     // 재정담당자는 업로드 후 검수 단계에서 확인/수정하면 된다.
     const trimmedBudgetCategory = budgetCategory.trim();
+    // 구분은 이 배치 전체에 일괄 적용된다 (행사 단위 업로드 전제).
+    const trimmedGroupName = groupName.trim();
 
     const fileList = Array.from(files);
     const uploadFiles = (targetSettlementId: string) =>
@@ -575,6 +595,7 @@ const Upload = () => {
             settlementId: targetSettlementId,
             evidenceType: evidenceTypeMap[selectedType],
             budgetCategory: trimmedBudgetCategory,
+            groupName: trimmedGroupName,
             file,
           }),
         ),
@@ -611,7 +632,12 @@ const Upload = () => {
       }
 
       const nextReviewItems = uploadedEvidences.map((evidence, index) =>
-        createReviewItem(evidence, fileList[index], trimmedBudgetCategory),
+        createReviewItem(
+          evidence,
+          fileList[index],
+          trimmedBudgetCategory,
+          trimmedGroupName,
+        ),
       );
 
       setReviewItems((prevItems) => [...nextReviewItems, ...prevItems]);
@@ -655,6 +681,26 @@ const Upload = () => {
               </button>
             );
           })}
+        </div>
+
+        <div className={styles.categoryFieldContainer}>
+          <label className={styles.categoryLabel} htmlFor="group-name">
+            구분 — 행사/용도 (이 배치 전체에 적용)
+          </label>
+          <input
+            id="group-name"
+            className={styles.categoryInput}
+            list="group-name-suggestions"
+            placeholder="예: 중간고사 간식행사 (영수증으로는 알 수 없어 직접 입력)"
+            value={groupName}
+            disabled={isPreparing || isUploading}
+            onChange={(e) => setGroupName(e.target.value)}
+          />
+          <datalist id="group-name-suggestions">
+            {groupNameSuggestions.map((name) => (
+              <option key={name} value={name} />
+            ))}
+          </datalist>
         </div>
 
         <div className={styles.categoryFieldContainer}>
@@ -741,6 +787,9 @@ const Upload = () => {
                   </strong>
                   <span className={styles.reviewAmount}>
                     {item.amount ? `₩${item.amount}` : "금액 확인 필요"}
+                  </span>
+                  <span className={styles.reviewCategory}>
+                    {item.groupName ? `구분: ${item.groupName}` : "구분 미입력"}
                   </span>
                   <span className={styles.reviewCategory}>
                     {item.budgetCategory || "카테고리 미입력"}
@@ -916,6 +965,23 @@ const Upload = () => {
                   <option value="transfer">계좌이체</option>
                   <option value="other">기타</option>
                 </select>
+
+                <label className={styles.formLabel} htmlFor="group-name-edit">
+                  구분 (행사/용도)
+                </label>
+                <input
+                  id="group-name-edit"
+                  className={styles.formInput}
+                  list="group-name-suggestions"
+                  placeholder="예: 중간고사 간식행사"
+                  value={editForm.groupName}
+                  onChange={(event) =>
+                    setEditForm((prevForm) => ({
+                      ...prevForm,
+                      groupName: event.target.value,
+                    }))
+                  }
+                />
 
                 <label className={styles.formLabel} htmlFor="budget-category-edit">
                   항목

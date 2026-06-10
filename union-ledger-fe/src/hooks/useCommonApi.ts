@@ -8,6 +8,7 @@ interface PatchEvidenceData {
   amount: number;
   paymentMethod: string;
   budgetCategory: string;
+  groupName?: string;
   isRefund?: boolean;
   status?: string;
   extractedPayload?: Record<string, unknown>;
@@ -74,6 +75,7 @@ const useCommonApi = () => {
         amount: data.amount,
         payment_method: data.paymentMethod,
         budget_category: data.budgetCategory,
+        group_name: data.groupName ?? "",
         is_refund: data.isRefund ?? false,
         status: data.status ?? "uploaded",
         extracted_payload: data.extractedPayload ?? {},

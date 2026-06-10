@@ -19,6 +19,7 @@ export interface EvidenceReviewItem {
   amount: string;
   paymentMethod: string;
   budgetCategory: string;
+  groupName: string;
   isRefund: boolean;
   status: string;
   extractedPayload: Record<string, unknown>;
@@ -38,6 +39,7 @@ const readStoredReviewItems = () => {
     return parsedValue.map((item) => ({
       ...item,
       isRefund: Boolean(item.isRefund),
+      groupName: item.groupName ?? "",
       previewUrl: "",
       extractStatus: item.extractStatus
         ? item.extractStatus === "running"
