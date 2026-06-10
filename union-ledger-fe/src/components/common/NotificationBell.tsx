@@ -32,14 +32,15 @@ const NotificationBell = () => {
   const [unread, setUnread] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
-  const refresh = useCallback(async () => {
-    try {
-      const data = await getNotificationsOnce({ limit: 50 });
-      setItems(data.items);
-      setUnread(data.unread);
-    } catch {
-      // 알림 조회 실패가 레이아웃 전체를 막지 않도록 조용히 무시한다.
-    }
+  const refresh = useCallback(() => {
+    getNotificationsOnce({ limit: 50 })
+      .then((data) => {
+        setItems(data.items);
+        setUnread(data.unread);
+      })
+      .catch(() => {
+        // 알림 조회 실패가 레이아웃 전체를 막지 않도록 조용히 무시한다.
+      });
   }, [getNotificationsOnce]);
 
   // 최초 진입 + 라우트 변경 시 갱신 (예: 결산안 제출 직후 이동하면 뱃지 반영)
