@@ -205,6 +205,142 @@ export const reconciliationNote = style({
   marginBottom: "16px",
 });
 
+export const exceptionSection = style({
+  marginBottom: "28px",
+  padding: "20px",
+  border: `1px solid ${vars.color.accent.red}`,
+  borderRadius: "8px",
+  background: "#fff8f8",
+});
+
+export const exceptionHeader = style({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  gap: "16px",
+  marginBottom: "16px",
+});
+
+export const exceptionTitle = style({
+  margin: 0,
+  marginBottom: "4px",
+  ...vars.font.title_bold_18,
+  color: vars.color.summaryTitle,
+});
+
+export const exceptionDescription = style({
+  margin: 0,
+  ...vars.font.body_regular_14,
+  color: vars.color.gray,
+});
+
+export const exceptionCount = style({
+  flexShrink: 0,
+  padding: "4px 10px",
+  borderRadius: "8px",
+  background: vars.color.accent.red,
+  color: vars.color.surface,
+  ...vars.font.caption_regular_12,
+});
+
+export const exceptionList = style({
+  display: "grid",
+  gap: "12px",
+});
+
+export const exceptionItem = style({
+  padding: "16px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  borderRadius: "8px",
+  background: vars.color.surface,
+});
+
+export const exceptionItemHeader = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  marginBottom: "14px",
+});
+
+export const exceptionStatusBadge = style({
+  padding: "4px 10px",
+  borderRadius: "8px",
+  background: "#ffe5e5",
+  color: vars.color.accent.red,
+  ...vars.font.caption_regular_12,
+});
+
+export const manualResolutionLabel = style({
+  padding: "4px 10px",
+  borderRadius: "8px",
+  background: vars.color.blueSoft.bgFrom,
+  color: vars.color.blueSoft.textStrong,
+  ...vars.font.caption_regular_12,
+});
+
+export const exceptionSources = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: "12px",
+  marginBottom: "12px",
+
+  "@media": {
+    "screen and (max-width: 720px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+export const exceptionSource = style({
+  minWidth: 0,
+  padding: "12px",
+  borderRadius: "8px",
+  background: vars.color.background,
+});
+
+export const exceptionSourceLabel = style({
+  display: "block",
+  marginBottom: "6px",
+  ...vars.font.caption_regular_12,
+  color: vars.color.gray,
+});
+
+export const exceptionSourceValue = style({
+  display: "block",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  ...vars.font.body_medium_14,
+  color: vars.color.summaryTitle,
+});
+
+export const exceptionMissingValue = style([
+  exceptionSourceValue,
+  {
+    color: vars.color.accent.red,
+  },
+]);
+
+export const exceptionNote = style({
+  padding: "12px",
+  borderLeft: `3px solid ${vars.color.accent.red}`,
+  background: "#fff3f3",
+});
+
+export const exceptionNoteLabel = style({
+  display: "block",
+  marginBottom: "4px",
+  ...vars.font.caption_regular_12,
+  color: vars.color.gray,
+});
+
+export const exceptionNoteText = style({
+  margin: 0,
+  ...vars.font.body_regular_14,
+  color: vars.color.summaryTitle,
+  whiteSpace: "pre-wrap",
+});
+
 export const commentBox = style({
   display: "flex",
   alignItems: "center",

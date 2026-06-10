@@ -51,6 +51,24 @@ const formatTimestamp = (iso: string) => {
   });
 };
 
+const inferEvidenceFileType = (blob: Blob, fileName: string) => {
+  if (blob.type && blob.type !== "application/octet-stream") {
+    return blob.type;
+  }
+
+  const extension = fileName.split(".").pop()?.toLowerCase();
+  const typeMap: Record<string, string> = {
+    gif: "image/gif",
+    jpeg: "image/jpeg",
+    jpg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    pdf: "application/pdf",
+  };
+
+  return extension ? (typeMap[extension] ?? blob.type) : blob.type;
+};
+
 const buildReviewData = (data: AuditSettlementDetailResponse) => {
   const totalAmount = data.evidences.reduce(
     (sum, evidence) => sum + parseAmount(evidence.amount),
@@ -95,18 +113,34 @@ const buildReviewData = (data: AuditSettlementDetailResponse) => {
     };
   });
 
-  // 증빙이 없는 은행 거래(누락) — 감사가 반드시 확인해야 하는 항목
-  const bankOnlyRows = data.reconciliation_results
-    .filter((result) => result.status === "missing_evidence")
+  const exceptionRows = data.reconciliation_results
+    .filter((result) =>
+      [
+        "missing_evidence",
+        "missing_bank_transaction",
+        "manually_resolved",
+      ].includes(result.status),
+    )
     .map((result) => {
+      const evidence = data.evidences.find(
+        (item) => item.id === result.evidence_id,
+      );
       const bankTransaction = data.bank_transactions.find(
         (transaction) => transaction.id === result.bank_transaction_id,
       );
+
       return {
         id: result.id,
-        date: bankTransaction?.transaction_date || "-",
-        description: bankTransaction?.description || "내역 없음",
-        amount: bankTransaction ? parseAmount(bankTransaction.amount) : 0,
+        status: result.status,
+        evidenceId: result.evidence_id,
+        evidenceLabel:
+          result.evidence_merchant_name ||
+          evidence?.merchant_name ||
+          evidence?.source_file_name ||
+          null,
+        bankTransactionId: result.bank_transaction_id,
+        bankLabel:
+          result.bank_merchant_name || bankTransaction?.description || null,
         notes: result.notes,
       };
     });
@@ -119,7 +153,7 @@ const buildReviewData = (data: AuditSettlementDetailResponse) => {
     settlement: { ...data.settlement, totalAmount },
     categorySummaries: Array.from(categoryMap.values()),
     evidenceRows,
-    bankOnlyRows,
+    exceptionRows,
     overallComments,
   };
 };
@@ -155,6 +189,7 @@ const ReviewDetail = () => {
   );
   const [modalFileUrl, setModalFileUrl] = useState<string | null>(null);
   const [modalFileType, setModalFileType] = useState<string>("");
+  const [modalErrorMessage, setModalErrorMessage] = useState("");
   const [modalLoading, setModalLoading] = useState(false);
 
   const [getAuditSettlementDetailOnce] = useState(
@@ -261,13 +296,21 @@ const ReviewDetail = () => {
     setModalLoading(true);
     setModalFileUrl(null);
     setModalFileType("");
+    setModalErrorMessage("");
 
     try {
       const blob = await downloadEvidenceFileOnce(evidenceId);
       setModalFileUrl(URL.createObjectURL(blob));
-      setModalFileType(blob.type);
+      setModalFileType(
+        inferEvidenceFileType(blob, evidence.source_file_name ?? ""),
+      );
     } catch (error) {
       console.error("증빙 원본 조회 실패", error);
+      setModalErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "증빙 원본 파일을 불러오지 못했습니다.",
+      );
     } finally {
       setModalLoading(false);
     }
@@ -280,6 +323,7 @@ const ReviewDetail = () => {
     setModalEvidence(null);
     setModalFileUrl(null);
     setModalFileType("");
+    setModalErrorMessage("");
     setModalLoading(false);
   };
 
@@ -430,6 +474,85 @@ const ReviewDetail = () => {
           </div>
 
           <div className={styles.panelBody}>
+            {reviewData.exceptionRows.length > 0 && (
+              <section className={styles.exceptionSection}>
+                <div className={styles.exceptionHeader}>
+                  <div>
+                    <h2 className={styles.exceptionTitle}>
+                      누락 및 수동 해결 내역
+                    </h2>
+                    <p className={styles.exceptionDescription}>
+                      원본 누락 여부와 재정담당자의 수동 처리 내용을
+                      확인해주세요.
+                    </p>
+                  </div>
+                  <span className={styles.exceptionCount}>
+                    {reviewData.exceptionRows.length}건
+                  </span>
+                </div>
+
+                <div className={styles.exceptionList}>
+                  {reviewData.exceptionRows.map((row) => (
+                    <div key={row.id} className={styles.exceptionItem}>
+                      <div className={styles.exceptionItemHeader}>
+                        <span className={styles.exceptionStatusBadge}>
+                          {getStatusLabel(row.status)}
+                        </span>
+                        {row.status === "manually_resolved" && (
+                          <span className={styles.manualResolutionLabel}>
+                            재정담당자 처리
+                          </span>
+                        )}
+                      </div>
+
+                      <div className={styles.exceptionSources}>
+                        <div className={styles.exceptionSource}>
+                          <span className={styles.exceptionSourceLabel}>
+                            증빙
+                          </span>
+                          <strong
+                            className={
+                              row.evidenceId
+                                ? styles.exceptionSourceValue
+                                : styles.exceptionMissingValue
+                            }
+                          >
+                            {row.evidenceLabel || "증빙 없음"}
+                          </strong>
+                        </div>
+                        <div className={styles.exceptionSource}>
+                          <span className={styles.exceptionSourceLabel}>
+                            거래내역
+                          </span>
+                          <strong
+                            className={
+                              row.bankTransactionId
+                                ? styles.exceptionSourceValue
+                                : styles.exceptionMissingValue
+                            }
+                          >
+                            {row.bankLabel || "거래내역 없음"}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div className={styles.exceptionNote}>
+                        <span className={styles.exceptionNoteLabel}>
+                          처리 메모
+                        </span>
+                        <p className={styles.exceptionNoteText}>
+                          {row.notes ||
+                            (row.status === "manually_resolved"
+                              ? "수동 해결 메모가 없습니다."
+                              : "등록된 메모가 없습니다.")}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             <div className={styles.transactionList}>
               {reviewData.evidenceRows.length === 0 ? (
                 <div className={styles.stateBox}>증빙 내역이 없습니다.</div>
@@ -504,29 +627,6 @@ const ReviewDetail = () => {
                 })
               )}
 
-              {reviewData.bankOnlyRows.length > 0 && (
-                <>
-                  <h3 className={styles.subSectionTitle}>
-                    증빙 없는 거래내역 ({reviewData.bankOnlyRows.length})
-                  </h3>
-                  {reviewData.bankOnlyRows.map((row) => (
-                    <div key={row.id} className={styles.missingItem}>
-                      <div className={styles.transactionTop}>
-                        <span className={styles.transactionDate}>
-                          {row.date}
-                        </span>
-                        <span className={styles.missingBadge}>증빙 누락</span>
-                      </div>
-                      <strong className={styles.merchantName}>
-                        {row.description}
-                      </strong>
-                      <strong className={styles.transactionAmount}>
-                        {formatMoney(row.amount)}
-                      </strong>
-                    </div>
-                  ))}
-                </>
-              )}
             </div>
           </div>
         </section>
@@ -639,7 +739,8 @@ const ReviewDetail = () => {
               )
             ) : (
               <div className={styles.modalStateText}>
-                원본 파일을 불러올 수 없습니다.
+                {modalErrorMessage ||
+                  "증빙 원본 파일을 불러오지 못했습니다."}
               </div>
             )}
 

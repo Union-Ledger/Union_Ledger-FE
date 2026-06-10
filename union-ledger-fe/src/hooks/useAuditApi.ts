@@ -1,3 +1,4 @@
+import axios from "axios";
 import useApi from "./useApi";
 import { ENDPOINTS } from "../../config";
 
@@ -80,6 +81,8 @@ export interface AuditReconciliationResult {
   bank_transaction_id: string | null;
   status: string;
   notes: string | null;
+  evidence_merchant_name?: string | null;
+  bank_merchant_name?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -107,6 +110,47 @@ interface PostAuditDecisionData {
   settlementId: string;
   comment: string;
 }
+
+const getEvidenceFileErrorMessage = async (error: unknown) => {
+  if (!axios.isAxiosError(error)) {
+    return "증빙 원본 파일을 불러오지 못했습니다.";
+  }
+
+  const data = error.response?.data;
+
+  if (data instanceof Blob) {
+    const text = await data.text();
+
+    if (!text) {
+      return "증빙 원본 파일을 불러오지 못했습니다.";
+    }
+
+    try {
+      const parsed = JSON.parse(text) as {
+        detail?: string;
+        message?: string;
+      };
+      return (
+        parsed.detail ??
+        parsed.message ??
+        "증빙 원본 파일을 불러오지 못했습니다."
+      );
+    } catch {
+      return text;
+    }
+  }
+
+  if (typeof data === "object" && data !== null) {
+    const parsed = data as { detail?: string; message?: string };
+    return (
+      parsed.detail ??
+      parsed.message ??
+      "증빙 원본 파일을 불러오지 못했습니다."
+    );
+  }
+
+  return "증빙 원본 파일을 불러오지 못했습니다.";
+};
 
 const useAuditApi = () => {
   const { auditApi, settlementApi, api } = useApi();
@@ -167,17 +211,25 @@ const useAuditApi = () => {
   };
 
   // 증빙 원본 파일 다운로드 (조직 멤버 — 감사 모달용)
-  const downloadEvidenceFile = (evidenceId: string): Promise<Blob> => {
-    return api
-      .get(ENDPOINTS.BASE.EVIDENCE_FILE(evidenceId), {
-        responseType: "blob",
-      })
-      .then((response) => response.data)
-      .catch((error) => {
-        console.log("증빙 파일 다운로드 실패 status:", error.response?.status);
-        console.log("증빙 파일 다운로드 실패 detail:", error.response?.data);
-        throw error;
-      });
+  const downloadEvidenceFile = async (evidenceId: string): Promise<Blob> => {
+    try {
+      const response = await api.get(
+        ENDPOINTS.BASE.EVIDENCE_FILE(evidenceId),
+        {
+          responseType: "blob",
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      const message = await getEvidenceFileErrorMessage(error);
+      console.log(
+        "증빙 파일 다운로드 실패 status:",
+        axios.isAxiosError(error) ? error.response?.status : undefined,
+      );
+      console.log("증빙 파일 다운로드 실패 detail:", message);
+      throw new Error(message);
+    }
   };
 
   const patchAuditComment = (commentId: string, comment: string) => {
