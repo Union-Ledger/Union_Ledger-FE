@@ -3,6 +3,7 @@ import UploadCard from "@/components/common/UploadCard";
 import useSettlementApi, {
   type BankStatementUploadResponse,
 } from "@/hooks/useSettlementApi";
+import { useToast } from "@shared/components/feedback";
 import * as styles from "@/pages/treasurer/compare/Compare.css";
 
 const BANK_STATEMENT_EXTENSIONS = [".xlsm", ".xlsx"];
@@ -18,6 +19,7 @@ const isValidBankStatementFile = (file: File) => {
 const Compare = () => {
   const { postBankStatement, getBankStatements, deleteBankStatement } =
     useSettlementApi();
+  const toast = useToast();
   const [currentSettlementId] = useState(() =>
     localStorage.getItem("currentSettlementId"),
   );
@@ -63,14 +65,14 @@ const Compare = () => {
     if (!file) return;
 
     if (!isValidBankStatementFile(file)) {
-      alert("거래내역 파일은 .xlsm, .xlsx 형식만 업로드할 수 있습니다.");
+      toast.error("거래내역 파일은 .xlsm, .xlsx 형식만 업로드할 수 있습니다.");
       return;
     }
 
     const settlementId = localStorage.getItem("currentSettlementId");
 
     if (!settlementId) {
-      alert("결산안 정보가 없습니다. 먼저 증빙 업로드 단계를 진행해주세요.");
+      toast.error("결산안 정보가 없습니다. 먼저 증빙 업로드 단계를 진행해주세요.");
       return;
     }
 
@@ -83,10 +85,10 @@ const Compare = () => {
       });
 
       await refreshUploadedStatements();
-      alert("거래내역 업로드가 완료되었습니다.");
+      toast.success("거래내역 업로드가 완료되었습니다.");
     } catch (error) {
       console.error("거래내역 업로드 실패", error);
-      alert("거래내역 업로드에 실패했습니다.");
+      toast.error("거래내역 업로드에 실패했습니다.");
     } finally {
       setIsUploading(false);
     }
@@ -106,9 +108,10 @@ const Compare = () => {
       setUploadedStatements((prevItems) =>
         prevItems.filter((statement) => statement.id !== item.id),
       );
+      toast.success("거래내역서가 삭제되었습니다.");
     } catch (error) {
       console.error("거래내역 삭제 실패", error);
-      alert("거래내역 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("거래내역 삭제에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setDeletingUploadIds((prevIds) => {
         const nextIds = new Set(prevIds);

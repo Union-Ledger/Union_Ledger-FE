@@ -9,6 +9,7 @@ import useSettlementApi, {
   type SettlementComment,
   type SettlementResponse,
 } from "@/hooks/useSettlementApi";
+import { useToast } from "@shared/components/feedback";
 
 const formatMoney = (amount: string) => {
   const parsedAmount = Number(amount);
@@ -191,6 +192,7 @@ const Create = () => {
   const [getSettlementOnce] = useState(() => getSettlement);
   const [getSettlementCommentsOnce] = useState(() => getSettlementComments);
   const [postResubmitSettlementOnce] = useState(() => postResubmitSettlement);
+  const toast = useToast();
 
   useEffect(() => {
     const fetchExpenseSummary = async () => {
@@ -253,12 +255,12 @@ const Create = () => {
     const trimmedMessage = resubmitMessage.trim();
 
     if (!settlementId) {
-      alert("재제출할 결산안 정보가 없습니다.");
+      toast.error("재제출할 결산안 정보가 없습니다.");
       return;
     }
 
     if (!trimmedMessage) {
-      alert("감사위원에게 전달할 재제출 메시지를 입력해주세요.");
+      toast.error("감사위원에게 전달할 재제출 메시지를 입력해주세요.");
       return;
     }
 
@@ -270,10 +272,10 @@ const Create = () => {
       });
       setSettlement(data);
       setResubmitMessage("");
-      alert("결산안이 재제출되었습니다.");
+      toast.success("결산안이 재제출되었습니다.");
     } catch (error) {
       console.error("결산안 재제출 실패", error);
-      alert("결산안 재제출에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("결산안 재제출에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsResubmitting(false);
     }

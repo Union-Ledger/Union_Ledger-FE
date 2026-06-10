@@ -7,6 +7,7 @@ import useSettlementApi, {
   type ReconciliationStatus,
   type SettlementArtifact,
 } from "@/hooks/useSettlementApi";
+import { useToast } from "@shared/components/feedback";
 
 type ReviewFilter = "all" | "matched" | "issue";
 
@@ -90,6 +91,7 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
   const [postSubmitSettlementOnce] = useState(() => postSubmitSettlement);
   const [postGenerateArtifactsOnce] = useState(() => postGenerateArtifacts);
   const [downloadArtifactOnce] = useState(() => downloadArtifact);
+  const toast = useToast();
 
   useEffect(() => {
     const runReconciliation = async () => {
@@ -172,13 +174,13 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
         result.excel.status === "failed" ||
         result.pdf.status === "failed"
       ) {
-        window.alert(
-          "일부 산출물 생성에 실패했습니다. 아래 상태를 확인해주세요.",
-        );
+        toast.error("일부 산출물 생성에 실패했습니다. 아래 상태를 확인해주세요.");
+      } else {
+        toast.success("결산안 생성이 완료되었습니다.");
       }
     } catch (error) {
       console.error("산출물 생성 실패", error);
-      window.alert("산출물 생성에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("산출물 생성에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsGenerating(false);
     }
@@ -199,10 +201,10 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
 
       const submittedSettlement = await postSubmitSettlementOnce(settlementId);
       setSubmittedSettlementId(submittedSettlement.id);
-      window.alert("결산안이 감사위원에게 제출되었습니다.");
+      toast.success("결산안이 감사위원에게 제출되었습니다.");
     } catch (error) {
       console.error("결산안 제출 실패", error);
-      window.alert("결산안 제출에 실패했습니다.");
+      toast.error("결산안 제출에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -228,9 +230,10 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
             }
           : prev,
       );
+      toast.success("수동 해결 처리가 완료되었습니다.");
     } catch (error) {
       console.error("대조 결과 수동 처리 실패", error);
-      window.alert("수동 처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("수동 처리에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setResolvingId(null);
     }
@@ -255,7 +258,7 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("산출물 다운로드 실패", error);
-      window.alert("산출물 다운로드에 실패했습니다.");
+      toast.error("산출물 다운로드에 실패했습니다.");
     } finally {
       setDownloadingArtifactId(null);
     }

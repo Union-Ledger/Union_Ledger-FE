@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import UploadCard from "@/components/common/UploadCard";
 import useOrganizationApi, { type TemplateData } from "@/hooks/useOrginizationApi";
+import { useConfirm, useToast } from "@shared/components/feedback";
 import * as styles from "@/pages/treasurer/template/Template.css";
 
 const Template = () => {
   const { getOrganization, getTemplate, postTemplate, patchTemplate, deleteTemplate } =
     useOrganizationApi();
+  const toast = useToast();
+  const confirm = useConfirm();
 
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [currentTemplate, setCurrentTemplate] = useState<TemplateData | null>(null);
@@ -29,7 +32,7 @@ const Template = () => {
         const organizations = await getOrganizationOnce();
 
         if (!organizations || organizations.length === 0) {
-          alert("소속된 조직이 없습니다.");
+          toast.error("소속된 조직이 없습니다.");
           return;
         }
 
@@ -53,7 +56,7 @@ const Template = () => {
     };
 
     loadOrganization();
-  }, [getOrganizationOnce, getTemplateOnce]);
+  }, [getOrganizationOnce, getTemplateOnce, toast]);
 
   const handleChangeFile = async (files: FileList | null) => {
     const file = files?.[0];
@@ -61,7 +64,7 @@ const Template = () => {
     if (!file) return;
 
     if (!organizationId) {
-      alert("조직 정보를 불러온 후 다시 시도해주세요.");
+      toast.error("조직 정보를 불러온 후 다시 시도해주세요.");
       return;
     }
 
@@ -99,9 +102,14 @@ const Template = () => {
           ? "양식이 수정되었습니다. 이전 양식은 보관 처리되었습니다."
           : "양식 업로드가 완료되었습니다. 이제 등록된 양식을 수정할 수 있습니다.",
       );
+      toast.success(
+        previousTemplate
+          ? "양식이 수정되었습니다."
+          : "양식 업로드가 완료되었습니다.",
+      );
     } catch (error) {
       console.error("업로드 실패", error);
-      alert("양식 업로드에 실패했습니다.");
+      toast.error("양식 업로드에 실패했습니다.");
     } finally {
       setIsUploading(false);
     }
@@ -110,13 +118,14 @@ const Template = () => {
   const handleDeleteTemplate = async () => {
     if (!currentTemplate) return;
 
-    if (
-      !window.confirm(
-        "등록된 양식을 삭제할까요? 이미 생성된 결산안에는 영향을 주지 않습니다.",
-      )
-    ) {
-      return;
-    }
+    const ok = await confirm({
+      title: "등록된 양식을 삭제할까요?",
+      description: "이미 생성된 결산안에는 영향을 주지 않습니다.",
+      confirmLabel: "삭제",
+      tone: "danger",
+    });
+
+    if (!ok) return;
 
     try {
       setIsDeleting(true);
@@ -124,9 +133,10 @@ const Template = () => {
       await deleteTemplateOnce(currentTemplate.id);
       setCurrentTemplate(null);
       setStatusMessage("양식이 삭제되었습니다. 새 양식을 업로드할 수 있습니다.");
+      toast.success("양식이 삭제되었습니다.");
     } catch (error) {
       console.error("양식 삭제 실패", error);
-      alert("양식 삭제에 실패했습니다.");
+      toast.error("양식 삭제에 실패했습니다.");
     } finally {
       setIsDeleting(false);
     }

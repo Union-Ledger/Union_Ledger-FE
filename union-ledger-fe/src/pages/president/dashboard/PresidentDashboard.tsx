@@ -5,6 +5,7 @@ import useDashboardApi, {
   type PresidentDashboardResponse,
 } from "@/hooks/useDashboardApi";
 import useSettlementApi from "@/hooks/useSettlementApi";
+import { useToast } from "@shared/components/feedback";
 import PresidentDashboardCards from "@/components/president/PresidentDashboardCards";
 import PresidentSettlementStatus from "@/components/president/PresidentSettlementStatus";
 import PresidentAuditorActivity from "@/components/president/PresidentAuditorActivity";
@@ -16,6 +17,7 @@ const PresidentDashboard = () => {
   const navigate = useNavigate();
   const { getPresidentDashboard } = useDashboardApi();
   const { postPublishSettlement } = useSettlementApi();
+  const toast = useToast();
   const [getPresidentDashboardOnce] = useState(() => getPresidentDashboard);
   const [postPublishSettlementOnce] = useState(() => postPublishSettlement);
   const [dashboard, setDashboard] =
@@ -64,10 +66,10 @@ const PresidentDashboard = () => {
           ),
         };
       });
-      alert("결산안이 공개되었습니다. 이제 학생들이 열람할 수 있어요.");
+      toast.success("결산안이 공개되었습니다. 이제 학생들이 열람할 수 있어요.");
     } catch (error) {
       console.error("결산안 공개 실패", error);
-      alert("결산안 공개에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("결산안 공개에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setPublishingSettlementId(null);
     }

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import useAdminApplicationApi from "@/hooks/useAdminApplicationApi";
 import type { AdminApplication } from "@/hooks/useStudentApi";
+import { useConfirm, useToast } from "@shared/components/feedback";
 import * as styles from "./AdminApplications.css";
 
 type ApplicationStatus = "pending" | "approved" | "rejected";
@@ -44,6 +45,8 @@ const AdminApplications = () => {
     approveAdminApplication,
     rejectAdminApplication,
   } = useAdminApplicationApi();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [applications, setApplications] = useState<AdminApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -100,20 +103,33 @@ const AdminApplications = () => {
         ? "회장 신청을 승인했습니다."
         : "회장 신청을 반려했습니다.";
 
+    if (status === "rejected") {
+      const ok = await confirm({
+        title: "이 신청을 반려하시겠습니까?",
+        description: "신청자가 다시 제출해야 합니다.",
+        confirmLabel: "반려",
+        tone: "danger",
+      });
+
+      if (!ok) return;
+    }
+
     try {
       setProcessingApplicationId(applicationId);
 
       if (status === "approved") {
         const response = await approveAdminApplication(applicationId, defaultNote);
         replaceApplication(response.application);
+        toast.success("회장 신청을 승인했습니다.");
         return;
       }
 
       const response = await rejectAdminApplication(applicationId, defaultNote);
       replaceApplication(response);
+      toast.success("회장 신청을 반려했습니다.");
     } catch (error) {
       console.error("회장 신청 검토 처리 실패", error);
-      alert("회장 신청 처리에 실패했습니다. 다시 시도해주세요.");
+      toast.error("회장 신청 처리에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setProcessingApplicationId(null);
     }
@@ -132,7 +148,7 @@ const AdminApplications = () => {
       saveBlob(blob, documentName);
     } catch (error) {
       console.error("회장 신청 서류 다운로드 실패", error);
-      alert("증빙 서류 다운로드에 실패했습니다. 다시 시도해주세요.");
+      toast.error("증빙 서류 다운로드에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setDownloadingKey(null);
     }

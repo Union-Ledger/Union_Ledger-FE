@@ -3,6 +3,7 @@ import useAuthApi, { type MeResponse } from "@/hooks/useAuthApi";
 import useOrganizationApi, {
   type OrganizationInvitation,
 } from "@/hooks/useOrginizationApi";
+import { useToast, useConfirm } from "@shared/components/feedback";
 import * as styles from "./PresidentInvite.css";
 
 type InviteRole = "재정담당자" | "감사위원";
@@ -114,6 +115,8 @@ const PresidentInvite = () => {
     deleteInvitation,
   } = useOrganizationApi();
   const { getMe } = useAuthApi();
+  const toast = useToast();
+  const confirm = useConfirm();
 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<InviteRole>("재정담당자");
@@ -187,17 +190,17 @@ const PresidentInvite = () => {
     const trimmedEmail = email.trim();
 
     if (!organizationId) {
-      alert("조직 정보를 찾을 수 없습니다.");
+      toast.error("조직 정보를 찾을 수 없습니다.");
       return;
     }
 
     if (!trimmedEmail) {
-      alert("초대할 이메일을 입력해주세요.");
+      toast.error("초대할 이메일을 입력해주세요.");
       return;
     }
 
     if (!trimmedEmail.endsWith("@konkuk.ac.kr")) {
-      alert("건국대학교 이메일(@konkuk.ac.kr)만 초대할 수 있습니다.");
+      toast.error("건국대학교 이메일(@konkuk.ac.kr)만 초대할 수 있습니다.");
       return;
     }
 
@@ -212,9 +215,10 @@ const PresidentInvite = () => {
 
       setSentInvitations((prev) => [invitation, ...prev]);
       setEmail("");
+      toast.success(`${trimmedEmail} 님에게 초대장을 발송했습니다.`);
     } catch (error) {
       console.error("조직 초대 발송 실패", error);
-      alert("초대장 발송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("초대장 발송에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsSending(false);
     }
@@ -224,24 +228,25 @@ const PresidentInvite = () => {
     const trimmedEmail = transferEmail.trim();
 
     if (!organizationId) {
-      alert("조직 정보를 찾을 수 없습니다.");
+      toast.error("조직 정보를 찾을 수 없습니다.");
       return;
     }
     if (!trimmedEmail) {
-      alert("후임자 이메일을 입력해주세요.");
+      toast.error("후임자 이메일을 입력해주세요.");
       return;
     }
     if (!trimmedEmail.endsWith("@konkuk.ac.kr")) {
-      alert("건국대학교 이메일(@konkuk.ac.kr)만 입력할 수 있습니다.");
+      toast.error("건국대학교 이메일(@konkuk.ac.kr)만 입력할 수 있습니다.");
       return;
     }
-    if (
-      !window.confirm(
-        `${trimmedEmail} 님에게 회장 권한을 이전합니다. 후임자가 수락하면 본인의 회장 권한은 회수됩니다. 진행할까요?`,
-      )
-    ) {
-      return;
-    }
+    const ok = await confirm({
+      title: `${trimmedEmail} 님에게 회장 권한을 이전할까요?`,
+      description:
+        "후임자가 수락하면 회장 권한이 상대에게 넘어가며, 본인의 회장 권한은 회수되어 되돌릴 수 없습니다.",
+      confirmLabel: "권한 이전",
+      tone: "danger",
+    });
+    if (!ok) return;
 
     try {
       setIsTransferring(true);
@@ -258,7 +263,7 @@ const PresidentInvite = () => {
       setTransferEmail("");
     } catch (error) {
       console.error("권한 이전 실패", error);
-      alert("권한 이전에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("권한 이전에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsTransferring(false);
     }
@@ -266,7 +271,7 @@ const PresidentInvite = () => {
 
   const handleCancel = async (invitationId: string) => {
     if (!organizationId) {
-      alert("조직 정보를 찾을 수 없습니다.");
+      toast.error("조직 정보를 찾을 수 없습니다.");
       return;
     }
 
@@ -278,7 +283,7 @@ const PresidentInvite = () => {
       );
     } catch (error) {
       console.error("조직 초대 회수 실패", error);
-      alert("초대 회수에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("초대 회수에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setDeletingInvitationId(null);
     }

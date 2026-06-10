@@ -2,12 +2,14 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useStudentApi from "@/hooks/useStudentApi";
 import { ROUTES } from "@/router/constant/router";
+import { useToast } from "@shared/components/feedback";
 import * as styles from "./StudentPresidentApplication.css";
 
 const StudentPresidentApplication = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { postAdminApplication } = useStudentApi();
+  const toast = useToast();
 
   const [postAdminApplicationOnce] = useState(() => postAdminApplication);
   const [organizationName, setOrganizationName] = useState("");
@@ -23,12 +25,12 @@ const StudentPresidentApplication = () => {
     const trimmedDepartmentName = departmentName.trim();
 
     if (!trimmedOrganizationName || !trimmedCollegeName || !trimmedDepartmentName) {
-      alert("조직 이름, 단과대학, 학과를 입력해주세요.");
+      toast.error("조직 이름, 단과대학, 학과를 입력해주세요.");
       return;
     }
 
     if (documents.length === 0) {
-      alert("증빙 서류를 업로드해주세요.");
+      toast.error("증빙 서류를 업로드해주세요.");
       return;
     }
 
@@ -44,10 +46,11 @@ const StudentPresidentApplication = () => {
 
       sessionStorage.setItem("studentPresidentApplicationSubmitted", "true");
       sessionStorage.setItem("studentPresidentApplicationId", application.id);
+      toast.success("회장 신청이 제출되었습니다.");
       navigate(ROUTES.STUDENT_DASHBOARD);
     } catch (error) {
       console.error("회장 신청 실패", error);
-      alert("회장 신청에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("회장 신청에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);
     }

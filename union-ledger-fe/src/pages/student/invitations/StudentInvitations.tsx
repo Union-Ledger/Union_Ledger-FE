@@ -3,6 +3,7 @@ import useStudentApi, {
   type StudentInvitation,
   type StudentInvitationStatus,
 } from "@/hooks/useStudentApi";
+import { useConfirm, useToast } from "@shared/components/feedback";
 import * as styles from "./StudentInvitations.css";
 
 const completedStatusLabel = (status: StudentInvitationStatus) => {
@@ -51,6 +52,8 @@ const getDescription = (invitation: StudentInvitation) => {
 const StudentInvitations = () => {
   const { getMyInvitations, postAcceptInvitation, postDeclineInvitation } =
     useStudentApi();
+  const toast = useToast();
+  const confirm = useConfirm();
   const [invitations, setInvitations] = useState<StudentInvitation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -98,15 +101,25 @@ const StudentInvitations = () => {
             : invitation,
         ),
       );
+      toast.success("초대를 수락했습니다.");
     } catch (error) {
       console.error("초대 수락 실패", error);
-      alert("초대 수락에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("초대 수락에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setProcessingInvitationId(null);
     }
   };
 
   const handleReject = async (invitationId: string) => {
+    const ok = await confirm({
+      title: "초대를 거절하시겠습니까?",
+      description: "거절한 초대는 되돌릴 수 없습니다.",
+      confirmLabel: "거절",
+      tone: "danger",
+    });
+
+    if (!ok) return;
+
     try {
       setProcessingInvitationId(invitationId);
       const declined = await postDeclineInvitationOnce(invitationId);
@@ -122,9 +135,10 @@ const StudentInvitations = () => {
             : invitation,
         ),
       );
+      toast.success("초대를 거절했습니다.");
     } catch (error) {
       console.error("초대 거절 실패", error);
-      alert("초대 거절에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error("초대 거절에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setProcessingInvitationId(null);
     }
