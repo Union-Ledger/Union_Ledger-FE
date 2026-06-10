@@ -1,50 +1,66 @@
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  ScrollRestoration,
+} from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
-import Login from "@pages/logIn/LogIn";
-import SignUp from "@pages/logIn/SignUp";
-import ForgotPassword from "@pages/logIn/ForgotPassword";
 import AppLayout from "@shared/components/layout/AppLayout";
 import RequireAuth from "@shared/components/auth/RequireAuth";
 import RequireRole from "@shared/components/auth/RequireRole";
+import RouteTitle from "@shared/components/RouteTitle";
+import NotFoundPage from "@pages/error/NotFoundPage";
+import RouteErrorPage from "@pages/error/RouteErrorPage";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { EvidenceReviewProvider } from "@/contexts/EvidenceReviewContext";
-import Template from "@/pages/treasurer/template/Template";
-import Upload from "@/pages/treasurer/upload/Upload";
-import Compare from "@/pages/treasurer/compare/Compare";
-import Create from "@/pages/treasurer/create/Create";
-import AuditorDashboard from "@/pages/auditor/dashboard/AuditorDashboard";
-import Dashboard from "@/pages/treasurer/dashboard/Dashboard";
-import Review from "@/pages/auditor/review/Review";
-import ReviewDetail from "@/pages/auditor/review/ReviewDetail";
 import DevAutoLogin from "@/components/common/DevAutoLogin";
-import StudentDashboard from "@/pages/student/dashboard/StudentDashboard";
-import StudentSettlementLookup from "@/pages/student/settlement/StudentSettlementLookup";
-import StudentInvitations from "@/pages/student/invitations/StudentInvitations";
-import StudentPresidentApplication from "@/pages/student/presidentApplication/StudentPresidentApplication";
-import PresidentDashboard from "@/pages/president/dashboard/PresidentDashboard";
-import PresidentInvite from "@/pages/president/invite/PresidentInvite";
-import AdminApplications from "@/pages/admin/applications/AdminApplications";
+import {
+  AdminApplications,
+  AuditorDashboard,
+  Compare,
+  Create,
+  Dashboard,
+  ForgotPassword,
+  Login,
+  PresidentDashboard,
+  PresidentInvite,
+  Review,
+  ReviewDetail,
+  SignUp,
+  StudentDashboard,
+  StudentInvitations,
+  StudentPresidentApplication,
+  StudentSettlementLookup,
+  Template,
+  Upload,
+} from "@router/lazyPages";
 
 const router = createBrowserRouter([
   {
     element: (
       <>
         {import.meta.env.DEV && <DevAutoLogin />}
+        <RouteTitle />
+        <ScrollRestoration />
         <Outlet />
       </>
     ),
+    errorElement: <RouteErrorPage />,
     children: [
       {
         path: ROUTES.LOGIN,
         element: <Login />,
+        handle: { title: "로그인" },
       },
       {
         path: ROUTES.SIGNUP,
         element: <SignUp />,
+        handle: { title: "회원가입" },
       },
       {
         path: ROUTES.FORGOT_PASSWORD,
         element: <ForgotPassword />,
+        handle: { title: "비밀번호 재설정" },
       },
       {
         element: (
@@ -74,22 +90,27 @@ const router = createBrowserRouter([
               {
                 path: "dashboard",
                 element: <Dashboard />,
+                handle: { title: "대시보드" },
               },
               {
                 path: "template",
                 element: <Template />,
+                handle: { title: "결산안 양식" },
               },
               {
                 path: "upload",
                 element: <Upload />,
+                handle: { title: "증빙 업로드" },
               },
               {
                 path: "compare",
                 element: <Compare />,
+                handle: { title: "거래내역 대조" },
               },
               {
                 path: "create",
                 element: <Create />,
+                handle: { title: "결산안 생성" },
               },
             ],
           },
@@ -106,14 +127,17 @@ const router = createBrowserRouter([
               {
                 path: "dashboard",
                 element: <AuditorDashboard />,
+                handle: { title: "감사 대시보드" },
               },
               {
                 path: "review",
                 element: <Review />,
+                handle: { title: "결산안 검토" },
               },
               {
                 path: "review/detail/:id",
                 element: <ReviewDetail />,
+                handle: { title: "검토 상세" },
               },
             ],
           },
@@ -125,23 +149,23 @@ const router = createBrowserRouter([
               {
                 path: "dashboard",
                 element: <StudentDashboard />,
+                handle: { title: "학생 대시보드" },
               },
               {
                 path: "settlements",
                 element: <StudentSettlementLookup />,
+                handle: { title: "결산안 조회" },
               },
               {
                 path: "invitations",
                 element: <StudentInvitations />,
+                handle: { title: "받은 초대" },
               },
               {
                 path: "president-application",
                 element: <StudentPresidentApplication />,
+                handle: { title: "회장 신청" },
               },
-              // {
-              //   path: "history",
-              //   element: <StudentHistory />,
-              // },
             ],
           },
 
@@ -157,10 +181,12 @@ const router = createBrowserRouter([
               {
                 path: "dashboard",
                 element: <PresidentDashboard />,
+                handle: { title: "회장 대시보드" },
               },
               {
                 path: "invite",
                 element: <PresidentInvite />,
+                handle: { title: "팀원 초대" },
               },
             ],
           },
@@ -181,13 +207,15 @@ const router = createBrowserRouter([
               {
                 path: "applications",
                 element: <AdminApplications />,
+                handle: { title: "회장 신청 관리" },
               },
             ],
           },
 
           {
             path: "*",
-            element: <div>404 Not Found</div>,
+            element: <NotFoundPage />,
+            handle: { title: "페이지를 찾을 수 없습니다" },
           },
         ],
       },

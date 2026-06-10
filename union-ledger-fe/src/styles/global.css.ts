@@ -16,6 +16,14 @@ globalStyle("body", {
   fontFamily: vars.font.body,
   lineHeight: 1.5,
   WebkitFontSmoothing: "antialiased",
+  wordBreak: "keep-all",
+  overflowWrap: "break-word",
+});
+
+globalStyle(":focus-visible", {
+  outline: `2px solid ${vars.color.primary}`,
+  outlineOffset: "2px",
+  borderRadius: "2px",
 });
 
 globalStyle("#root", {

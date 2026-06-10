@@ -229,6 +229,18 @@ export const errorText = style({
   textAlign: "center",
 });
 
+export const infoText = style({
+  ...vars.font.body_regular_14,
+  width: "100%",
+  marginTop: vars.space.lg,
+  padding: `${vars.space.md} ${vars.space.lg}`,
+  borderRadius: vars.radius.md,
+  background: vars.color.semantic.info.bg,
+  border: `1px solid ${vars.color.semantic.info.border}`,
+  color: vars.color.semantic.info.text,
+  textAlign: "center",
+});
+
 export const stepper = style({
   width: "100%",
   display: "flex",

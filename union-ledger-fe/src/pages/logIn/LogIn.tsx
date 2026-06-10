@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthApi from "@/hooks/useAuthApi";
+import { SESSION_EXPIRED_FLAG } from "@/hooks/useApi";
 import { ROUTES } from "@/router/constant/router";
 import { getDashboardRouteByUser } from "./authRoute";
 import * as styles from "./Auth.css";
@@ -13,6 +14,14 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showSessionExpired, setShowSessionExpired] = useState(false);
+
+  useEffect(() => {
+    if (sessionStorage.getItem(SESSION_EXPIRED_FLAG)) {
+      sessionStorage.removeItem(SESSION_EXPIRED_FLAG);
+      setShowSessionExpired(true);
+    }
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -54,6 +63,12 @@ const Login = () => {
         <div className={styles.logo}>UL</div>
         <h1 className={styles.brandTitle}>Union-Ledger</h1>
         <p className={styles.subtitle}>대학 학생회 결산 시스템</p>
+
+        {showSessionExpired && (
+          <p className={styles.infoText} role="status">
+            세션이 만료되어 로그아웃되었습니다. 다시 로그인해주세요.
+          </p>
+        )}
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <label className={styles.field}>

@@ -1,7 +1,25 @@
 import axios, { type AxiosInstance } from "axios";
-import { BASE_URL } from "../../config";
+import { BASE_URL, ENDPOINTS } from "../../config";
 import { tokenStorage } from "@/utils/token";
+import { ROUTES } from "@router/constant/router";
 import { useMemo } from "react";
+
+// 로그인 화면에서 세션 만료 안내를 띄우기 위한 sessionStorage 플래그
+export const SESSION_EXPIRED_FLAG = "sessionExpired";
+
+const handleUnauthorized = (requestUrl: string) => {
+  const hadToken = Boolean(tokenStorage.getAccessToken());
+  tokenStorage.removeAccessToken();
+
+  // 자격 증명 오류(로그인 요청 자체의 401)나 이미 로그인 화면이면 그대로 둔다
+  const isLoginRequest = requestUrl.includes(ENDPOINTS.AUTH.LOGIN);
+  const isOnLoginPage = window.location.pathname === ROUTES.LOGIN;
+
+  if (hadToken && !isLoginRequest && !isOnLoginPage) {
+    sessionStorage.setItem(SESSION_EXPIRED_FLAG, "1");
+    window.location.replace(ROUTES.LOGIN);
+  }
+};
 
 const applyAuthInterceptor = (instance: AxiosInstance) => {
   instance.interceptors.request.use((config) => {
@@ -18,7 +36,7 @@ const applyAuthInterceptor = (instance: AxiosInstance) => {
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        tokenStorage.removeAccessToken();
+        handleUnauthorized(String(error.config?.url ?? ""));
       }
 
       return Promise.reject(error);
