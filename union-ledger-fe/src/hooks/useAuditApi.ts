@@ -108,12 +108,6 @@ interface PostAuditDecisionData {
   comment: string;
 }
 
-interface PostAuditCommentData {
-  settlementId: string;
-  evidenceId: string;
-  comment: string;
-}
-
 const useAuditApi = () => {
   const { auditApi, settlementApi, api } = useApi();
 
@@ -195,24 +189,6 @@ const useAuditApi = () => {
       .catch((error) => {
         console.log("감사 코멘트 수정 실패 status:", error.response?.status);
         console.log("감사 코멘트 수정 실패 detail:", error.response?.data);
-        throw error;
-      });
-  };
-
-  const postAuditComment = ({
-    settlementId,
-    evidenceId,
-    comment,
-  }: PostAuditCommentData): Promise<AuditComment> => {
-    return settlementApi
-      .post(ENDPOINTS.SETTLEMENT.COMMENT(settlementId), {
-        evidence_id: evidenceId,
-        comment,
-      })
-      .then((response) => response.data)
-      .catch((error) => {
-        console.log("감사 코멘트 등록 실패 status:", error.response?.status);
-        console.log("감사 코멘트 등록 실패 detail:", error.response?.data);
         throw error;
       });
   };

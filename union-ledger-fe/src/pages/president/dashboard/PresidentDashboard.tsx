@@ -4,6 +4,7 @@ import { ROUTES } from "@/router/constant/router";
 import useDashboardApi, {
   type PresidentDashboardResponse,
 } from "@/hooks/useDashboardApi";
+import useSettlementApi from "@/hooks/useSettlementApi";
 import PresidentDashboardCards from "@/components/president/PresidentDashboardCards";
 import PresidentSettlementStatus from "@/components/president/PresidentSettlementStatus";
 import PresidentAuditorActivity from "@/components/president/PresidentAuditorActivity";
@@ -14,9 +15,14 @@ import * as styles from "./PresidentDashboard.css";
 const PresidentDashboard = () => {
   const navigate = useNavigate();
   const { getPresidentDashboard } = useDashboardApi();
+  const { postPublishSettlement } = useSettlementApi();
   const [getPresidentDashboardOnce] = useState(() => getPresidentDashboard);
+  const [postPublishSettlementOnce] = useState(() => postPublishSettlement);
   const [dashboard, setDashboard] =
     useState<PresidentDashboardResponse | null>(null);
+  const [publishingSettlementId, setPublishingSettlementId] = useState<
+    string | null
+  >(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -37,6 +43,35 @@ const PresidentDashboard = () => {
 
     loadDashboard();
   }, [getPresidentDashboardOnce]);
+
+  const handlePublish = async (settlementId: string) => {
+    try {
+      setPublishingSettlementId(settlementId);
+      await postPublishSettlementOnce(settlementId);
+      setDashboard((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          treasurer_work: prev.treasurer_work.map((settlement) =>
+            settlement.settlement_id === settlementId
+              ? {
+                  ...settlement,
+                  status: "published",
+                  status_label: "공개 완료",
+                }
+              : settlement,
+          ),
+        };
+      });
+      alert("결산안이 공개되었습니다. 이제 학생들이 열람할 수 있어요.");
+    } catch (error) {
+      console.error("결산안 공개 실패", error);
+      alert("결산안 공개에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
+      setPublishingSettlementId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -68,7 +103,11 @@ const PresidentDashboard = () => {
         reviewPendingCount={dashboard.review_pending_count}
       />
 
-      <PresidentSettlementStatus settlements={dashboard.treasurer_work} />
+      <PresidentSettlementStatus
+        settlements={dashboard.treasurer_work}
+        publishingSettlementId={publishingSettlementId}
+        onPublish={handlePublish}
+      />
 
       <PresidentAuditorActivity auditors={dashboard.auditor_activity} />
 

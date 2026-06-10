@@ -171,6 +171,24 @@ export const reportFooter = style({
   color: "#405574",
 });
 
+export const publishButton = style({
+  width: "100%",
+  height: "52px",
+  marginTop: "20px",
+  border: "none",
+  borderRadius: "8px",
+  background: `linear-gradient(90deg, ${vars.color.gradient.violetFrom}, ${vars.color.gradient.violetTo})`,
+  color: vars.color.surface,
+  cursor: "pointer",
+  ...vars.font.body_medium_14,
+  fontWeight: "700",
+
+  ":disabled": {
+    cursor: "not-allowed",
+    opacity: 0.6,
+  },
+});
+
 export const auditTitleRow = style({
   display: "flex",
   alignItems: "center",

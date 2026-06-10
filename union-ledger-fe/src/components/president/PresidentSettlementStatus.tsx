@@ -7,6 +7,8 @@ import * as styles from "./PresidentDashboardSections.css";
 
 interface PresidentSettlementStatusProps {
   settlements: PresidentTreasurerWork[];
+  publishingSettlementId: string | null;
+  onPublish: (settlementId: string) => void;
 }
 
 const getStatusTone = (status: string) => {
@@ -19,6 +21,8 @@ const getStatusTone = (status: string) => {
 
 const PresidentSettlementStatus = ({
   settlements,
+  publishingSettlementId,
+  onPublish,
 }: PresidentSettlementStatusProps) => {
   return (
     <section className={styles.panel}>
@@ -33,6 +37,11 @@ const PresidentSettlementStatus = ({
               100,
               Math.max(0, settlement.progress_percent),
             );
+            const isPublished =
+              settlement.status === "published" ||
+              settlement.status_label.includes("공개 완료");
+            const canPublish =
+              settlement.status === "approved" && !isPublished;
 
             return (
               <article
@@ -92,6 +101,21 @@ const PresidentSettlementStatus = ({
                   제출일:{" "}
                   {formatPresidentDashboardDate(settlement.submitted_at)}
                 </p>
+
+                {canPublish && (
+                  <button
+                    type="button"
+                    className={styles.publishButton}
+                    disabled={
+                      publishingSettlementId === settlement.settlement_id
+                    }
+                    onClick={() => onPublish(settlement.settlement_id)}
+                  >
+                    {publishingSettlementId === settlement.settlement_id
+                      ? "공개 중..."
+                      : "결산안 공개하기"}
+                  </button>
+                )}
               </article>
             );
           })}
