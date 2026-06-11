@@ -39,6 +39,75 @@ export const desc = style({
   color: vars.color.gray,
 });
 
+export const statusCard = style({
+  display: "flex",
+  alignItems: "flex-start",
+  gap: "14px",
+  padding: "20px",
+  borderRadius: vars.radius.lg,
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.surface,
+  boxShadow: vars.shadow.sm,
+});
+
+export const statusBadge = style({
+  ...vars.font.body_medium_14,
+  flexShrink: 0,
+  padding: "4px 12px",
+  borderRadius: vars.radius.full,
+  fontWeight: 700,
+});
+
+export const statusBadgePending = style({
+  background: vars.color.semantic.info.bg,
+  border: `1px solid ${vars.color.semantic.info.border}`,
+  color: vars.color.semantic.info.text,
+});
+
+export const statusBadgeApproved = style({
+  background: vars.color.semantic.success.bg,
+  border: `1px solid ${vars.color.semantic.success.border}`,
+  color: vars.color.semantic.success.text,
+});
+
+export const statusBadgeRejected = style({
+  background: vars.color.semantic.danger.bg,
+  border: `1px solid ${vars.color.semantic.danger.border}`,
+  color: vars.color.semantic.danger.text,
+});
+
+export const statusBody = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+  minWidth: 0,
+});
+
+export const statusTitle = style({
+  ...vars.font.title_bold_16,
+  color: vars.color.summaryTitle,
+});
+
+export const statusMeta = style({
+  ...vars.font.body_regular_14,
+  color: vars.color.description,
+});
+
+export const statusNote = style({
+  ...vars.font.body_medium_14,
+  color: vars.color.semantic.warning.text,
+});
+
+export const warningText = style({
+  ...vars.font.caption_regular_12,
+  margin: 0,
+  padding: "10px 14px",
+  borderRadius: vars.radius.sm,
+  border: `1px solid ${vars.color.semantic.warning.border}`,
+  background: vars.color.semantic.warning.bg,
+  color: vars.color.semantic.warning.text,
+});
+
 export const noticeBox = style({
   display: "flex",
   gap: "8px",

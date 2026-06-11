@@ -124,6 +124,18 @@ const useStudentApi = () => {
       });
   };
 
+  // 내 회장 신청 목록 (최신순) — 신청 페이지에서 진행 상태 표시에 사용
+  const getMyAdminApplications = (): Promise<AdminApplication[]> => {
+    return api
+      .get(ENDPOINTS.ADMIN_APPLICATION.MINE)
+      .then((response) => response.data)
+      .catch((error) => {
+        console.log("내 회장 신청 조회 실패 status:", error.response?.status);
+        console.log("내 회장 신청 조회 실패 detail:", error.response?.data);
+        throw error;
+      });
+  };
+
   const getAdminApplication = (
     applicationId: string,
   ): Promise<AdminApplication> => {
@@ -142,6 +154,7 @@ const useStudentApi = () => {
     postAcceptInvitation,
     postDeclineInvitation,
     postAdminApplication,
+    getMyAdminApplications,
     getAdminApplication,
   };
 };

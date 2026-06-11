@@ -22,6 +22,7 @@ export const ENDPOINTS = {
   ADMIN_APPLICATION: {
     CREATE: "/admin-applications",
     LIST: "/admin-applications",
+    MINE: "/admin-applications/me",
     DETAIL: (applicationId: string) => `/admin-applications/${applicationId}`,
     DOCUMENT: (applicationId: string, index: number) =>
       `/admin-applications/${applicationId}/documents/${index}`,

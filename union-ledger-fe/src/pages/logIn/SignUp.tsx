@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthApi from "@/hooks/useAuthApi";
 import { ROUTES } from "@/router/constant/router";
+import { useToast } from "@shared/components/feedback";
 import PasswordStrengthMeter from "@shared/components/PasswordStrengthMeter";
 import { getDashboardRouteByRoles, getDashboardRouteByUser } from "./authRoute";
 import eyeGray from "@/assets/eye-gray.svg";
@@ -34,6 +35,7 @@ const getApiErrorMessage = (error: unknown, fallback: string) => {
 
 const SignUp = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const { postSendVerificationCode, postVerifyEmail, postSignup, getMe } =
     useAuthApi();
 
@@ -161,6 +163,10 @@ const SignUp = () => {
         return;
       }
 
+      toast.info(
+        "학생회장이신가요? 사이드바의 '회장 신청'에서 조직 등록을 신청할 수 있습니다.",
+        { duration: 8000 },
+      );
       navigate(getDashboardRouteByUser(me));
     } catch (error) {
       console.error("회원가입 실패", error);
@@ -452,7 +458,9 @@ const SignUp = () => {
 
               <p className={styles.helperText}>
                 초대 코드가 없으면 일반 학우로 가입됩니다. 재정담당자나
-                감사위원 권한은 초대 코드로만 부여됩니다.
+                감사위원 권한은 초대 코드로만 부여됩니다. 학생회장이라면 가입
+                후 사이드바의 &lsquo;회장 신청&rsquo;에서 조직 등록을 신청할
+                수 있습니다.
               </p>
 
               {errorMessage && (
