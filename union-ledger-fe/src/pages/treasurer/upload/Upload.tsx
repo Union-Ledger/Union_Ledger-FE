@@ -286,7 +286,7 @@ const Upload = () => {
     status: evidence.status ?? "uploaded",
     evidenceType: evidence.evidence_type ?? "",
     extractedPayload: evidence.extracted_payload ?? {},
-    isExtracting: true,
+    isExtracting: false,
     extractStatus: "pending",
   });
 
@@ -400,7 +400,8 @@ const Upload = () => {
     [processExtractQueue, setReviewItems],
   );
 
-  useEffect(() => {
+  // 업로드 즉시 자동 실행하지 않고, 사용자가 실행 버튼을 눌렀을 때만 OCR을 돌린다.
+  const runPendingExtracts = useCallback(() => {
     reviewItems.forEach((item) => {
       if (item.extractStatus === "pending") {
         enqueueEvidenceExtract(item.id, item.budgetCategory);
@@ -656,7 +657,7 @@ const Upload = () => {
       setReviewItems((prevItems) => [...nextReviewItems, ...prevItems]);
       toast.success(`증빙 ${uploadedEvidences.length}건이 업로드되었습니다.`);
       setUploadStatusMessage(
-        "증빙 업로드가 완료되었습니다. OCR은 백그라운드에서 진행되며, 기다리지 않고 바로 수정할 수 있습니다.",
+        "증빙 업로드가 완료되었습니다. 'OCR 실행' 버튼을 누르면 종류와 금액을 자동으로 인식합니다.",
       );
 
     } catch (error) {
@@ -684,12 +685,11 @@ const Upload = () => {
     const failed = reviewItems.filter(
       (item) => item.extractStatus === "failed",
     ).length;
+    const done = reviewItems.filter(
+      (item) => item.extractStatus === "done",
+    ).length;
 
-    return {
-      active: running + pending,
-      done: reviewItems.length - running - pending,
-      failed,
-    };
+    return { running, pending, failed, done };
   }, [reviewItems]);
 
   return (
@@ -751,13 +751,23 @@ const Upload = () => {
             <h2 className={styles.reviewTitle}>
               업로드 목록 ({reviewItems.length})
             </h2>
-            {extractSummary.active > 0 && (
+            {extractSummary.pending > 0 && (
+              <button
+                type="button"
+                className={styles.runExtractButton}
+                onClick={runPendingExtracts}
+                disabled={extractSummary.running > 0}
+              >
+                OCR 실행 ({extractSummary.pending}건)
+              </button>
+            )}
+            {extractSummary.running > 0 && (
               <span className={styles.extractProgress}>
                 <Spinner size="sm" label="OCR 진행 중" />
                 OCR 처리 중 {extractSummary.done}/{reviewItems.length}
               </span>
             )}
-            {extractSummary.active === 0 && extractSummary.failed > 0 && (
+            {extractSummary.running === 0 && extractSummary.failed > 0 && (
               <span className={styles.extractFailedSummary}>
                 OCR 실패 {extractSummary.failed}건 — 카드에서 다시 시도할 수
                 있습니다
@@ -830,10 +840,15 @@ const Upload = () => {
                     </span>
                   )}
                   {item.extractStatus === "pending" && (
-                    <span className={styles.reviewExtractStatus}>
-                      <Spinner size="sm" label="OCR 대기 중" />
-                      OCR 대기 중입니다.
-                    </span>
+                    <button
+                      type="button"
+                      className={styles.cardRunExtractButton}
+                      onClick={() =>
+                        enqueueEvidenceExtract(item.id, item.budgetCategory)
+                      }
+                    >
+                      OCR 실행
+                    </button>
                   )}
                   {item.extractStatus === "failed" && (
                     <span className={styles.reviewExtractStatus}>

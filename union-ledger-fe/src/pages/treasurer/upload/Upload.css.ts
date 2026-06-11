@@ -302,6 +302,47 @@ export const retryExtractButton = style({
   textDecoration: "underline",
 });
 
+// 업로드 목록 헤더의 일괄 OCR 실행 버튼 (강조)
+export const runExtractButton = style({
+  ...vars.font.body_medium_14,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "8px",
+  padding: "8px 18px",
+  border: 0,
+  borderRadius: vars.radius.full,
+  color: "#FFFFFF",
+  fontWeight: 700,
+  background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
+  cursor: "pointer",
+  ":disabled": {
+    cursor: "not-allowed",
+    opacity: 0.55,
+  },
+});
+
+// 카드별 개별 OCR 실행 버튼 (보조 — 아웃라인)
+export const cardRunExtractButton = style({
+  ...vars.font.body_medium_14,
+  width: "100%",
+  height: "44px",
+  marginTop: "8px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "6px",
+  borderRadius: "12px",
+  border: `1.5px solid ${vars.color.primary}`,
+  background: vars.color.blueSoft.bgFrom,
+  color: vars.color.primary,
+  fontWeight: 700,
+  cursor: "pointer",
+  ":disabled": {
+    cursor: "not-allowed",
+    opacity: 0.55,
+  },
+});
+
 export const refundBadge = style({
   ...vars.font.caption_regular_12,
   alignSelf: "center",
