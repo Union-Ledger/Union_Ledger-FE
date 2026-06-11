@@ -309,6 +309,12 @@ export const errorText = style({
   fontSize: "1.3rem",
 });
 
+export const capsLockHint = style({
+  marginTop: "-10px",
+  color: "#B45309",
+  fontSize: "1.3rem",
+});
+
 export const completeContent = style({
   width: "100%",
   display: "flex",

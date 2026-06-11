@@ -58,6 +58,7 @@ const ForgotPassword = () => {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [isCapsLockOn, setIsCapsLockOn] = useState(false);
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -251,6 +252,7 @@ const ForgotPassword = () => {
                   value={email}
                   placeholder="your.name@konkuk.ac.kr"
                   autoComplete="email"
+                  autoFocus
                   onChange={(event) => {
                     setEmail(event.target.value);
                     setErrorMessage("");
@@ -258,7 +260,11 @@ const ForgotPassword = () => {
                 />
               </span>
             </label>
-            {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
+            {errorMessage && (
+              <p className={styles.errorText} role="alert">
+                {errorMessage}
+              </p>
+            )}
             <button
               className={styles.primaryButton}
               type="submit"
@@ -318,7 +324,11 @@ const ForgotPassword = () => {
                     : "재전송"}
               </button>
             </div>
-            {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
+            {errorMessage && (
+              <p className={styles.errorText} role="alert">
+                {errorMessage}
+              </p>
+            )}
             <button
               className={styles.primaryButton}
               type="submit"
@@ -363,6 +373,12 @@ const ForgotPassword = () => {
                     setPassword(event.target.value);
                     setErrorMessage("");
                   }}
+                  onKeyDown={(event) =>
+                    setIsCapsLockOn(event.getModifierState("CapsLock"))
+                  }
+                  onKeyUp={(event) =>
+                    setIsCapsLockOn(event.getModifierState("CapsLock"))
+                  }
                 />
                 <button
                   className={styles.visibilityButton}
@@ -376,6 +392,12 @@ const ForgotPassword = () => {
                 </button>
               </span>
             </label>
+
+            {isCapsLockOn && (
+              <p className={styles.capsLockHint} role="status">
+                Caps Lock이 켜져 있습니다.
+              </p>
+            )}
 
             <PasswordStrength strength={passwordStrength} />
 
@@ -412,14 +434,28 @@ const ForgotPassword = () => {
             </label>
 
             {passwordMismatch && (
-              <p className={styles.errorText}>비밀번호가 일치하지 않습니다</p>
-            )}
-            {remainingSeconds <= 0 && (
-              <p className={styles.errorText}>
-                인증코드 유효 시간이 만료되었습니다. 새 코드를 발급받아 주세요.
+              <p className={styles.errorText} role="alert">
+                비밀번호가 일치하지 않습니다
               </p>
             )}
-            {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
+            {remainingSeconds <= 0 && (
+              <p className={styles.errorText} role="alert">
+                인증코드 유효 시간이 만료되었습니다.{" "}
+                <button
+                  className={styles.resendButton}
+                  type="button"
+                  disabled={isSendingCode}
+                  onClick={() => void resendCode()}
+                >
+                  {isSendingCode ? "발송 중..." : "새 인증코드 받기"}
+                </button>
+              </p>
+            )}
+            {errorMessage && (
+              <p className={styles.errorText} role="alert">
+                {errorMessage}
+              </p>
+            )}
 
             <button
               className={styles.primaryButton}

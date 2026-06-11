@@ -1,8 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthApi from "@/hooks/useAuthApi";
 import { ROUTES } from "@/router/constant/router";
+import PasswordStrengthMeter from "@shared/components/PasswordStrengthMeter";
 import { getDashboardRouteByRoles, getDashboardRouteByUser } from "./authRoute";
+import eyeGray from "@/assets/eye-gray.svg";
 import * as styles from "./Auth.css";
 
 type SignupStep = 1 | 2 | 3;
@@ -52,10 +54,16 @@ const SignUp = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [signedUpRoles, setSignedUpRoles] = useState<string[]>([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [isCapsLockOn, setIsCapsLockOn] = useState(false);
 
   const isKonkukEmail = useMemo(() => {
     return email.trim().endsWith(KONKUK_EMAIL_DOMAIN);
   }, [email]);
+
+  const passwordMismatch =
+    passwordConfirm.length > 0 && password !== passwordConfirm;
 
   const canSubmitSignup =
     name &&
@@ -63,6 +71,20 @@ const SignUp = () => {
     password === passwordConfirm &&
     collegeName &&
     departmentName;
+
+  // 초대 코드 인증 대기 모달 ESC 닫기
+  useEffect(() => {
+    if (!modalVisible) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setModalVisible(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [modalVisible]);
 
   const showToast = () => {
     setToastVisible(true);
@@ -180,10 +202,21 @@ const SignUp = () => {
                     type="email"
                     value={email}
                     placeholder="your.name@konkuk.ac.kr"
+                    autoComplete="email"
+                    autoFocus
                     onChange={(event) => {
                       setEmail(event.target.value);
                       setCodeSent(false);
                       setErrorMessage("");
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key !== "Enter") return;
+                      event.preventDefault();
+                      if (codeSent) {
+                        setStep(2);
+                      } else if (email && !isSendingCode) {
+                        void handleSendCode();
+                      }
                     }}
                   />
                   <button
@@ -214,7 +247,9 @@ const SignUp = () => {
               )}
 
               {errorMessage && (
-                <p className={styles.errorText}>{errorMessage}</p>
+                <p className={styles.errorText} role="alert">
+                  {errorMessage}
+                </p>
               )}
 
               <button
@@ -238,9 +273,17 @@ const SignUp = () => {
                   placeholder="6자리 인증 코드"
                   maxLength={6}
                   inputMode="numeric"
+                  autoFocus
                   onChange={(event) =>
                     setVerificationCode(event.target.value.replace(/\D/g, ""))
                   }
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter") return;
+                    event.preventDefault();
+                    if (verificationCode.length === 6 && !isVerifying) {
+                      void handleVerifyCode();
+                    }
+                  }}
                 />
               </label>
               <p className={styles.helperText}>
@@ -249,7 +292,9 @@ const SignUp = () => {
               </p>
 
               {errorMessage && (
-                <p className={styles.errorText}>{errorMessage}</p>
+                <p className={styles.errorText} role="alert">
+                  {errorMessage}
+                </p>
               )}
 
               <div className={styles.actionRow}>
@@ -305,26 +350,73 @@ const SignUp = () => {
 
                 <label className={styles.field}>
                   <span className={styles.label}>비밀번호 *</span>
-                  <input
-                    className={styles.input}
-                    type="password"
-                    value={password}
-                    placeholder="최소 8자 이상"
-                    onChange={(event) => setPassword(event.target.value)}
-                  />
+                  <span className={styles.inputShell}>
+                    <input
+                      className={`${styles.input} ${styles.inputWithToggle}`}
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      placeholder="최소 8자 이상"
+                      autoComplete="new-password"
+                      onChange={(event) => setPassword(event.target.value)}
+                      onKeyDown={(event) =>
+                        setIsCapsLockOn(event.getModifierState("CapsLock"))
+                      }
+                      onKeyUp={(event) =>
+                        setIsCapsLockOn(event.getModifierState("CapsLock"))
+                      }
+                    />
+                    <button
+                      className={styles.visibilityButton}
+                      type="button"
+                      aria-label={
+                        showPassword ? "비밀번호 숨기기" : "비밀번호 보기"
+                      }
+                      onClick={() => setShowPassword((visible) => !visible)}
+                    >
+                      <img src={eyeGray} alt="" aria-hidden="true" />
+                    </button>
+                  </span>
+                  {isCapsLockOn && (
+                    <p className={styles.capsLockHint} role="status">
+                      Caps Lock이 켜져 있습니다.
+                    </p>
+                  )}
+                  <PasswordStrengthMeter password={password} />
                 </label>
 
                 <label className={styles.field}>
                   <span className={styles.label}>비밀번호 확인 *</span>
-                  <input
-                    className={styles.input}
-                    type="password"
-                    value={passwordConfirm}
-                    placeholder="비밀번호 재입력"
-                    onChange={(event) =>
-                      setPasswordConfirm(event.target.value)
-                    }
-                  />
+                  <span className={styles.inputShell}>
+                    <input
+                      className={`${styles.input} ${styles.inputWithToggle}`}
+                      type={showPasswordConfirm ? "text" : "password"}
+                      value={passwordConfirm}
+                      placeholder="비밀번호 재입력"
+                      autoComplete="new-password"
+                      onChange={(event) =>
+                        setPasswordConfirm(event.target.value)
+                      }
+                    />
+                    <button
+                      className={styles.visibilityButton}
+                      type="button"
+                      aria-label={
+                        showPasswordConfirm
+                          ? "비밀번호 숨기기"
+                          : "비밀번호 보기"
+                      }
+                      onClick={() =>
+                        setShowPasswordConfirm((visible) => !visible)
+                      }
+                    >
+                      <img src={eyeGray} alt="" aria-hidden="true" />
+                    </button>
+                  </span>
+                  {passwordMismatch && (
+                    <p className={styles.fieldErrorText} role="alert">
+                      비밀번호가 일치하지 않습니다
+                    </p>
+                  )}
                 </label>
 
                 <label className={styles.field}>
@@ -364,7 +456,9 @@ const SignUp = () => {
               </p>
 
               {errorMessage && (
-                <p className={styles.errorText}>{errorMessage}</p>
+                <p className={styles.errorText} role="alert">
+                  {errorMessage}
+                </p>
               )}
 
               <div className={styles.actionRow}>
@@ -408,17 +502,25 @@ const SignUp = () => {
       )}
 
       {modalVisible && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
+        <div className={styles.modalOverlay} role="presentation">
+          <div
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="signup-pending-modal-title"
+          >
             <button
               className={styles.modalClose}
               type="button"
+              aria-label="닫기"
               onClick={() => setModalVisible(false)}
             >
               ×
             </button>
             <div className={styles.modalIcon}>◷</div>
-            <h2 className={styles.modalTitle}>초대 코드 인증 대기 중</h2>
+            <h2 id="signup-pending-modal-title" className={styles.modalTitle}>
+              초대 코드 인증 대기 중
+            </h2>
             <p className={styles.modalText}>
               재정담당자 또는 감사위원 권한 인증까지 <strong>평균 1~2일</strong>{" "}
               소요됩니다.

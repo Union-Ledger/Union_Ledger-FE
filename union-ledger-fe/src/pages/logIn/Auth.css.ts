@@ -38,6 +38,14 @@ export const card = style({
   borderRadius: "14px",
   background: "rgba(255, 255, 255, 0.94)",
   boxShadow: "0 24px 70px rgba(31, 27, 90, 0.34)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "28px 22px",
+    },
+    "screen and (max-width: 480px)": {
+      padding: "24px 16px",
+    },
+  },
 });
 
 export const signupCard = style([
@@ -227,6 +235,44 @@ export const errorText = style({
   ...vars.font.body_regular_14,
   color: vars.color.accent.red,
   textAlign: "center",
+});
+
+export const inputShell = style({
+  position: "relative",
+  width: "100%",
+});
+
+export const inputWithToggle = style({
+  paddingRight: "52px",
+});
+
+export const visibilityButton = style({
+  position: "absolute",
+  right: "8px",
+  top: "50%",
+  width: "42px",
+  height: "42px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "none",
+  borderRadius: "50%",
+  background: "transparent",
+  color: "#94A3B8",
+  cursor: "pointer",
+  transform: "translateY(-50%)",
+});
+
+export const fieldErrorText = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.semantic.danger.strong,
+  textAlign: "left",
+});
+
+export const capsLockHint = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.semantic.warning.text,
+  textAlign: "left",
 });
 
 export const infoText = style({

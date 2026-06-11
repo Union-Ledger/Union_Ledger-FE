@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import useAuthApi from "@/hooks/useAuthApi";
 import { SESSION_EXPIRED_FLAG } from "@/hooks/useApi";
 import { ROUTES } from "@/router/constant/router";
+import { getApiErrorMessage } from "@/utils/apiError";
 import { getDashboardRouteByUser } from "./authRoute";
+import eyeGray from "@/assets/eye-gray.svg";
 import * as styles from "./Auth.css";
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,6 +16,9 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isCapsLockOn, setIsCapsLockOn] = useState(false);
+  const [emailHint, setEmailHint] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showSessionExpired, setShowSessionExpired] = useState(false);
@@ -41,7 +48,11 @@ const Login = () => {
       await postLogin({ email: trimmedEmail, password: trimmedPassword });
     } catch (error) {
       console.error("로그인 실패", error);
-      setErrorMessage("이메일 또는 비밀번호를 확인해주세요.");
+      setErrorMessage(
+        getApiErrorMessage(error, "이메일 또는 비밀번호를 확인해주세요.", {
+          401: "이메일 또는 비밀번호를 확인해주세요.",
+        }),
+      );
       setIsSubmitting(false);
       return;
     }
@@ -79,8 +90,25 @@ const Login = () => {
               value={email}
               placeholder="your.name@konkuk.ac.kr"
               autoComplete="email"
-              onChange={(event) => setEmail(event.target.value.trim())}
+              autoFocus
+              onChange={(event) => {
+                setEmail(event.target.value.trim());
+                setEmailHint("");
+              }}
+              onBlur={(event) => {
+                const value = event.target.value.trim();
+                setEmailHint(
+                  value && !EMAIL_PATTERN.test(value)
+                    ? "올바른 이메일 형식이 아닙니다."
+                    : "",
+                );
+              }}
             />
+            {emailHint && (
+              <p className={styles.fieldErrorText} role="alert">
+                {emailHint}
+              </p>
+            )}
           </label>
 
           <div className={styles.field}>
@@ -94,18 +122,43 @@ const Login = () => {
                 비밀번호 찾기
               </button>
             </span>
-            <input
-              className={styles.input}
-              type="password"
-              aria-label="비밀번호"
-              value={password}
-              placeholder="비밀번호"
-              autoComplete="current-password"
-              onChange={(event) => setPassword(event.target.value)}
-            />
+            <span className={styles.inputShell}>
+              <input
+                className={`${styles.input} ${styles.inputWithToggle}`}
+                type={showPassword ? "text" : "password"}
+                aria-label="비밀번호"
+                value={password}
+                placeholder="비밀번호"
+                autoComplete="current-password"
+                onChange={(event) => setPassword(event.target.value)}
+                onKeyDown={(event) =>
+                  setIsCapsLockOn(event.getModifierState("CapsLock"))
+                }
+                onKeyUp={(event) =>
+                  setIsCapsLockOn(event.getModifierState("CapsLock"))
+                }
+              />
+              <button
+                className={styles.visibilityButton}
+                type="button"
+                aria-label={showPassword ? "비밀번호 숨기기" : "비밀번호 보기"}
+                onClick={() => setShowPassword((visible) => !visible)}
+              >
+                <img src={eyeGray} alt="" aria-hidden="true" />
+              </button>
+            </span>
+            {isCapsLockOn && (
+              <p className={styles.capsLockHint} role="status">
+                Caps Lock이 켜져 있습니다.
+              </p>
+            )}
           </div>
 
-          {errorMessage && <p className={styles.errorText}>{errorMessage}</p>}
+          {errorMessage && (
+            <p className={styles.errorText} role="alert">
+              {errorMessage}
+            </p>
+          )}
 
           <button
             className={styles.primaryButton}
