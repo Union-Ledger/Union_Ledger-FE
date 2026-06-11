@@ -7,6 +7,9 @@ import usePublicSettlementApi, {
   type PublicSettlementListItem,
 } from "@/hooks/usePublicSettlementApi";
 import { useToast } from "@shared/components/feedback";
+import DonutChart from "@shared/components/charts/DonutChart";
+import MonthlyBarChart from "@shared/components/charts/MonthlyBarChart";
+import { formatCompactKrw } from "@/utils/format";
 import * as styles from "./StudentSettlementLookup.css";
 
 const ITEMS_PER_PAGE = 10;
@@ -260,6 +263,25 @@ const StudentSettlementLookup = () => {
     );
   }, [items, itemSearch]);
 
+  // 월별 지출 집계 — 추이 차트용
+  const monthlySummary = useMemo(() => {
+    const map = new Map<string, number>();
+
+    items.forEach((item) => {
+      const date = item.evidence_date ?? "";
+      if (!/^\d{4}-\d{2}/.test(date)) return;
+      const key = date.slice(0, 7);
+      map.set(key, (map.get(key) ?? 0) + getNumericAmount(item.amount));
+    });
+
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => ({
+        label: `${Number(key.slice(5, 7))}월`,
+        value,
+      }));
+  }, [items]);
+
   const totalItemPages = Math.max(
     1,
     Math.ceil(filteredItems.length / ITEMS_PER_PAGE),
@@ -456,6 +478,28 @@ const StudentSettlementLookup = () => {
 
             {!isDetailLoading && !detailErrorMessage && (
               <>
+                {categorySummary.length > 0 && (
+                  <div className={styles.chartsRow}>
+                    <div className={styles.chartCard}>
+                      <h3 className={styles.chartTitle}>구분별 비율</h3>
+                      <DonutChart
+                        data={categorySummary.map((category) => ({
+                          label: category.name,
+                          value: category.amount,
+                        }))}
+                        centerLabel={`₩${formatCompactKrw(categoryTotal)}`}
+                        centerSubLabel="총 지출"
+                      />
+                    </div>
+                    {monthlySummary.length > 1 && (
+                      <div className={styles.chartCard}>
+                        <h3 className={styles.chartTitle}>월별 지출 추이</h3>
+                        <MonthlyBarChart data={monthlySummary} />
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className={styles.categoryList}>
                   {categorySummary.length === 0 && (
                     <p className={styles.stateMessage}>공개된 지출 항목이 없습니다.</p>

@@ -444,6 +444,34 @@ export const sectionTitle = style({
   },
 });
 
+export const chartsRow = style({
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "18px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+export const chartCard = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "14px",
+  padding: "18px",
+  border: "1px solid #E2E8F0",
+  borderRadius: "12px",
+  background: "#F8FAFC",
+});
+
+export const chartTitle = style({
+  ...vars.font.body_medium_14,
+  margin: 0,
+  color: "#334155",
+  fontWeight: 800,
+});
+
 export const tableToolbar = style({
   display: "flex",
   alignItems: "center",
