@@ -151,6 +151,7 @@ const Template = () => {
         </span>
       </div>
 
+      <div className={styles.layoutGrid}>
       <div className={styles.contentContainer}>
         {currentTemplate ? (
           <>
@@ -204,18 +205,44 @@ const Template = () => {
         {statusMessage && (
           <div className={styles.statusMessage}>{statusMessage}</div>
         )}
+      </div>
 
-        <div className={styles.uploadInfoContainer}>
-          <span className={styles.uploadInfoTitle}>자동 인식 항목:</span>
-          <ul className={styles.uploadInfoDescContainer}>
-            <li className={styles.uploadInfoDesc}>
-              날짜, 적요, 입금, 출금, 잔액, 비고
-            </li>
-            <li className={styles.uploadInfoDesc}>
-              한 번 등록하면 재사용 가능
-            </li>
-          </ul>
+      <aside className={styles.guideCard}>
+        <h2 className={styles.guideTitle}>이렇게 등록하세요</h2>
+        <ol className={styles.guideSteps}>
+          <li className={styles.guideStep}>
+            <span className={styles.guideStepNum}>1</span>
+            <div className={styles.guideStepBody}>
+              <strong className={styles.guideStepTitle}>양식 준비</strong>
+              <span className={styles.guideStepDesc}>
+                학교·학과 결산안 엑셀 양식을 준비합니다.
+              </span>
+            </div>
+          </li>
+          <li className={styles.guideStep}>
+            <span className={styles.guideStepNum}>2</span>
+            <div className={styles.guideStepBody}>
+              <strong className={styles.guideStepTitle}>업로드</strong>
+              <span className={styles.guideStepDesc}>
+                파일을 끌어다 놓거나 클릭해 선택합니다.
+              </span>
+            </div>
+          </li>
+          <li className={styles.guideStep}>
+            <span className={styles.guideStepNum}>3</span>
+            <div className={styles.guideStepBody}>
+              <strong className={styles.guideStepTitle}>재사용</strong>
+              <span className={styles.guideStepDesc}>
+                최초 1회 등록 후 결산안 생성에 계속 재사용됩니다.
+              </span>
+            </div>
+          </li>
+        </ol>
+        <div className={styles.guideFormats}>
+          <span className={styles.guideFormatBadge}>.xlsx</span>
+          <span className={styles.guideFormatBadge}>.xls</span>
         </div>
+      </aside>
       </div>
     </div>
   );

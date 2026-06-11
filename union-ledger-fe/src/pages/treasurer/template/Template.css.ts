@@ -42,8 +42,23 @@ export const desc = style({
   color: vars.color.gray,
 });
 
+export const layoutGrid = style({
+  width: "100%",
+  maxWidth: "1080px",
+  display: "grid",
+  gridTemplateColumns: "minmax(0, 1fr) 360px",
+  gap: "24px",
+  alignItems: "stretch",
+  "@media": {
+    "screen and (max-width: 900px)": {
+      gridTemplateColumns: "1fr",
+      maxWidth: "640px",
+    },
+  },
+});
+
 export const contentContainer = style({
-  width: "672px",
+  width: "100%",
   minHeight: "540px",
   display: "flex",
   flexDirection: "column",
@@ -55,42 +70,90 @@ export const contentContainer = style({
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
   "@media": {
     "screen and (max-width: 768px)": {
-      width: "100%",
       minHeight: "auto",
       padding: "16px",
     },
   },
 });
 
+export const guideCard = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "22px",
+  padding: "28px 24px",
+  borderRadius: "14px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: "rgba(255, 255, 255, 0.65)",
+});
+
+export const guideTitle = style({
+  ...vars.font.title_bold_18,
+  color: vars.color.summaryTitle,
+});
+
+export const guideSteps = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "18px",
+});
+
+export const guideStep = style({
+  display: "flex",
+  alignItems: "flex-start",
+  gap: "12px",
+});
+
+export const guideStepNum = style({
+  ...vars.font.body_medium_14,
+  flexShrink: 0,
+  width: "26px",
+  height: "26px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  borderRadius: vars.radius.full,
+  background: `linear-gradient(135deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
+  color: vars.color.surface,
+  fontWeight: 700,
+});
+
+export const guideStepBody = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "3px",
+});
+
+export const guideStepTitle = style({
+  ...vars.font.body_medium_14,
+  color: vars.color.summaryTitle,
+  fontWeight: 700,
+});
+
+export const guideStepDesc = style({
+  ...vars.font.body_regular_14,
+  color: vars.color.gray,
+});
+
+export const guideFormats = style({
+  display: "flex",
+  gap: "8px",
+  marginTop: "auto",
+  paddingTop: "4px",
+});
+
+export const guideFormatBadge = style({
+  ...vars.font.caption_regular_12,
+  padding: "4px 12px",
+  borderRadius: vars.radius.full,
+  border: `1px solid ${vars.color.blueSoft.border}`,
+  background: vars.color.blueSoft.bgFrom,
+  color: vars.color.blueSoft.textStrong,
+  fontWeight: 700,
+});
+
 export const uploadTitle = style({
   ...vars.font.heading_medium_20,
   color: vars.color.foreground,
-});
-
-export const uploadInfoContainer = style({
-  width: "100%",
-  display: "flex",
-  flexDirection: "column",
-  paddingTop: "17px",
-  gap: "12px",
-  borderTop: "1px solid rgba(0, 0, 0, 0.10)",
-});
-
-export const uploadInfoTitle = style({
-  ...vars.font.body_medium_14,
-  color: "#0F172B",
-});
-
-export const uploadInfoDescContainer = style({
-  display: "flex",
-  flexDirection: "column",
-  gap: "4px",
-  paddingLeft: "16px",
-});
-
-export const uploadInfoDesc = style({
-  ...vars.font.body_regular_14,
-  color: vars.color.gray,
 });
 
 export const currentTemplateBox = style({

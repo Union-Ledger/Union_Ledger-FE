@@ -14,6 +14,7 @@ export const container = style({
   background:
     "linear-gradient(135deg, rgba(238, 242, 255, 0.50) 0%, rgba(250, 245, 255, 0.50) 100%)",
   cursor: "pointer",
+  transition: "border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease",
   selectors: {
     '&[aria-disabled="true"]': {
       cursor: "not-allowed",
@@ -27,6 +28,15 @@ export const container = style({
       padding: "20px 16px",
     },
   },
+});
+
+export const containerDragging = style({
+  borderColor: vars.color.primary,
+  borderStyle: "solid",
+  background:
+    "linear-gradient(135deg, rgba(238, 242, 255, 0.95) 0%, rgba(250, 245, 255, 0.95) 100%)",
+  boxShadow: `0 0 0 4px ${vars.color.focusRing}`,
+  transform: "scale(1.01)",
 });
 
 export const iconContainer = style({

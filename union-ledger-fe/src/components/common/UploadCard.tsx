@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import bigUpload from "@assets/bigUpload.svg";
 import * as styles from "@/components/common/UploadCard.css";
 
@@ -22,6 +22,9 @@ const UploadCard = ({
   onChangeFile,
 }: UploadCardProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  // 드래그가 자식 요소를 지날 때의 깜빡임을 막기 위한 카운터
+  const dragDepth = useRef(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleClickCard = () => {
     if (disabled) return;
@@ -34,10 +37,43 @@ const UploadCard = ({
     e.target.value = "";
   };
 
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (disabled) return;
+    dragDepth.current += 1;
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    // drop을 허용하려면 dragover에서 기본 동작을 막아야 한다.
+    e.preventDefault();
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    dragDepth.current -= 1;
+    if (dragDepth.current <= 0) {
+      dragDepth.current = 0;
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    dragDepth.current = 0;
+    setIsDragging(false);
+    if (disabled) return;
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      onChangeFile?.(files);
+    }
+  };
+
   return (
     <>
       <div
-        className={styles.container}
+        className={`${styles.container} ${isDragging ? styles.containerDragging : ""}`}
         role="button"
         tabIndex={0}
         aria-disabled={disabled}
@@ -50,14 +86,22 @@ const UploadCard = ({
             handleClickCard();
           }
         }}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <div
           className={`${styles.iconContainer} ${styles.iconContainerVariant[iconBackground]}`}
         >
           <img src={bigUpload} alt="파일 업로드 아이콘" />
         </div>
-        <span className={styles.title}>{title}</span>
-        <span className={styles.desc}>{desc}</span>
+        <span className={styles.title}>
+          {isDragging ? "여기에 놓아 업로드" : title}
+        </span>
+        <span className={styles.desc}>
+          {isDragging ? "파일을 놓으세요" : `${desc} · 끌어다 놓거나 클릭`}
+        </span>
       </div>
 
       <input
