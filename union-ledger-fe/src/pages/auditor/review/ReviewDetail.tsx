@@ -10,6 +10,7 @@ import {
   useConfirm,
   useToast,
 } from "@shared/components/feedback";
+import { getApiErrorMessage } from "@/utils/apiError";
 import * as styles from "@/pages/auditor/review/ReviewDetail.css";
 
 const parseAmount = (amount: string) => {
@@ -465,7 +466,12 @@ const ReviewDetail = () => {
       navigate("/auditor/review");
     } catch (error) {
       console.error("결산안 승인 실패", error);
-      toast.error("결산안 승인에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error(
+        getApiErrorMessage(
+          error,
+          "결산안 승인에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        ),
+      );
     } finally {
       setProcessingDecision(null);
     }
@@ -510,7 +516,12 @@ const ReviewDetail = () => {
       navigate("/auditor/review");
     } catch (error) {
       console.error("결산안 반려 실패", error);
-      toast.error("결산안 반려에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error(
+        getApiErrorMessage(
+          error,
+          "결산안 반려에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        ),
+      );
     } finally {
       setProcessingDecision(null);
     }

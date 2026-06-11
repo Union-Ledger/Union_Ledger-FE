@@ -11,6 +11,7 @@ import {
   type EvidenceReviewItem,
 } from "@/contexts/EvidenceReviewContext";
 import { Spinner, useConfirm, useToast } from "@shared/components/feedback";
+import { getApiErrorMessage } from "@/utils/apiError";
 import * as styles from "@/pages/treasurer/upload/Upload.css";
 
 type ReceiptType = "offlineReceipt" | "statement" | "onlineReceipt";
@@ -528,24 +529,20 @@ const Upload = () => {
     }
   };
 
-  // 편집 모달에서 입력했지만 저장하지 않은 변경이 있는지
-  const isEditFormDirty = () => {
-    if (!editingItem) return false;
-
-    return (
-      editForm.evidenceDate !== editingItem.evidenceDate ||
-      editForm.merchantName !== editingItem.merchantName ||
-      editForm.amount !== editingItem.amount ||
-      editForm.paymentMethod !== editingItem.paymentMethod ||
-      editForm.groupName !== editingItem.groupName ||
-      editForm.isRefund !== editingItem.isRefund
-    );
-  };
-
-  const closeEditModal = async () => {
+  const closeEditModal = useCallback(async () => {
     if (isSaving) return;
 
-    if (isEditFormDirty()) {
+    // 입력했지만 저장하지 않은 변경이 있으면 닫기 전에 확인
+    const isDirty =
+      editingItem !== null &&
+      (editForm.evidenceDate !== editingItem.evidenceDate ||
+        editForm.merchantName !== editingItem.merchantName ||
+        editForm.amount !== editingItem.amount ||
+        editForm.paymentMethod !== editingItem.paymentMethod ||
+        editForm.groupName !== editingItem.groupName ||
+        editForm.isRefund !== editingItem.isRefund);
+
+    if (isDirty) {
       const ok = await confirm({
         title: "수정 중인 내용이 있습니다",
         description: "저장하지 않고 닫으면 변경한 내용이 사라집니다.",
@@ -559,7 +556,21 @@ const Upload = () => {
     setModalPreviewUrl(null);
     setModalPreviewType("");
     setIsModalPreviewLoading(false);
-  };
+  }, [confirm, editForm, editingItem, isSaving]);
+
+  // 편집 모달 ESC 닫기 (확인 다이얼로그가 떠 있으면 그쪽 ESC가 우선)
+  useEffect(() => {
+    if (!editingItem) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (document.querySelector('[role="alertdialog"]')) return;
+      void closeEditModal();
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [editingItem, closeEditModal]);
 
   const handleSaveEvidence = async () => {
     if (!editingItem) return;
@@ -670,7 +681,12 @@ const Upload = () => {
     } catch (error) {
       console.error("증빙 업로드 실패", error);
       setUploadStatusMessage("");
-      toast.error("증빙 업로드에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      toast.error(
+        getApiErrorMessage(
+          error,
+          "증빙 업로드에 실패했습니다. 잠시 후 다시 시도해주세요.",
+        ),
+      );
     } finally {
       setIsUploading(false);
     }
@@ -980,13 +996,17 @@ const Upload = () => {
                   id="evidence-amount"
                   className={styles.formInput}
                   inputMode="numeric"
+                  placeholder="예: 50,000"
                   value={editForm.amount}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    const numericOnly = event.target.value.replace(/[^0-9]/g, "");
                     setEditForm((prevForm) => ({
                       ...prevForm,
-                      amount: event.target.value,
-                    }))
-                  }
+                      amount: numericOnly
+                        ? Number(numericOnly).toLocaleString("ko-KR")
+                        : "",
+                    }));
+                  }}
                 />
 
                 <label className={styles.formLabel} htmlFor="payment-method">
