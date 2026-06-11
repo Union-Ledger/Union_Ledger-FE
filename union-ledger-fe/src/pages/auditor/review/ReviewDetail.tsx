@@ -115,6 +115,9 @@ const buildReviewData = (data: AuditSettlementDetailResponse) => {
       merchantName:
         evidence.merchant_name || bankTransaction?.description || "내역 없음",
       amount: parseAmount(evidence.amount),
+      // 불일치 시 실값 대비 표시용 — 매칭된 통장 거래의 금액/날짜
+      bankAmount: bankTransaction ? parseAmount(bankTransaction.amount) : null,
+      bankDate: bankTransaction?.transaction_date ?? null,
       reconciliationStatus: reconciliation?.status,
       reconciliationNotes: reconciliation?.notes,
       existingCommentId: existingComment?.id ?? null,
@@ -527,6 +530,40 @@ const ReviewDetail = () => {
     }
   };
 
+  // 검토 단축키: A 승인 / R 반려 — 입력 중이거나 모달·다이얼로그가 열려 있으면 무시
+  useEffect(() => {
+    if (isApproved || isLoading) return;
+
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName;
+      if (
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "SELECT" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+      if (modalEvidence || processingDecision) return;
+      if (document.querySelector('[role="alertdialog"]')) return;
+
+      const key = event.key.toLowerCase();
+      if (key === "a") {
+        event.preventDefault();
+        void handleApprove();
+      } else if (key === "r") {
+        event.preventDefault();
+        void handleReject();
+      }
+    };
+
+    document.addEventListener("keydown", handleShortcut);
+    return () => document.removeEventListener("keydown", handleShortcut);
+  });
+
   if (isLoading) {
     return (
       <div className={styles.container}>
@@ -671,6 +708,20 @@ const ReviewDetail = () => {
                         {formatMoney(row.amount)}
                       </strong>
 
+                      {row.reconciliationStatus === "amount_mismatch" &&
+                        row.bankAmount !== null && (
+                          <p className={styles.mismatchDetail}>
+                            증빙 {formatMoney(row.amount)} ↔ 통장{" "}
+                            {formatMoney(row.bankAmount)} · 차액{" "}
+                            {formatMoney(Math.abs(row.amount - row.bankAmount))}
+                          </p>
+                        )}
+                      {row.reconciliationStatus === "date_mismatch" &&
+                        row.bankDate && (
+                          <p className={styles.mismatchDetail}>
+                            증빙 {row.date} ↔ 통장 {row.bankDate}
+                          </p>
+                        )}
                       {row.reconciliationNotes && (
                         <p className={styles.reconciliationNote}>
                           {row.reconciliationNotes}
@@ -794,6 +845,12 @@ const ReviewDetail = () => {
               {processingDecision === "reject" ? "반려 중..." : "⊗ 반려"}
             </button>
           </div>
+
+          <p className={styles.shortcutHint}>
+            단축키: <kbd className={styles.shortcutKey}>A</kbd> 승인 ·{" "}
+            <kbd className={styles.shortcutKey}>R</kbd> 반려 — 입력 중에는
+            동작하지 않습니다
+          </p>
         </section>
       )}
 

@@ -640,6 +640,38 @@ export const loadingBox = style({
   gap: "12px",
 });
 
+export const mismatchDetail = style({
+  ...vars.font.body_medium_14,
+  margin: 0,
+  marginBottom: "12px",
+  padding: "8px 12px",
+  borderRadius: vars.radius.sm,
+  border: `1px solid ${vars.color.semantic.danger.border}`,
+  background: vars.color.semantic.danger.bg,
+  color: vars.color.semantic.danger.text,
+  fontVariantNumeric: "tabular-nums",
+});
+
+export const shortcutHint = style({
+  ...vars.font.caption_regular_12,
+  marginTop: "14px",
+  color: vars.color.gray,
+  textAlign: "right",
+});
+
+export const shortcutKey = style({
+  display: "inline-block",
+  minWidth: "2rem",
+  padding: "1px 6px",
+  borderRadius: "4px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.background,
+  color: vars.color.summaryTitle,
+  fontFamily: "inherit",
+  fontWeight: 700,
+  textAlign: "center",
+});
+
 export const modalStateText = style({
   ...vars.font.body_regular_14,
   color: vars.color.gray,
