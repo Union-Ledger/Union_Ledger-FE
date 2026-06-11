@@ -30,6 +30,7 @@ type StudentDashboardCardItem = {
   icon: string;
   title: string;
   content: string;
+  description: string;
 };
 
 const formatMoney = (amount: number) => {
@@ -65,6 +66,7 @@ const StudentDashboardCards = ({
       icon: receipt,
       title: "우리 학과 결산안",
       content: `${totalEvidenceCount}건`,
+      description: "감사 승인 후 공개된 결산안",
     },
     {
       id: "semesterExpense",
@@ -72,6 +74,7 @@ const StudentDashboardCards = ({
       icon: trendingUp,
       title: "이번 학기 지출",
       content: formatMoney(totalEvidenceAmount),
+      description: "현재 공개 학기 기준 총 지출",
     },
     {
       id: "recentApprovalDate",
@@ -79,6 +82,7 @@ const StudentDashboardCards = ({
       icon: callender,
       title: "최근 승인일",
       content: formatDate(recentApprovedAt),
+      description: "가장 최근 감사 완료일",
     },
     {
       id: "viewCount",
@@ -86,25 +90,30 @@ const StudentDashboardCards = ({
       icon: eye,
       title: "조회수",
       content: `${viewCount.toLocaleString("ko-KR")}회`,
+      description: "학생들이 확인한 누적 열람",
     },
   ];
 
   return (
-    <div className={styles.container}>
+    <section className={styles.container} aria-label="학생 결산 요약">
       {dashboardCardData.map((card) => (
-        <div key={card.id} className={styles.card}>
-          <div
-            className={`${styles.iconContainer} ${
-              styles.iconVariant[card.variant]
-            }`}
-          >
-            <img src={card.icon} alt={`${card.title} 아이콘`} />
+        <article key={card.id} className={styles.card}>
+          <div className={styles.cardHeader}>
+            <div
+              className={`${styles.iconContainer} ${
+                styles.iconVariant[card.variant]
+              }`}
+              aria-hidden="true"
+            >
+              <img src={card.icon} alt="" />
+            </div>
+            <span className={styles.cardTitle}>{card.title}</span>
           </div>
-          <span className={styles.cardTitle}>{card.title}</span>
           <span className={styles.cardContent}>{card.content}</span>
-        </div>
+          <span className={styles.cardDescription}>{card.description}</span>
+        </article>
       ))}
-    </div>
+    </section>
   );
 };
 

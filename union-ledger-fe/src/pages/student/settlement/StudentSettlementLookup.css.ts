@@ -39,7 +39,8 @@ export const description = style({
 });
 
 export const filterPanel = style({
-  display: "flex",
+  display: "grid",
+  gridTemplateColumns: "auto minmax(18rem, 30rem) minmax(24rem, 1fr) auto",
   alignItems: "center",
   gap: "18px",
   width: "100%",
@@ -48,7 +49,11 @@ export const filterPanel = style({
   borderRadius: "12px",
   background: "#FFFFFF",
   "@media": {
+    "screen and (max-width: 1024px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
     "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
       padding: "16px",
       gap: "12px",
     },
@@ -59,6 +64,14 @@ export const filterIcon = style({
   width: "20px",
   height: "20px",
   flexShrink: 0,
+  "@media": {
+    "screen and (max-width: 1024px)": {
+      display: "none",
+    },
+    "screen and (max-width: 768px)": {
+      display: "none",
+    },
+  },
 });
 
 export const filterControl = style({
@@ -66,6 +79,9 @@ export const filterControl = style({
   flexDirection: "column",
   gap: "8px",
   "@media": {
+    "screen and (max-width: 1024px)": {
+      minWidth: 0,
+    },
     "screen and (max-width: 768px)": {
       flex: "1",
       minWidth: 0,
@@ -79,7 +95,7 @@ export const label = style({
 });
 
 export const select = style({
-  width: "300px",
+  width: "100%",
   height: "44px",
   border: "1px solid #EEF2F7",
   borderRadius: "8px",
@@ -90,10 +106,71 @@ export const select = style({
   fontSize: "1.4rem",
   fontWeight: 600,
   outline: "none",
+});
+
+export const searchControl = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+  minWidth: 0,
+});
+
+export const searchInput = style({
+  width: "100%",
+  height: "44px",
+  border: "1px solid #EEF2F7",
+  borderRadius: "8px",
+  background: "#F8FAFC",
+  padding: "0 16px",
+  color: "#0F172A",
+  fontFamily: vars.font.body,
+  fontSize: "1.4rem",
+  fontWeight: 600,
+  outline: "none",
+  ":focus": {
+    borderColor: vars.color.primary,
+    boxShadow: `0 0 0 3px ${vars.color.focusRing}`,
+    background: vars.color.surface,
+  },
+  "::placeholder": {
+    color: "#94A3B8",
+  },
+});
+
+export const filterSummary = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  gap: "12px",
+  color: "#475569",
+  ...vars.font.body_medium_14,
+  whiteSpace: "nowrap",
   "@media": {
-    "screen and (max-width: 768px)": {
-      width: "100%",
+    "screen and (max-width: 1024px)": {
+      gridColumn: "1 / -1",
+      justifyContent: "flex-start",
     },
+    "screen and (max-width: 768px)": {
+      gridColumn: "auto",
+      justifyContent: "space-between",
+      whiteSpace: "normal",
+    },
+  },
+});
+
+export const resetButton = style({
+  minHeight: "36px",
+  border: `1px solid ${vars.color.ItemBorder}`,
+  borderRadius: vars.radius.md,
+  background: vars.color.surface,
+  padding: "0 12px",
+  color: "#0F172A",
+  fontFamily: vars.font.body,
+  fontSize: "1.3rem",
+  fontWeight: 800,
+  cursor: "pointer",
+  ":hover": {
+    background: "#F8FAFC",
   },
 });
 
@@ -340,7 +417,7 @@ export const overlay = style({
 });
 
 export const modal = style({
-  width: "min(760px, 100%)",
+  width: "min(1040px, 100%)",
   maxHeight: "calc(100vh - 64px)",
   overflowY: "auto",
   display: "flex",
@@ -415,9 +492,24 @@ export const categoryMeta = style({
   letterSpacing: "0",
 });
 
+export const categoryName = style({
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "8px",
+  minWidth: 0,
+});
+
+export const categoryDot = style({
+  width: "10px",
+  height: "10px",
+  flexShrink: 0,
+  borderRadius: vars.radius.full,
+});
+
 export const categoryAmount = style({
   color: "#475569",
   fontWeight: 500,
+  whiteSpace: "nowrap",
 });
 
 export const progressTrack = style({

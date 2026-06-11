@@ -13,6 +13,14 @@ import { formatCompactKrw } from "@/utils/format";
 import * as styles from "./StudentSettlementLookup.css";
 
 const ITEMS_PER_PAGE = 10;
+const CATEGORY_COLORS = [
+  "#2563EB",
+  "#7C3AED",
+  "#0F766E",
+  "#DB2777",
+  "#D97706",
+  "#059669",
+];
 
 type CategorySummary = {
   name: string;
@@ -130,6 +138,7 @@ const StudentSettlementLookup = () => {
   } = usePublicSettlementApi();
   const [settlements, setSettlements] = useState<PublicSettlementListItem[]>([]);
   const [selectedSemester, setSelectedSemester] = useState("전체");
+  const [settlementSearch, setSettlementSearch] = useState("");
   const [selectedSettlement, setSelectedSettlement] =
     useState<PublicSettlementListItem | null>(null);
   const [detail, setDetail] = useState<PublicSettlementDetail | null>(null);
@@ -237,14 +246,38 @@ const StudentSettlementLookup = () => {
   }, [settlements]);
 
   const filteredSettlements = useMemo(() => {
-    if (selectedSemester === "전체") return settlements;
+    const semesterFiltered =
+      selectedSemester === "전체"
+        ? settlements
+        : settlements.filter(
+            (settlement) =>
+              getSemesterOption(
+                settlement.academic_year,
+                settlement.semester,
+              ) === selectedSemester,
+          );
 
-    return settlements.filter(
-      (settlement) =>
-        getSemesterOption(settlement.academic_year, settlement.semester) ===
-        selectedSemester,
-    );
-  }, [selectedSemester, settlements]);
+    const query = settlementSearch.trim().toLowerCase();
+    if (!query) return semesterFiltered;
+
+    return semesterFiltered.filter((settlement) => {
+      const searchableText = [
+        getTitle(settlement),
+        settlement.title,
+        settlement.organization_name,
+        settlement.department_name,
+        getSemesterOption(settlement.academic_year, settlement.semester),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(query);
+    });
+  }, [selectedSemester, settlementSearch, settlements]);
+
+  const hasActiveListFilter =
+    selectedSemester !== "전체" || settlementSearch.trim().length > 0;
 
   const categorySummary = useMemo(() => createCategorySummary(items), [items]);
   const categoryTotal = useMemo(
@@ -374,12 +407,44 @@ const StudentSettlementLookup = () => {
             ))}
           </select>
         </label>
+        <label className={styles.searchControl}>
+          <span className={styles.label}>결산안 검색</span>
+          <input
+            className={styles.searchInput}
+            type="search"
+            placeholder="조직명·학과·제목 검색"
+            value={settlementSearch}
+            onChange={(event) => setSettlementSearch(event.target.value)}
+          />
+        </label>
+        <div className={styles.filterSummary}>
+          <span>
+            {settlements.length.toLocaleString("ko-KR")}건 중{" "}
+            <strong>{filteredSettlements.length.toLocaleString("ko-KR")}건</strong>
+          </span>
+          {hasActiveListFilter && (
+            <button
+              className={styles.resetButton}
+              type="button"
+              onClick={() => {
+                setSelectedSemester("전체");
+                setSettlementSearch("");
+              }}
+            >
+              초기화
+            </button>
+          )}
+        </div>
       </section>
 
       {isLoading && <p className={styles.stateMessage}>공개 결산안을 불러오는 중입니다.</p>}
       {!isLoading && errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
       {!isLoading && !errorMessage && filteredSettlements.length === 0 && (
-        <p className={styles.stateMessage}>선택한 학기에 공개된 결산안이 없습니다.</p>
+        <p className={styles.stateMessage}>
+          {hasActiveListFilter
+            ? "선택한 조건에 맞는 공개 결산안이 없습니다."
+            : "공개된 결산안이 없습니다."}
+        </p>
       )}
 
       {!isLoading && !errorMessage && filteredSettlements.length > 0 && (
@@ -466,7 +531,12 @@ const StudentSettlementLookup = () => {
               <h2 id="settlement-detail-title" className={styles.modalTitle}>
                 항목별 지출 현황
               </h2>
-              <button className={styles.closeButton} type="button" onClick={() => setSelectedSettlement(null)}>
+              <button
+                className={styles.closeButton}
+                type="button"
+                aria-label="결산 상세 닫기"
+                onClick={() => setSelectedSettlement(null)}
+              >
                 ×
               </button>
             </div>
@@ -504,20 +574,31 @@ const StudentSettlementLookup = () => {
                   {categorySummary.length === 0 && (
                     <p className={styles.stateMessage}>공개된 지출 항목이 없습니다.</p>
                   )}
-                  {categorySummary.map((category) => {
+                  {categorySummary.map((category, index) => {
                     const percentage =
                       categoryTotal > 0 ? Math.round((category.amount / categoryTotal) * 100) : 0;
+                    const color = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
 
                     return (
                       <div className={styles.categoryRow} key={category.name}>
                         <div className={styles.categoryMeta}>
-                          <span>{category.name}</span>
+                          <span className={styles.categoryName}>
+                            <span
+                              className={styles.categoryDot}
+                              aria-hidden="true"
+                              style={{ background: color }}
+                            />
+                            {category.name}
+                          </span>
                           <span className={styles.categoryAmount}>
                             {category.displayAmount} ({percentage}%)
                           </span>
                         </div>
                         <div className={styles.progressTrack}>
-                          <div className={styles.progressBar} style={{ width: `${percentage}%` }} />
+                          <div
+                            className={styles.progressBar}
+                            style={{ width: `${percentage}%`, background: color }}
+                          />
                         </div>
                       </div>
                     );

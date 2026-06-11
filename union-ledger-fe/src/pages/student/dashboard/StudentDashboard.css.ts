@@ -3,17 +3,30 @@ import { vars } from "@/styles/theme.css";
 
 export const container = style({
   width: "100%",
-  height: "100vh",
+  minHeight: "100vh",
   display: "flex",
   flexDirection: "column",
   gap: "32px",
   padding: "32px",
-  background: "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%);",
+  background:
+    "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%)",
   "@media": {
     "screen and (max-width: 768px)": {
-      height: "auto",
-      minHeight: "100vh",
       padding: "16px",
+      gap: "20px",
+    },
+  },
+});
+
+export const headerRow = style({
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "space-between",
+  gap: "24px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexDirection: "column",
+      gap: "16px",
     },
   },
 });
@@ -41,6 +54,30 @@ export const desc = style({
   color: vars.color.gray,
 });
 
+export const primaryLink = style({
+  ...vars.font.body_medium_14,
+  minHeight: "44px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+  padding: "0 18px",
+  borderRadius: vars.radius.md,
+  background: vars.color.summaryTitle,
+  color: vars.color.surface,
+  textDecoration: "none",
+  fontWeight: 800,
+  boxShadow: vars.shadow.md,
+  ":hover": {
+    background: "#1E293B",
+  },
+  "@media": {
+    "screen and (max-width: 768px)": {
+      width: "100%",
+    },
+  },
+});
+
 export const contentContainer = style({
   width: "100%",
   height: "auto",
@@ -54,11 +91,56 @@ export const contentContainer = style({
   },
 });
 
+export const summarySkeletonGrid = style({
+  display: "grid",
+  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+  gap: "24px",
+  "@media": {
+    "screen and (max-width: 1180px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "16px",
+    },
+  },
+});
+
+export const summarySkeletonCard = style({
+  minHeight: "17.2rem",
+  display: "flex",
+  flexDirection: "column",
+  gap: "14px",
+  padding: "24px",
+  borderRadius: "14px",
+  background: "rgba(255, 255, 255, 0.80)",
+  boxShadow: vars.shadow.sm,
+});
+
+export const panelSkeleton = style({
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  padding: "24px",
+  borderRadius: "14px",
+  background: "rgba(255, 255, 255, 0.80)",
+  boxShadow: vars.shadow.sm,
+});
+
+export const errorPanel = style({
+  width: "min(56rem, 100%)",
+  border: `1px solid ${vars.color.semantic.danger.border}`,
+  borderRadius: vars.radius.lg,
+  background: vars.color.surface,
+  boxShadow: vars.shadow.sm,
+});
+
 export const toast = style({
   position: "fixed",
   right: "32px",
   bottom: "32px",
-  zIndex: 20,
+  zIndex: vars.zIndex.toast,
   maxWidth: "360px",
   display: "flex",
   alignItems: "center",

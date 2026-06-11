@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import useDashboardApi, {
   type StudentDashboardResponse,
 } from "@/hooks/useDashboardApi";
@@ -8,6 +9,8 @@ import StudentDashboardAuditResult, {
   type StudentAuditResultItem,
 } from "@/components/student/StudentDashboardAuditResult";
 import StudentDashboardQuestion from "@/components/student/StudentDashboardQuestion";
+import { ROUTES } from "@/router/constant/router";
+import { ErrorState, Skeleton } from "@/shared/components/feedback";
 
 const parseAmount = (amount: string) => {
   const parsed = Number(amount);
@@ -34,24 +37,27 @@ const StudentDashboard = () => {
   const [dashboardData, setDashboardData] =
     useState<StudentDashboardResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
   const [showApplicationToast, setShowApplicationToast] = useState(false);
 
-  useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        const data = await getStudentDashboardOnce();
-        if (data) {
-          setDashboardData(data);
-        }
-      } catch (error) {
-        console.error("학생 대시보드 조회 실패", error);
-      } finally {
-        setIsLoading(false);
+  const loadDashboard = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+      const data = await getStudentDashboardOnce();
+      if (data) {
+        setDashboardData(data);
       }
-    };
-
-    loadDashboard();
+    } catch {
+      setErrorMessage("결산 요약을 불러오지 못했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   }, [getStudentDashboardOnce]);
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
 
   useEffect(() => {
     const shouldShowToast = sessionStorage.getItem(
@@ -75,9 +81,34 @@ const StudentDashboard = () => {
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <div className={styles.titleContainer}>
-          <span className={styles.title}>학생 대시보드</span>
-          <span className={styles.desc}>결산 내역을 불러오는 중입니다</span>
+        <div className={styles.headerRow}>
+          <div className={styles.titleContainer}>
+            <span className={styles.title}>학생 대시보드</span>
+            <span className={styles.desc}>결산 내역을 불러오는 중입니다</span>
+          </div>
+        </div>
+        <div className={styles.summarySkeletonGrid} aria-hidden="true">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div className={styles.summarySkeletonCard} key={index}>
+              <Skeleton width="4.2rem" height="4.2rem" radius="1.2rem" />
+              <Skeleton width="58%" height="1.4rem" />
+              <Skeleton width="74%" height="2.4rem" />
+              <Skeleton width="82%" height="1.2rem" />
+            </div>
+          ))}
+        </div>
+        <div className={styles.contentContainer}>
+          <div className={styles.panelSkeleton}>
+            <Skeleton width="42%" height="2rem" />
+            <Skeleton width="100%" height="8rem" radius="1.2rem" />
+            <Skeleton width="92%" height="8rem" radius="1.2rem" />
+          </div>
+          <div className={styles.panelSkeleton}>
+            <Skeleton width="54%" height="2rem" />
+            <Skeleton width="100%" height="4.4rem" radius="1rem" />
+            <Skeleton width="100%" height="4.4rem" radius="1rem" />
+            <Skeleton width="100%" height="4.4rem" radius="1rem" />
+          </div>
         </div>
       </div>
     );
@@ -87,28 +118,43 @@ const StudentDashboard = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.titleContainer}>
-        <span className={styles.title}>학생 대시보드</span>
-        <span className={styles.desc}>
-          {dashboardData?.organization?.name
-            ? `${dashboardData.organization.name} 결산 내역을 투명하게 확인하세요`
-            : "학생회 결산 내역을 투명하게 확인하세요"}
-        </span>
+      <div className={styles.headerRow}>
+        <div className={styles.titleContainer}>
+          <span className={styles.title}>학생 대시보드</span>
+          <span className={styles.desc}>
+            {dashboardData?.organization?.name
+              ? `${dashboardData.organization.name} 결산 내역을 투명하게 확인하세요`
+              : "학생회 결산 내역을 투명하게 확인하세요"}
+          </span>
+        </div>
+        <Link className={styles.primaryLink} to={ROUTES.STUDENT_SETTLEMENTS}>
+          결산안 조회
+        </Link>
       </div>
 
-      <StudentDashboardCards
-        totalEvidenceCount={summary?.published_settlement_count ?? 0}
-        totalEvidenceAmount={parseAmount(
-          summary?.current_period_total_amount ?? "0",
-        )}
-        recentApprovedAt={summary?.last_published_at ?? null}
-        viewCount={summary?.total_view_count ?? 0}
-      />
+      {errorMessage && (
+        <div className={styles.errorPanel}>
+          <ErrorState description={errorMessage} onRetry={loadDashboard} />
+        </div>
+      )}
 
-      <div className={styles.contentContainer}>
-        <StudentDashboardAuditResult results={toAuditResults(dashboardData)} />
-        <StudentDashboardQuestion />
-      </div>
+      {!errorMessage && (
+        <>
+          <StudentDashboardCards
+            totalEvidenceCount={summary?.published_settlement_count ?? 0}
+            totalEvidenceAmount={parseAmount(
+              summary?.current_period_total_amount ?? "0",
+            )}
+            recentApprovedAt={summary?.last_published_at ?? null}
+            viewCount={summary?.total_view_count ?? 0}
+          />
+
+          <div className={styles.contentContainer}>
+            <StudentDashboardAuditResult results={toAuditResults(dashboardData)} />
+            <StudentDashboardQuestion />
+          </div>
+        </>
+      )}
 
       {showApplicationToast && (
         <div className={styles.toast}>

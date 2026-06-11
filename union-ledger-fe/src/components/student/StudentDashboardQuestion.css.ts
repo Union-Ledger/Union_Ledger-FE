@@ -25,6 +25,7 @@ export const title = style({
   display: "flex",
   alignItems: "center",
   gap: "8px",
+  margin: 0,
 });
 
 export const contentContainer = style({
@@ -38,13 +39,38 @@ export const contentContainer = style({
 export const faqItem = style({
   display: "flex",
   flexDirection: "column",
-  gap: "8px",
-  paddingBottom: "16.5px",
+  gap: "10px",
+  paddingBottom: "14px",
   borderBottom: "1px solid #E2E8F0",
+  selectors: {
+    "&:last-child": {
+      paddingBottom: 0,
+      borderBottom: "0",
+    },
+  },
+});
+
+export const questionButton = style({
+  width: "100%",
+  minHeight: "44px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "16px",
+  border: "0",
+  padding: 0,
+  background: "transparent",
+  color: vars.color.summaryTitle,
+  fontFamily: vars.font.body,
+  cursor: "pointer",
+  textAlign: "left",
 });
 
 export const question = style({
   ...vars.font.head_bold_16,
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
   color: vars.color.summaryTitle,
 });
 
@@ -54,11 +80,12 @@ export const questionHighlight = style({
 
 export const answer = style({
   ...vars.font.body_regular_14,
+  margin: 0,
   color: vars.color.description,
-  padding: "0 20px",
+  padding: "0 44px 4px 28px",
   "@media": {
     "screen and (max-width: 768px)": {
-      padding: "0 12px",
+      padding: "0 12px 2px 28px",
     },
   },
 });
@@ -66,4 +93,18 @@ export const answer = style({
 export const answerHighlight = style({
   color: "#00A63E",
   fontWeight: "600",
+});
+
+export const toggleIcon = style({
+  width: "28px",
+  height: "28px",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+  borderRadius: vars.radius.full,
+  background: vars.color.semantic.info.bg,
+  color: vars.color.semantic.info.text,
+  fontSize: "1.8rem",
+  fontWeight: 800,
 });

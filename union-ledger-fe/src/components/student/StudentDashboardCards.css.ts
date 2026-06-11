@@ -3,48 +3,56 @@ import { vars } from "@/styles/theme.css";
 
 export const container = style({
   width: "100%",
-  height: "168px",
-  display: "flex",
+  display: "grid",
+  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
   gap: "24px",
   "@media": {
+    "screen and (max-width: 1180px)": {
+      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    },
     "screen and (max-width: 768px)": {
-      height: "auto",
-      flexWrap: "wrap",
+      gridTemplateColumns: "1fr",
       gap: "16px",
     },
   },
 });
 
 export const card = style({
-  flex: "1",
   display: "flex",
   flexDirection: "column",
-  height: "100%",
+  minHeight: "17.2rem",
   borderRadius: "14px",
   background: "rgba(255, 255, 255, 0.80)",
   boxShadow:
     "0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10)",
   padding: "24px",
+  border: `1px solid ${vars.color.white80}`,
   "@media": {
     "screen and (max-width: 768px)": {
-      flex: "1 1 240px",
-      height: "auto",
+      minHeight: "14.8rem",
       padding: "20px",
     },
   },
 });
 
+export const cardHeader = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  marginBottom: "18px",
+});
+
 export const iconContainer = style({
-  width: "48px",
-  height: "48px",
+  width: "42px",
+  height: "42px",
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  borderRadius: "14px",
+  flexShrink: 0,
+  borderRadius: "12px",
   background: `linear-gradient(135deg, ${vars.color.gradient.cyanFrom} 0%, ${vars.color.gradient.cyanTo} 100%)`,
   boxShadow:
     "0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10)",
-  marginBottom: "16.5px",
 });
 
 export const iconVariant = styleVariants({
@@ -65,9 +73,18 @@ export const iconVariant = styleVariants({
 export const cardTitle = style({
   ...vars.font.body_regular_14,
   color: vars.color.gray,
+  fontWeight: "700",
 });
 
 export const cardContent = style({
   ...vars.font.title_bold_24,
   color: "#0F172B",
+  marginTop: "auto",
+  fontVariantNumeric: "tabular-nums",
+});
+
+export const cardDescription = style({
+  ...vars.font.caption_regular_12,
+  marginTop: "6px",
+  color: vars.color.description,
 });
