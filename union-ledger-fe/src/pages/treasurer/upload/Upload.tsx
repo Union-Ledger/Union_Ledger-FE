@@ -704,13 +704,13 @@ const Upload = () => {
       <div className={styles.contentContainer}>
         <div className={styles.categoryFieldContainer}>
           <label className={styles.categoryLabel} htmlFor="group-name">
-            구분 — 행사/용도 (이 배치 전체에 적용)
+            구분 — 행사/용도
           </label>
           <input
             id="group-name"
             className={styles.categoryInput}
             list="group-name-suggestions"
-            placeholder="예: 중간고사 간식행사 (영수증으로는 알 수 없어 직접 입력)"
+            placeholder="예: 중간고사 간식행사"
             value={groupName}
             disabled={isPreparing || isUploading}
             onChange={(e) => setGroupName(e.target.value)}
