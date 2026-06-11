@@ -22,6 +22,7 @@ export interface EvidenceReviewItem {
   groupName: string;
   isRefund: boolean;
   status: string;
+  evidenceType: string;
   extractedPayload: Record<string, unknown>;
   isExtracting: boolean;
   extractStatus?: "pending" | "running" | "done" | "failed";
@@ -40,6 +41,7 @@ const readStoredReviewItems = () => {
       ...item,
       isRefund: Boolean(item.isRefund),
       groupName: item.groupName ?? "",
+      evidenceType: item.evidenceType ?? "",
       previewUrl: "",
       extractStatus: item.extractStatus
         ? item.extractStatus === "running"

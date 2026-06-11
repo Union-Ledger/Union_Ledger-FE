@@ -14,34 +14,14 @@ import { Spinner, useConfirm, useToast } from "@shared/components/feedback";
 import { getApiErrorMessage } from "@/utils/apiError";
 import * as styles from "@/pages/treasurer/upload/Upload.css";
 
-type ReceiptType = "offlineReceipt" | "statement" | "onlineReceipt";
+// 증빙 종류는 추출 단계에서 AI가 자동 판별한다. 업로드 시엔 기본값을 보내고,
+// 추출 후 감지된 종류를 카드 배지로 보여준다.
+const DEFAULT_EVIDENCE_TYPE = "physical_receipt";
 
-const receiptTypeOptions: {
-  id: ReceiptType;
-  title: string;
-  desc: string;
-}[] = [
-  {
-    id: "offlineReceipt",
-    title: "실물 영수증",
-    desc: "카드결제, POS 영수증",
-  },
-  {
-    id: "statement",
-    title: "거래명세서",
-    desc: "계좌이체 은행문서",
-  },
-  {
-    id: "onlineReceipt",
-    title: "전자영수증",
-    desc: "온라인 결제",
-  },
-];
-
-const evidenceTypeMap: Record<ReceiptType, string> = {
-  offlineReceipt: "physical_receipt",
-  statement: "bank_transfer_statement",
-  onlineReceipt: "e_receipt",
+const EVIDENCE_TYPE_LABELS: Record<string, string> = {
+  physical_receipt: "실물 영수증",
+  bank_transfer_statement: "거래명세서",
+  e_receipt: "전자영수증",
 };
 
 const reusableSettlementStatuses = new Set([
@@ -67,6 +47,7 @@ interface EvidenceApiResponse {
   group_name?: string | null;
   is_refund?: boolean | null;
   status?: string | null;
+  evidence_type?: string | null;
   extracted_payload?: Record<string, unknown> | null;
 }
 
@@ -103,8 +84,6 @@ const findReusableSettlementId = (
 const Upload = () => {
   const toast = useToast();
   const confirm = useConfirm();
-  const [selectedType, setSelectedType] =
-    useState<ReceiptType>("offlineReceipt");
   const [settlementId, setSettlementId] = useState<string | null>(null);
   // 구분 — 이 배치의 영수증들이 속한 행사/용도 (예: 중간고사 간식행사).
   // 영수증만으로는 알 수 없는 정보라 업로드 시 사람이 한 번 입력한다.
@@ -305,6 +284,7 @@ const Upload = () => {
     groupName: evidence.group_name ?? defaultGroupName,
     isRefund: evidence.is_refund ?? false,
     status: evidence.status ?? "uploaded",
+    evidenceType: evidence.evidence_type ?? "",
     extractedPayload: evidence.extracted_payload ?? {},
     isExtracting: true,
     extractStatus: "pending",
@@ -329,6 +309,7 @@ const Upload = () => {
             groupName: evidence.group_name ?? item.groupName,
             isRefund: evidence.is_refund ?? item.isRefund,
             status: evidence.status ?? item.status,
+            evidenceType: evidence.evidence_type ?? item.evidenceType,
             extractedPayload:
               evidence.extracted_payload ?? item.extractedPayload,
             isExtracting: false,
@@ -625,7 +606,7 @@ const Upload = () => {
         fileList.map((file) =>
           postEvidenceOnce({
             settlementId: targetSettlementId,
-            evidenceType: evidenceTypeMap[selectedType],
+            evidenceType: DEFAULT_EVIDENCE_TYPE,
             budgetCategory: trimmedBudgetCategory,
             groupName: trimmedGroupName,
             file,
@@ -715,31 +696,12 @@ const Upload = () => {
     <div className={styles.container}>
       <div className={styles.titleContainer}>
         <span className={styles.title}>증빙 업로드</span>
-        <span className={styles.desc}>증빙 유형 선택 후 파일 업로드</span>
+        <span className={styles.desc}>
+          영수증을 올리면 종류·금액을 자동으로 인식합니다
+        </span>
       </div>
 
       <div className={styles.contentContainer}>
-        <div className={styles.typeSelectorContainer}>
-          {receiptTypeOptions.map((item) => {
-            const isSelected = selectedType === item.id;
-
-            return (
-              <button
-                key={item.id}
-                type="button"
-                className={`${styles.typeCard} ${
-                  isSelected ? styles.typeCardSelected : styles.typeCardDefault
-                }`}
-                onClick={() => setSelectedType(item.id)}
-                disabled={isPreparing || isUploading}
-              >
-                <span className={styles.typeCardTitle}>{item.title}</span>
-                <span className={styles.typeCardDesc}>{item.desc}</span>
-              </button>
-            );
-          })}
-        </div>
-
         <div className={styles.categoryFieldContainer}>
           <label className={styles.categoryLabel} htmlFor="group-name">
             구분 — 행사/용도 (이 배치 전체에 적용)
@@ -830,6 +792,12 @@ const Upload = () => {
                 )}
 
                 <div className={styles.reviewCardBody}>
+                  {item.evidenceType &&
+                    EVIDENCE_TYPE_LABELS[item.evidenceType] && (
+                      <span className={styles.evidenceTypeBadge}>
+                        {EVIDENCE_TYPE_LABELS[item.evidenceType]}
+                      </span>
+                    )}
                   <span className={styles.reviewDate}>
                     {item.evidenceDate || "날짜 확인 필요"}
                   </span>
