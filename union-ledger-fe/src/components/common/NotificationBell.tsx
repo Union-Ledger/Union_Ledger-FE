@@ -1,11 +1,40 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ROUTES } from "@router/constant/router";
+import { useAuth } from "@/contexts/AuthContext";
 import * as styles from "./NotificationBell.css";
 import useNotificationApi, {
   type NotificationItem,
+  type NotificationType,
 } from "@/hooks/useNotificationApi";
 
 const POLL_INTERVAL_MS = 60_000;
+
+// 알림 유형 → 받은 사람 역할 기준으로 이동할 화면
+const getNotificationRoute = (
+  type: NotificationType,
+  roles: string[],
+  isOperator: boolean,
+): string | null => {
+  switch (type) {
+    case "settlement_submitted":
+    case "settlement_resubmitted":
+      return roles.includes("auditor") ? ROUTES.AUDITOR_REVIEW : null;
+    case "audit_approved":
+      if (roles.includes("president")) return ROUTES.PRESIDENT_DASHBOARD;
+      if (roles.includes("treasurer")) return ROUTES.TREASURER_DASHBOARD;
+      return null;
+    case "audit_rejected":
+      if (roles.includes("treasurer") || roles.includes("president")) {
+        return ROUTES.CREATE;
+      }
+      return null;
+    case "settlement_published":
+      return isOperator ? null : ROUTES.STUDENT_SETTLEMENTS;
+    default:
+      return null;
+  }
+};
 
 const formatTimestamp = (iso: string) => {
   const date = new Date(iso);
@@ -24,6 +53,8 @@ const formatTimestamp = (iso: string) => {
 
 const NotificationBell = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { me } = useAuth();
   const { getNotifications, markNotificationRead } = useNotificationApi();
   const [getNotificationsOnce] = useState(() => getNotifications);
   const [markNotificationReadOnce] = useState(() => markNotificationRead);
@@ -90,6 +121,17 @@ const NotificationBell = () => {
   };
 
   const handleItemClick = async (item: NotificationItem) => {
+    // 관련 화면이 있으면 바로 이동하고 패널을 닫는다
+    const route = getNotificationRoute(
+      item.notification_type,
+      me?.roles ?? [],
+      Boolean(me?.is_operator),
+    );
+    if (route) {
+      setIsOpen(false);
+      navigate(route);
+    }
+
     if (item.read_at) {
       return;
     }

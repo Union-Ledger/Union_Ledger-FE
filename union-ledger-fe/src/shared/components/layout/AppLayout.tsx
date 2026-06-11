@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
 import * as styles from "./AppLayout.css";
@@ -70,6 +70,56 @@ const AppLayout = () => {
       ]
     : [];
 
+  // 권한상 접근 가능한 작업 영역 — 2개 이상이면 전환 드롭다운 노출
+  const accessibleSections = useMemo(() => {
+    const roles = me?.roles ?? [];
+    const sections: { value: Role; label: string; to: string }[] = [];
+
+    if (roles.includes("president")) {
+      sections.push({
+        value: "PRESIDENT",
+        label: SECTION_LABELS.PRESIDENT,
+        to: ROUTES.PRESIDENT_DASHBOARD,
+      });
+    }
+    if (roles.includes("treasurer") || roles.includes("president")) {
+      sections.push({
+        value: "TREASURER",
+        label: SECTION_LABELS.TREASURER,
+        to: ROUTES.TREASURER_DASHBOARD,
+      });
+    }
+    if (roles.includes("auditor")) {
+      sections.push({
+        value: "AUDITOR",
+        label: SECTION_LABELS.AUDITOR,
+        to: ROUTES.AUDITOR_DASHBOARD,
+      });
+    }
+    // 학생 영역은 모든 사용자가 접근 가능
+    sections.push({
+      value: "STUDENT",
+      label: SECTION_LABELS.STUDENT,
+      to: ROUTES.STUDENT_DASHBOARD,
+    });
+    if (me?.is_operator) {
+      sections.push({
+        value: "ADMIN",
+        label: SECTION_LABELS.ADMIN,
+        to: ROUTES.ADMIN_APPLICATIONS,
+      });
+    }
+
+    return sections;
+  }, [me]);
+
+  const handleSectionChange = (value: string) => {
+    const next = accessibleSections.find((item) => item.value === value);
+    if (!next) return;
+    setIsSidebarOpen(false);
+    navigate(next.to);
+  };
+
   const menuByRole = () => {
     switch (section) {
       case "TREASURER":
@@ -126,7 +176,27 @@ const AppLayout = () => {
         </div>
         <div className={styles.divider}></div>
         <div className={styles.dropdownBox}>
-          <div className={styles.roleBadge}>{SECTION_LABELS[section]}</div>
+          {accessibleSections.length > 1 ? (
+            <select
+              className={styles.dropdown}
+              value={section}
+              aria-label="작업 영역 전환"
+              onChange={(event) => handleSectionChange(event.target.value)}
+            >
+              {accessibleSections.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+              {!accessibleSections.some((item) => item.value === section) && (
+                <option value={section} disabled>
+                  {SECTION_LABELS[section]}
+                </option>
+              )}
+            </select>
+          ) : (
+            <div className={styles.roleBadge}>{SECTION_LABELS[section]}</div>
+          )}
         </div>
         <div className={styles.divider}></div>
 
