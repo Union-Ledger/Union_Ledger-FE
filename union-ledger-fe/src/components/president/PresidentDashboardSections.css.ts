@@ -18,6 +18,11 @@ export const sectionTitle = style({
   margin: 0,
   ...vars.font.title_bold_24,
   color: vars.color.foreground,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const compactSectionTitle = style({
@@ -41,6 +46,11 @@ export const emptyState = style({
   textAlign: "center",
   color: vars.color.description,
   ...vars.font.body_regular_16,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const compactEmptyState = style({
@@ -299,6 +309,11 @@ export const auditCompletedValue = style({
   lineHeight: "1.2",
   fontWeight: "700",
   color: "#00A63E",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.4rem",
+    },
+  },
 });
 
 export const auditDaysValue = style({
@@ -308,6 +323,11 @@ export const auditDaysValue = style({
   lineHeight: "1.2",
   fontWeight: "700",
   color: "#155DFC",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.4rem",
+    },
+  },
 });
 
 export const teamHeader = style({
@@ -316,6 +336,12 @@ export const teamHeader = style({
   alignItems: "center",
   gap: "16px",
   marginBottom: "22px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+      gap: "12px",
+    },
+  },
 });
 
 export const inviteButton = style({
@@ -344,6 +370,12 @@ export const memberItem = style({
   borderRadius: "8px",
   border: `1px solid ${vars.color.ItemBorder}`,
   background: vars.color.surface,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+      gap: "10px",
+    },
+  },
 });
 
 export const compactMemberName = style({

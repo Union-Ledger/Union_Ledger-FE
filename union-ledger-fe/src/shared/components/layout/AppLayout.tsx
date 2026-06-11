@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
 import * as styles from "./AppLayout.css";
@@ -46,6 +47,21 @@ const AppLayout = () => {
   const { me } = useAuth();
   const { clearReviewItems } = useEvidenceReview();
   const section = getSectionFromPath(location.pathname);
+  // 모바일(≤768px) 드로어 — 데스크톱에서는 항상 펼쳐진 사이드바
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isSidebarOpen]);
 
   const myRoleLabels = me
     ? [
@@ -80,7 +96,25 @@ const AppLayout = () => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.sidebar}>
+      <button
+        type="button"
+        className={styles.mobileMenuButton}
+        aria-label={isSidebarOpen ? "메뉴 닫기" : "메뉴 열기"}
+        aria-expanded={isSidebarOpen}
+        onClick={() => setIsSidebarOpen((prev) => !prev)}
+      >
+        ☰
+      </button>
+      {isSidebarOpen && (
+        <div
+          className={styles.mobileOverlay}
+          role="presentation"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      <div
+        className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ""}`}
+      >
         <div className={styles.titleBox}>
           <div className={styles.titleIconBox}>
             <img className={styles.titleIcon} src={title} alt="Union-Ledger" />
@@ -103,6 +137,7 @@ const AppLayout = () => {
               to={menu.to}
               end={menu.to === ROUTES.DASHBOARD}
               className={styles.eachmenuBox}
+              onClick={() => setIsSidebarOpen(false)}
             >
               {({ isActive }) => (
                 <div className={styles.menuItem({ active: isActive })}>

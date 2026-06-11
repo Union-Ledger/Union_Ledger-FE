@@ -9,6 +9,13 @@ export const container = style({
   gap: "32px",
   padding: "32px",
   background: "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%);",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "auto",
+      minHeight: "100vh",
+      padding: "16px",
+    },
+  },
 });
 
 export const titleContainer = style({
@@ -22,6 +29,11 @@ export const title = style({
   background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const desc = style({
@@ -35,6 +47,11 @@ export const contentContainer = style({
   display: "flex",
   gap: "32px",
   paddingBottom: "32px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexDirection: "column",
+    },
+  },
 });
 
 export const toast = style({
@@ -53,6 +70,13 @@ export const toast = style({
     "0 20px 25px -5px rgba(0, 0, 0, 0.18), 0 8px 10px -6px rgba(0, 0, 0, 0.18)",
   color: vars.color.summaryTitle,
   ...vars.font.body_medium_14,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      right: "16px",
+      bottom: "16px",
+      maxWidth: "calc(100vw - 32px)",
+    },
+  },
 });
 
 export const toastIcon = style({

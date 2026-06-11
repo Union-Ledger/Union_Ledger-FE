@@ -9,6 +9,12 @@ export const container = style({
   gap: "32px",
   padding: "32px",
   background: "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%);",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+      gap: "24px",
+    },
+  },
 });
 
 export const titleContainer = style({
@@ -22,6 +28,11 @@ export const title = style({
   background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const desc = style({
@@ -40,6 +51,12 @@ export const contentContainer = style({
   background: "rgba(255, 255, 255, 0.80)",
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "auto",
+      padding: "16px",
+    },
+  },
 });
 
 export const uploadTitle = style({

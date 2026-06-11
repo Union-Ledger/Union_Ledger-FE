@@ -9,6 +9,12 @@ export const container = style({
   gap: "28px",
   padding: "32px",
   background: "#F8FAFC",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+      gap: "20px",
+    },
+  },
 });
 
 export const titleGroup = style({
@@ -20,6 +26,11 @@ export const titleGroup = style({
 export const title = style({
   ...vars.font.display_bold_30,
   color: "#0F172A",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const description = style({
@@ -36,6 +47,12 @@ export const filterPanel = style({
   border: "1px solid #E2E8F0",
   borderRadius: "12px",
   background: "#FFFFFF",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+      gap: "12px",
+    },
+  },
 });
 
 export const filterIcon = style({
@@ -48,6 +65,12 @@ export const filterControl = style({
   display: "flex",
   flexDirection: "column",
   gap: "8px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flex: "1",
+      minWidth: 0,
+    },
+  },
 });
 
 export const label = style({
@@ -67,6 +90,11 @@ export const select = style({
   fontSize: "1.4rem",
   fontWeight: 600,
   outline: "none",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      width: "100%",
+    },
+  },
 });
 
 export const cardGrid = style({
@@ -151,6 +179,11 @@ export const statGrid = style({
   display: "grid",
   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
   gap: "12px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
 });
 
 export const amountBox = style({
@@ -299,6 +332,11 @@ export const overlay = style({
   justifyContent: "center",
   padding: "32px",
   background: "rgba(15, 23, 42, 0.55)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+    },
+  },
 });
 
 export const modal = style({
@@ -312,6 +350,13 @@ export const modal = style({
   borderRadius: "12px",
   background: "#FFFFFF",
   boxShadow: "0 24px 70px rgba(15, 23, 42, 0.25)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      maxHeight: "calc(100vh - 32px)",
+      gap: "20px",
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const modalHeader = style({
@@ -324,6 +369,11 @@ export const modalHeader = style({
 export const modalTitle = style({
   ...vars.font.title_bold_24,
   color: "#0F172A",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2rem",
+    },
+  },
 });
 
 export const closeButton = style({
@@ -335,6 +385,12 @@ export const closeButton = style({
   color: "#334155",
   cursor: "pointer",
   fontSize: "2rem",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      width: "40px",
+      height: "40px",
+    },
+  },
 });
 
 export const categoryList = style({
@@ -381,6 +437,11 @@ export const progressBar = style({
 export const sectionTitle = style({
   ...vars.font.title_bold_24,
   color: "#0F172A",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2rem",
+    },
+  },
 });
 
 export const tableToolbar = style({
@@ -438,6 +499,11 @@ export const pageButton = style({
     opacity: 0.4,
     cursor: "not-allowed",
   },
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "40px",
+    },
+  },
 });
 
 export const pageInfo = style({
@@ -450,6 +516,11 @@ export const tableWrap = style({
   border: "1px solid #E2E8F0",
   borderRadius: "10px",
   overflow: "hidden",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      overflowX: "auto",
+    },
+  },
 });
 
 export const table = style({
@@ -516,6 +587,11 @@ export const evidenceButton = style({
       opacity: 0.45,
     },
   },
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "40px",
+    },
+  },
 });
 
 export const modalActions = style({
@@ -524,6 +600,12 @@ export const modalActions = style({
   gap: "16px",
   paddingTop: "8px",
   borderTop: "1px solid #E2E8F0",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "10px",
+    },
+  },
 });
 
 export const outlineButton = style({

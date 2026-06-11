@@ -11,6 +11,12 @@ export const container = style({
   borderRadius: "14px",
   boxShadow:
     "0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "18px",
+      gap: "16px",
+    },
+  },
 });
 
 export const title = style({
@@ -43,6 +49,12 @@ export const resultHeader = style({
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+      gap: "8px",
+    },
+  },
 });
 
 export const resultHeaderRight = style({

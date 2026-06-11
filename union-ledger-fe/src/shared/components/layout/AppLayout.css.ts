@@ -17,6 +17,65 @@ export const sidebar = style({
   height: "100%",
   flexShrink: 0,
   background: `linear-gradient(180deg, ${vars.color.gradient.sidebarFrom} 0%, ${vars.color.gradient.sidebarMid} 50%, ${vars.color.gradient.sidebarTo} 100%)`,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      position: "fixed",
+      top: 0,
+      bottom: 0,
+      left: 0,
+      zIndex: 810,
+      transform: "translateX(-100%)",
+      transition: "transform 0.25s ease",
+      overflowY: "auto",
+      boxShadow: vars.shadow.lg,
+    },
+  },
+});
+
+// 모바일 드로어 열림 — 데스크톱에서는 영향 없음
+export const sidebarOpen = style({
+  "@media": {
+    "screen and (max-width: 768px)": {
+      transform: "translateX(0)",
+    },
+  },
+});
+
+export const mobileMenuButton = style({
+  display: "none",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      position: "fixed",
+      top: "1.2rem",
+      left: "1.2rem",
+      zIndex: 790,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "4.4rem",
+      height: "4.4rem",
+      border: "none",
+      borderRadius: vars.radius.md,
+      background: vars.color.gradient.sidebarFrom,
+      color: vars.color.surface,
+      fontSize: "2rem",
+      cursor: "pointer",
+      boxShadow: vars.shadow.md,
+    },
+  },
+});
+
+export const mobileOverlay = style({
+  display: "none",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      display: "block",
+      position: "fixed",
+      inset: 0,
+      zIndex: 800,
+      background: vars.color.overlay,
+    },
+  },
 });
 
 export const titleBox = style({
@@ -216,6 +275,11 @@ export const content = style({
   height: "100%",
   overflowY: "auto",
   overflowX: "hidden",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      paddingTop: "6.4rem",
+    },
+  },
 });
 
 export const menuItem = recipe({

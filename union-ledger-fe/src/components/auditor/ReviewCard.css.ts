@@ -11,12 +11,24 @@ export const container = style({
   background: "rgba(255, 255, 255, 0.80)",
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "auto",
+      padding: "16px",
+    },
+  },
 });
 
 export const titleContainer = style({
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+      gap: "8px",
+    },
+  },
 });
 
 export const titleWrapper = style({
@@ -77,6 +89,11 @@ export const button = style({
   background: "linear-gradient(90deg, #4F39F6 0%, #9810FA 100%)",
   border: "none",
   cursor: "pointer",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "40px",
+    },
+  },
 });
 
 export const resultButton = style({
@@ -98,6 +115,13 @@ export const infoContainer = style({
   height: "86px",
   gap: "16px",
   marginTop: "16px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "auto",
+      flexDirection: "column",
+      gap: "12px",
+    },
+  },
 });
 
 export const infoItem = style({
@@ -109,6 +133,12 @@ export const infoItem = style({
   borderRadius: "14px",
   border: "1px solid",
   padding: "17px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      width: "100%",
+      height: "auto",
+    },
+  },
 });
 
 export const infoItemVariant = styleVariants({

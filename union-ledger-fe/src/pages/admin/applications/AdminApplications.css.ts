@@ -9,6 +9,15 @@ export const container = style({
   flexDirection: "column",
   gap: "32px",
   background: "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%)",
+  "@media": {
+    "screen and (max-width: 1024px)": {
+      padding: "32px 24px",
+    },
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+      gap: "24px",
+    },
+  },
 });
 
 export const titleContainer = style({
@@ -23,6 +32,11 @@ export const title = style({
   background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const description = style({
@@ -37,6 +51,11 @@ export const panel = style({
   background: vars.color.white95,
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const sectionHeader = style({
@@ -45,6 +64,13 @@ export const sectionHeader = style({
   justifyContent: "space-between",
   gap: "16px",
   marginBottom: "28px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+      gap: "12px",
+      marginBottom: "20px",
+    },
+  },
 });
 
 export const sectionTitle = style({
@@ -79,6 +105,11 @@ export const pendingCard = style({
   borderRadius: "10px",
   border: "1px solid #FCD34D",
   background: "#FFFBEB",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const cardTop = style({
@@ -87,6 +118,13 @@ export const cardTop = style({
   justifyContent: "space-between",
   gap: "20px",
   marginBottom: "20px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexDirection: "column",
+      gap: "8px",
+      marginBottom: "16px",
+    },
+  },
 });
 
 export const nameRow = style({
@@ -128,6 +166,12 @@ export const metaGrid = style({
   gridTemplateColumns: "1fr 1fr",
   gap: "28px",
   marginBottom: "24px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "16px",
+    },
+  },
 });
 
 export const organizationBlock = style({
@@ -156,6 +200,12 @@ export const documentRow = style({
   alignItems: "center",
   justifyContent: "space-between",
   gap: "16px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+      gap: "8px",
+    },
+  },
 });
 
 export const documentList = style({
@@ -194,6 +244,11 @@ export const actionRow = style({
   gridTemplateColumns: "1fr 1fr",
   gap: "12px",
   marginTop: "20px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
 });
 
 const actionButtonBase = {
@@ -262,6 +317,14 @@ export const completedItem = recipe({
     gap: "16px",
     padding: "18px 20px",
     borderRadius: "10px",
+    "@media": {
+      "screen and (max-width: 768px)": {
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: "10px",
+        padding: "16px",
+      },
+    },
   },
   variants: {
     status: {

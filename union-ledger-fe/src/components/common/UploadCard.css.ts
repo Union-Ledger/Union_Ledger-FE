@@ -20,6 +20,13 @@ export const container = style({
       opacity: 0.65,
     },
   },
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "auto",
+      minHeight: "200px",
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const iconContainer = style({

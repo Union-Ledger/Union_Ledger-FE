@@ -6,6 +6,14 @@ export const container = style({
   minHeight: "100vh",
   padding: "44px 56px",
   background: `linear-gradient(135deg, ${vars.color.checklistbackground} 0%, ${vars.color.blueSoft.bgFrom} 100%)`,
+  "@media": {
+    "screen and (max-width: 1024px)": {
+      padding: "32px 24px",
+    },
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const backButton = style({
@@ -22,6 +30,13 @@ export const headerContainer = style({
   justifyContent: "space-between",
   alignItems: "flex-start",
   marginBottom: "32px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexDirection: "column",
+      gap: "12px",
+      marginBottom: "24px",
+    },
+  },
 });
 
 export const title = style({
@@ -30,6 +45,11 @@ export const title = style({
   background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const desc = style({
@@ -54,6 +74,11 @@ export const totalAmountWrapper = style({
   display: "flex",
   flexDirection: "column",
   alignItems: "flex-end",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      alignItems: "flex-start",
+    },
+  },
 });
 
 export const totalAmountLabel = style({
@@ -64,12 +89,25 @@ export const totalAmountLabel = style({
 export const totalAmount = style({
   ...vars.font.display_bold_30,
   color: vars.color.primary,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const contentContainer = style({
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
   gap: "32px",
+  "@media": {
+    "screen and (max-width: 1024px)": {
+      gridTemplateColumns: "1fr",
+    },
+    "screen and (max-width: 768px)": {
+      gap: "20px",
+    },
+  },
 });
 
 export const panel = style({
@@ -91,12 +129,22 @@ export const panelHeader = style({
   ...vars.font.heading_medium_20,
   fontWeight: "700",
   color: vars.color.summaryTitle,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "0 20px",
+    },
+  },
 });
 
 export const panelBody = style({
   padding: "32px",
   height: "calc(100% - 96px)",
   overflowY: "auto",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const sectionTitle = style({
@@ -160,6 +208,11 @@ export const transactionTop = style({
   alignItems: "center",
   gap: "8px",
   marginBottom: "12px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+    },
+  },
 });
 
 export const transactionDate = style({
@@ -271,6 +324,12 @@ export const auditPanel = style({
   background: vars.color.white95,
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      marginTop: "20px",
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const auditCompletePanel = style({
@@ -281,6 +340,12 @@ export const auditCompletePanel = style({
   background: `linear-gradient(135deg, ${vars.color.mint.bgFrom} 0%, ${vars.color.mint.bgTo} 100%)`,
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      marginTop: "20px",
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const auditCompleteTitle = style({
@@ -320,6 +385,12 @@ export const actionContainer = style({
   gap: "16px",
   borderTop: `1px solid ${vars.color.ItemBorder}`,
   paddingTop: "20px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "12px",
+    },
+  },
 });
 
 export const approveButton = style({
@@ -363,6 +434,11 @@ export const viewEvidenceButton = style({
   color: vars.color.primary,
   cursor: "pointer",
   ...vars.font.caption_regular_12,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      minHeight: "40px",
+    },
+  },
 });
 
 export const missingItem = style({
@@ -420,6 +496,11 @@ export const modalOverlay = style({
   justifyContent: "center",
   padding: "24px",
   background: "rgba(15, 23, 42, 0.55)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+    },
+  },
 });
 
 export const modalCard = style({
@@ -431,6 +512,12 @@ export const modalCard = style({
   borderRadius: "14px",
   background: vars.color.surface,
   boxShadow: "0 24px 48px -12px rgba(0, 0, 0, 0.35)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+      maxHeight: "90vh",
+    },
+  },
 });
 
 export const modalTitleRow = style({
@@ -523,6 +610,11 @@ export const topRow = style({
   alignItems: "center",
   justifyContent: "space-between",
   gap: "12px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+    },
+  },
 });
 
 export const queueBadge = style({

@@ -38,6 +38,11 @@ export const title = style({
   margin: 0,
   ...vars.font.display_bold_30,
   color: vars.color.primary,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const desc = style({

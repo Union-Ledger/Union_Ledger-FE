@@ -11,6 +11,12 @@ export const container = style({
   borderRadius: "14px",
   boxShadow:
     "0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "18px",
+      gap: "16px",
+    },
+  },
 });
 
 export const title = style({
@@ -24,6 +30,12 @@ export const contentContainer = style({
   display: "flex",
   flexDirection: "column",
   justifyContent: "space-between",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "auto",
+      gap: "14px",
+    },
+  },
 });
 
 export const activityContainer = style({

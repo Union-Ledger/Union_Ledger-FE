@@ -12,6 +12,7 @@ export const container = style({
     },
     "screen and (max-width: 560px)": {
       gridTemplateColumns: "1fr",
+      gap: "16px",
     },
   },
 });
@@ -25,6 +26,11 @@ export const card = style({
   background: vars.color.white80,
   boxShadow:
     "0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+    },
+  },
 });
 
 export const iconContainer = style({
@@ -67,4 +73,9 @@ export const cardTitle = style({
 export const cardContent = style({
   ...vars.font.title_bold_24,
   color: vars.color.summaryTitle,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2rem",
+    },
+  },
 });

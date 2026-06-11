@@ -10,6 +10,12 @@ export const container = style({
   padding: "32px",
   background: "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%);",
   paddingBottom: "32px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+      gap: "20px",
+    },
+  },
 });
 
 export const titleContainer = style({
@@ -23,6 +29,11 @@ export const title = style({
   background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const desc = style({

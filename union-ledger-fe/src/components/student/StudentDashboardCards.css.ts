@@ -6,6 +6,13 @@ export const container = style({
   height: "168px",
   display: "flex",
   gap: "24px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "auto",
+      flexWrap: "wrap",
+      gap: "16px",
+    },
+  },
 });
 
 export const card = style({
@@ -18,6 +25,13 @@ export const card = style({
   boxShadow:
     "0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10)",
   padding: "24px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flex: "1 1 240px",
+      height: "auto",
+      padding: "20px",
+    },
+  },
 });
 
 export const iconContainer = style({

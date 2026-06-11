@@ -10,6 +10,12 @@ export const container = style({
   gap: "32px",
   padding: "32px",
   marginBottom: "32px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+      gap: "24px",
+    },
+  },
 });
 
 export const titleBox = style({
@@ -21,6 +27,11 @@ export const titleBox = style({
 export const title = style({
   ...vars.font.display_bold_30,
   color: vars.color.accent.violet,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const description = style({
@@ -60,6 +71,12 @@ export const summaryTotalContainer = style({
   display: "flex",
   gap: "24px",
   justifyContent: "space-between",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexDirection: "column",
+      gap: "12px",
+    },
+  },
 });
 
 export const summaryTotalBox = recipe({
@@ -104,6 +121,11 @@ export const summaryTotalTitle = recipe({
 export const summaryTotalAmount = recipe({
   base: {
     ...vars.font.display_bold_30,
+    "@media": {
+      "screen and (max-width: 768px)": {
+        fontSize: "2.2rem",
+      },
+    },
   },
   variants: {
     color: {
@@ -232,6 +254,12 @@ export const rejectedMetaRow = style({
   display: "flex",
   justifyContent: "space-between",
   gap: "16px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+      gap: "10px",
+    },
+  },
 });
 
 export const rejectedReviewerBox = style({
@@ -329,6 +357,12 @@ export const rejectedActionRow = style({
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
   gap: "12px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "10px",
+    },
+  },
 });
 
 export const rejectedOutlineButton = style({
@@ -343,6 +377,11 @@ export const rejectedOutlineButton = style({
   color: vars.color.summaryTitle,
   cursor: "pointer",
   ...vars.font.body_medium_14,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "44px",
+    },
+  },
 });
 
 export const rejectedSubmitButton = style({
@@ -357,6 +396,11 @@ export const rejectedSubmitButton = style({
   ":disabled": {
     opacity: 0.6,
     cursor: "not-allowed",
+  },
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "44px",
+    },
   },
 });
 
@@ -402,6 +446,12 @@ export const publishButton = style({
     opacity: 0.6,
     cursor: "not-allowed",
   },
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "44px",
+      alignSelf: "stretch",
+    },
+  },
 });
 
 export const fileContainer = style({
@@ -409,6 +459,12 @@ export const fileContainer = style({
   display: "flex",
   justifyContent: "space-between",
   gap: "24px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexDirection: "column",
+      gap: "16px",
+    },
+  },
 });
 
 export const fileBox = style({
@@ -575,6 +631,12 @@ export const reconciliationTabBox = style({
   borderRadius: "999px",
   background: vars.color.background,
   marginBottom: "24px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      width: "100%",
+      height: "44px",
+    },
+  },
 });
 
 export const reconciliationTab = style({
@@ -676,6 +738,11 @@ export const reconciliationStatsBox = style({
   gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
   gap: "10px",
   marginTop: "18px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
 });
 
 export const reconciliationStatsItem = style({
@@ -706,6 +773,11 @@ export const reconciliationBackButton = style({
   cursor: "pointer",
   ...vars.font.body_medium_14,
   color: vars.color.summaryTitle,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "44px",
+    },
+  },
 });
 
 export const reconciliationGenerateButton = style({
@@ -721,6 +793,11 @@ export const reconciliationGenerateButton = style({
   ":disabled": {
     opacity: 0.55,
     cursor: "not-allowed",
+  },
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "44px",
+    },
   },
 });
 
@@ -774,6 +851,11 @@ export const artifactDownloadButton = style({
     opacity: 0.55,
     cursor: "not-allowed",
   },
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "40px",
+    },
+  },
 });
 
 export const artifactStatusFailed = style({
@@ -795,5 +877,10 @@ export const reconciliationResolveButton = style({
   ":disabled": {
     opacity: 0.55,
     cursor: "not-allowed",
+  },
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "40px",
+    },
   },
 });

@@ -9,6 +9,12 @@ export const container = style({
   gap: "32px",
   padding: "32px",
   background: "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%);",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+      gap: "24px",
+    },
+  },
 });
 
 export const titleContainer = style({
@@ -22,6 +28,11 @@ export const title = style({
   background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const desc = style({
@@ -41,6 +52,13 @@ export const typeSelectorContainer = style({
   height: "88px",
   display: "flex",
   gap: "16px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "auto",
+      flexDirection: "column",
+      gap: "12px",
+    },
+  },
 });
 
 export const typeCard = style({
@@ -122,6 +140,12 @@ export const cardContainer = style({
   background: "rgba(255, 255, 255, 0.80)",
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "auto",
+      padding: "20px",
+    },
+  },
 });
 
 export const statusMessage = style({
@@ -143,12 +167,23 @@ export const reviewSection = style({
   background: "rgba(255, 255, 255, 0.86)",
   boxShadow:
     "0 20px 25px -5px rgba(15, 23, 43, 0.10), 0 8px 10px -6px rgba(15, 23, 43, 0.08)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px",
+      gap: "20px",
+    },
+  },
 });
 
 export const reviewTitle = style({
   ...vars.font.display_bold_30,
   color: "#0F172B",
   margin: 0,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const reviewGrid = style({
@@ -336,6 +371,11 @@ export const modalOverlay = style({
   justifyContent: "center",
   padding: "32px",
   background: "rgba(15, 23, 42, 0.55)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+    },
+  },
 });
 
 export const modal = style({
@@ -346,6 +386,11 @@ export const modal = style({
   background: "#FFFFFF",
   boxShadow:
     "0 24px 48px -16px rgba(15, 23, 42, 0.35), 0 10px 18px -12px rgba(15, 23, 42, 0.28)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      maxHeight: "calc(100vh - 32px)",
+    },
+  },
 });
 
 export const modalHeader = style({
@@ -354,12 +399,22 @@ export const modalHeader = style({
   justifyContent: "space-between",
   gap: "16px",
   padding: "32px 32px 16px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px 12px",
+    },
+  },
 });
 
 export const modalTitle = style({
   ...vars.font.display_bold_30,
   margin: 0,
   color: "#0F172B",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const modalCloseButton = style({
@@ -382,6 +437,13 @@ export const modalContent = style({
   "@media": {
     "(max-width: 760px)": {
       gridTemplateColumns: "1fr",
+    },
+    "screen and (max-width: 1024px)": {
+      gridTemplateColumns: "1fr",
+      gap: "24px",
+    },
+    "screen and (max-width: 768px)": {
+      padding: "12px 16px 20px",
     },
   },
 });
@@ -452,6 +514,13 @@ export const modalActions = style({
   gridTemplateColumns: "2fr 1fr",
   gap: "16px",
   marginTop: "28px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "10px",
+      marginTop: "20px",
+    },
+  },
 });
 
 export const saveButton = style({

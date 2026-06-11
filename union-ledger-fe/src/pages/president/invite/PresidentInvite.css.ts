@@ -9,6 +9,15 @@ export const container = style({
   flexDirection: "column",
   gap: "32px",
   background: "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%)",
+  "@media": {
+    "screen and (max-width: 1024px)": {
+      padding: "32px 24px",
+    },
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+      gap: "24px",
+    },
+  },
 });
 
 export const titleContainer = style({
@@ -22,6 +31,11 @@ export const title = style({
   background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const desc = style({
@@ -35,6 +49,11 @@ export const formCard = style({
   background: vars.color.white95,
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const formHeader = style({
@@ -48,6 +67,11 @@ export const formIcon = style({
   color: vars.color.primary,
   fontSize: "2.4rem",
   lineHeight: "1",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2rem",
+    },
+  },
 });
 
 export const formTitle = style({
@@ -67,6 +91,12 @@ export const formGrid = style({
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
   gap: "24px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "16px",
+    },
+  },
 });
 
 export const field = style({
@@ -135,6 +165,11 @@ export const listCard = style({
   background: vars.color.white95,
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px 16px",
+    },
+  },
 });
 
 export const listTitle = style({
@@ -166,6 +201,13 @@ export const invitationItem = style({
   borderRadius: "10px",
   border: `1px solid ${vars.color.ItemBorder}`,
   background: vars.color.surface,
+  "@media": {
+    "screen and (max-width: 768px)": {
+      flexWrap: "wrap",
+      gap: "10px",
+      padding: "16px",
+    },
+  },
 });
 
 export const email = style({
@@ -213,6 +255,12 @@ export const cancelButton = style({
   ":disabled": {
     opacity: 0.6,
     cursor: "not-allowed",
+  },
+
+  "@media": {
+    "screen and (max-width: 768px)": {
+      height: "40px",
+    },
   },
 });
 

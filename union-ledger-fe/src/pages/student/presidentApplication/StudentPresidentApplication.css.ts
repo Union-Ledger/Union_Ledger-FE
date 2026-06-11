@@ -8,6 +8,12 @@ export const container = style({
   flexDirection: "column",
   gap: "28px",
   background: "linear-gradient(135deg, #F8FAFC 0%, #FAF5FF 50%, #EFF6FF 100%)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "16px",
+      gap: "20px",
+    },
+  },
 });
 
 export const titleContainer = style({
@@ -21,6 +27,11 @@ export const title = style({
   background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      fontSize: "2.2rem",
+    },
+  },
 });
 
 export const desc = style({
@@ -45,6 +56,11 @@ export const formCard = style({
   background: vars.color.white95,
   boxShadow:
     "0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      padding: "20px",
+    },
+  },
 });
 
 export const formHeader = style({
@@ -78,6 +94,12 @@ export const grid = style({
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
   gap: "20px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "0px",
+    },
+  },
 });
 
 export const field = style({
@@ -157,6 +179,12 @@ export const actionRow = style({
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
   gap: "24px",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      gridTemplateColumns: "1fr",
+      gap: "12px",
+    },
+  },
 });
 
 export const cancelButton = style({
