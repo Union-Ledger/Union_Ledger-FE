@@ -1034,7 +1034,7 @@ const Upload = () => {
                       }))
                     }
                   />
-                  <span>환불/취소 영수증 (금액을 총액에서 차감)</span>
+                  <span>환불/취소 영수증</span>
                 </label>
 
                 <div className={styles.modalActions}>
