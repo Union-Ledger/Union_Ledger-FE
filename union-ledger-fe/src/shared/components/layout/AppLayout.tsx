@@ -14,6 +14,7 @@ import { tokenStorage } from "@/utils/token";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEvidenceReview } from "@/contexts/EvidenceReviewContext";
 import NotificationBell from "@/components/common/NotificationBell";
+import SessionTimer from "@/components/common/SessionTimer";
 
 type Role = "TREASURER" | "AUDITOR" | "STUDENT" | "PRESIDENT" | "ADMIN";
 
@@ -140,12 +141,14 @@ const AppLayout = () => {
   const handleLogout = () => {
     clearReviewItems();
     tokenStorage.removeAccessToken();
+    tokenStorage.removeRefreshToken();
     localStorage.removeItem("organizationId");
     navigate(ROUTES.LOGIN);
   };
 
   return (
     <div className={styles.container}>
+      {me && <SessionTimer />}
       <button
         type="button"
         className={styles.mobileMenuButton}

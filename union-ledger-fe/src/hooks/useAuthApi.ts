@@ -39,6 +39,7 @@ interface SignupData {
 
 interface TokenResponse {
   access_token: string;
+  refresh_token?: string;
   token_type: string;
 }
 
@@ -87,11 +88,12 @@ export interface MeResponse {
 const useAuthApi = () => {
   const { api } = useApi();
 
-  const saveAccessToken = (data: TokenResponse) => {
-    const accessToken = data.access_token;
-
-    if (accessToken) {
-      tokenStorage.setAccessToken(accessToken);
+  const saveTokens = (data: TokenResponse) => {
+    if (data.access_token) {
+      tokenStorage.setAccessToken(data.access_token);
+    }
+    if (data.refresh_token) {
+      tokenStorage.setRefreshToken(data.refresh_token);
     }
   };
 
@@ -99,7 +101,7 @@ const useAuthApi = () => {
     return api
       .post(ENDPOINTS.AUTH.LOGIN, data)
       .then((response) => {
-        saveAccessToken(response.data);
+        saveTokens(response.data);
 
         return response.data;
       })
@@ -183,7 +185,7 @@ const useAuthApi = () => {
         invitation_code: data.invitationCode || undefined,
       })
       .then((response) => {
-        saveAccessToken(response.data);
+        saveTokens(response.data);
 
         return response.data;
       })
@@ -205,8 +207,25 @@ const useAuthApi = () => {
       });
   };
 
+  const postRefresh = (): Promise<TokenResponse> => {
+    const refreshToken = tokenStorage.getRefreshToken();
+
+    if (!refreshToken) {
+      return Promise.reject(new Error("리프레시 토큰이 없습니다."));
+    }
+
+    return api
+      .post(ENDPOINTS.AUTH.REFRESH, { refresh_token: refreshToken })
+      .then((response) => {
+        saveTokens(response.data);
+
+        return response.data;
+      });
+  };
+
   const logout = () => {
     tokenStorage.removeAccessToken();
+    tokenStorage.removeRefreshToken();
   };
 
   return {
@@ -217,6 +236,7 @@ const useAuthApi = () => {
     postResetPassword,
     postSignup,
     getMe,
+    postRefresh,
     logout,
   };
 };

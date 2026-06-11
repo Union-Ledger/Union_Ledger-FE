@@ -8,6 +8,7 @@ export const ENDPOINTS = {
     PASSWORD_RESET: "/auth/password/reset",
     LOGIN: "/auth/login",
     SIGNUP: "/auth/signup",
+    REFRESH: "/auth/refresh",
     ME: "/auth/me",
   },
   INVITATION: {

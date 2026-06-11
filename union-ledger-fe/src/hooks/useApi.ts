@@ -10,6 +10,7 @@ export const SESSION_EXPIRED_FLAG = "sessionExpired";
 const handleUnauthorized = (requestUrl: string) => {
   const hadToken = Boolean(tokenStorage.getAccessToken());
   tokenStorage.removeAccessToken();
+  tokenStorage.removeRefreshToken();
 
   // 자격 증명 오류(로그인 요청 자체의 401)나 이미 로그인 화면이면 그대로 둔다
   const isLoginRequest = requestUrl.includes(ENDPOINTS.AUTH.LOGIN);
