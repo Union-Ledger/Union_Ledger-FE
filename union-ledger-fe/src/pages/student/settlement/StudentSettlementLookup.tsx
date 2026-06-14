@@ -8,19 +8,26 @@ import usePublicSettlementApi, {
 } from "@/hooks/usePublicSettlementApi";
 import { useToast } from "@shared/components/feedback";
 import DonutChart from "@shared/components/charts/DonutChart";
+import { CHART_PALETTE } from "@shared/components/charts/chartPalette";
 import MonthlyBarChart from "@shared/components/charts/MonthlyBarChart";
-import { formatCompactKrw } from "@/utils/format";
+import { formatCompactKrw, formatDate } from "@/utils/format";
 import * as styles from "./StudentSettlementLookup.css";
 
 const ITEMS_PER_PAGE = 10;
-const CATEGORY_COLORS = [
-  "#2563EB",
-  "#7C3AED",
-  "#0F766E",
-  "#DB2777",
-  "#D97706",
-  "#059669",
-];
+
+// 결제수단 코드 → 한국어 표기 (미지정/미지원 코드는 원문 그대로 노출)
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  card: "카드",
+  cash: "현금",
+  transfer: "계좌이체",
+  account_transfer: "계좌이체",
+  bank_transfer: "계좌이체",
+};
+
+const getPaymentMethodLabel = (method: string | null | undefined) => {
+  if (!method) return "-";
+  return PAYMENT_METHOD_LABELS[method.toLowerCase()] ?? method;
+};
 
 type CategorySummary = {
   name: string;
@@ -548,6 +555,19 @@ const StudentSettlementLookup = () => {
 
             {!isDetailLoading && !detailErrorMessage && (
               <>
+                <div className={styles.trustBar}>
+                  <span className={styles.trustBadge}>감사 완료 ✓</span>
+                  <span className={styles.trustMeta}>
+                    감사일 <strong>{formatDate(detail?.audited_at)}</strong>
+                  </span>
+                  <span className={styles.trustMeta}>
+                    제출일 <strong>{formatDate(detail?.submitted_at)}</strong>
+                  </span>
+                  <span className={styles.trustNote}>
+                    감사위원 검토를 거쳐 공개된 결산입니다.
+                  </span>
+                </div>
+
                 {categorySummary.length > 0 && (
                   <div className={styles.chartsRow}>
                     <div className={styles.chartCard}>
@@ -577,7 +597,7 @@ const StudentSettlementLookup = () => {
                   {categorySummary.map((category, index) => {
                     const percentage =
                       categoryTotal > 0 ? Math.round((category.amount / categoryTotal) * 100) : 0;
-                    const color = CATEGORY_COLORS[index % CATEGORY_COLORS.length];
+                    const color = CHART_PALETTE[index % CHART_PALETTE.length];
 
                     return (
                       <div className={styles.categoryRow} key={category.name}>
@@ -628,6 +648,7 @@ const StudentSettlementLookup = () => {
                         <tr>
                           <th className={styles.tableHeadCell}>날짜</th>
                           <th className={styles.tableHeadCell}>적요</th>
+                          <th className={styles.tableHeadCell}>결제수단</th>
                           <th className={styles.tableHeadCell}>항목</th>
                           <th className={styles.tableHeadCell}>증빙</th>
                           <th className={`${styles.tableHeadCell} ${styles.tableAmount}`}>금액</th>
@@ -636,7 +657,7 @@ const StudentSettlementLookup = () => {
                       <tbody>
                         {pagedItems.length === 0 && (
                           <tr>
-                            <td className={styles.tableCell} colSpan={5}>
+                            <td className={styles.tableCell} colSpan={6}>
                               {itemSearch.trim()
                                 ? "검색 결과가 없습니다."
                                 : "거래 내역이 없습니다."}
@@ -648,7 +669,13 @@ const StudentSettlementLookup = () => {
                             <td className={styles.tableCell}>{getDateText(item.evidence_date)}</td>
                             <td className={styles.tableCell}>{item.merchant_name || "-"}</td>
                             <td className={styles.tableCell}>
+                              {getPaymentMethodLabel(item.payment_method)}
+                            </td>
+                            <td className={styles.tableCell}>
                               <span className={styles.categoryChip}>{item.group_name || "미분류"}</span>
+                              {item.budget_category && (
+                                <span className={styles.budgetSub}>{item.budget_category}</span>
+                              )}
                             </td>
                             <td className={styles.tableCell}>
                               <button

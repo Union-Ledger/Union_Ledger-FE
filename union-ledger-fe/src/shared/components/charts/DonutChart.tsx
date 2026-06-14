@@ -1,5 +1,5 @@
-import { vars } from "@/styles/theme.css";
 import { formatKrw } from "@/utils/format";
+import { CHART_PALETTE } from "./chartPalette";
 import * as styles from "./DonutChart.css";
 
 export interface DonutDatum {
@@ -14,18 +14,6 @@ interface DonutChartProps {
   centerSubLabel?: string;
   formatValue?: (value: number) => string;
 }
-
-const PALETTE = [
-  vars.color.accent.indigo,
-  vars.color.accent.blue,
-  vars.color.accent.cyan,
-  vars.color.accent.teal,
-  vars.color.accent.orange,
-  vars.color.accent.pink,
-  vars.color.accent.purple,
-  vars.color.accent.green,
-  vars.color.accent.red,
-];
 
 const RADIUS = 42;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -50,7 +38,7 @@ const DonutChart = ({
 
     return {
       ...datum,
-      color: PALETTE[index % PALETTE.length],
+      color: CHART_PALETTE[index % CHART_PALETTE.length],
       fraction,
       dash: fraction * CIRCUMFERENCE,
       offset,

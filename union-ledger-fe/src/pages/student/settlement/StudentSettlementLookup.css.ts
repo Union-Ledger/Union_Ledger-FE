@@ -749,3 +749,51 @@ export const outlineButton = style({
     },
   },
 });
+
+// 결산 상세 모달의 감사 신뢰 헤더 (누가/언제 검증했는지 가시화)
+export const trustBar = style({
+  display: "flex",
+  alignItems: "center",
+  flexWrap: "wrap",
+  gap: "10px 18px",
+  padding: "14px 18px",
+  border: `1px solid ${vars.color.semantic.success.border}`,
+  borderRadius: "12px",
+  background: vars.color.semantic.success.bg,
+});
+
+export const trustBadge = style({
+  ...vars.font.body_medium_14,
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "6px",
+  padding: "4px 12px",
+  borderRadius: "999px",
+  background: vars.color.semantic.success.strong,
+  color: "#FFFFFF",
+  fontWeight: 800,
+});
+
+export const trustMeta = style({
+  ...vars.font.body_medium_14,
+  color: vars.color.semantic.success.text,
+});
+
+export const trustNote = style({
+  ...vars.font.caption_regular_12,
+  color: vars.color.semantic.success.text,
+  marginLeft: "auto",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      marginLeft: 0,
+    },
+  },
+});
+
+// 거래표 항목 셀: 구분 칩 아래 공식 예산항목 보조 표기
+export const budgetSub = style({
+  ...vars.font.caption_regular_12,
+  display: "block",
+  marginTop: "4px",
+  color: "#64748B",
+});

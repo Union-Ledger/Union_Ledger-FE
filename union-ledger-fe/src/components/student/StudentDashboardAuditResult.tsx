@@ -2,6 +2,7 @@ import * as styles from "@components/student/StudentDashboardAuditResult.css";
 import check from "@assets/dashboard/check.svg";
 import smallCheck from "@assets/dashboard/small-check.svg";
 import xIcon from "@assets/dashboard/x-icon.svg";
+import { formatDate } from "@/utils/format";
 
 type SettlementStatus = "APPROVED" | "UNAPPROVED";
 
@@ -53,7 +54,7 @@ const StudentDashboardAuditResult = ({
               )}
               <span className={styles.resultApprovedAt}>
                 {item.status === "APPROVED"
-                  ? `감사 완료: ${item.approvedAt ?? "-"}`
+                  ? `감사 완료: ${formatDate(item.approvedAt)}`
                   : "감사 미완료"}
               </span>
             </div>
