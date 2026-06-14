@@ -15,6 +15,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEvidenceReview } from "@/contexts/EvidenceReviewContext";
 import NotificationBell from "@/components/common/NotificationBell";
 import SessionTimer from "@/components/common/SessionTimer";
+import TreasurerStepper from "@/components/treasurer/TreasurerStepper";
+
+// 재정 파이프라인 단계 페이지 — 스텝퍼 노출 대상
+const PIPELINE_ROUTES: string[] = [
+  ROUTES.TEMPLATE,
+  ROUTES.UPLOAD,
+  ROUTES.COMPARE,
+  ROUTES.CREATE,
+];
 
 type Role = "TREASURER" | "AUDITOR" | "STUDENT" | "PRESIDENT" | "ADMIN";
 
@@ -266,6 +275,9 @@ const AppLayout = () => {
       </div>
 
       <main className={styles.content}>
+        {PIPELINE_ROUTES.some((route) =>
+          location.pathname.startsWith(route),
+        ) && <TreasurerStepper />}
         <Outlet />
       </main>
     </div>
