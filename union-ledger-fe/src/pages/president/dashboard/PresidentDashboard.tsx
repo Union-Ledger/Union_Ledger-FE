@@ -5,7 +5,7 @@ import useDashboardApi, {
   type PresidentDashboardResponse,
 } from "@/hooks/useDashboardApi";
 import useSettlementApi from "@/hooks/useSettlementApi";
-import { useToast } from "@shared/components/feedback";
+import { useConfirm, useToast } from "@shared/components/feedback";
 import PresidentDashboardCards from "@/components/president/PresidentDashboardCards";
 import PresidentSettlementStatus from "@/components/president/PresidentSettlementStatus";
 import PresidentAuditorActivity from "@/components/president/PresidentAuditorActivity";
@@ -18,6 +18,7 @@ const PresidentDashboard = () => {
   const { getPresidentDashboard } = useDashboardApi();
   const { postPublishSettlement } = useSettlementApi();
   const toast = useToast();
+  const confirm = useConfirm();
   const [getPresidentDashboardOnce] = useState(() => getPresidentDashboard);
   const [postPublishSettlementOnce] = useState(() => postPublishSettlement);
   const [dashboard, setDashboard] =
@@ -47,6 +48,20 @@ const PresidentDashboard = () => {
   }, [getPresidentDashboardOnce]);
 
   const handlePublish = async (settlementId: string) => {
+    const target = dashboard?.treasurer_work.find(
+      (settlement) => settlement.settlement_id === settlementId,
+    );
+    const confirmed = await confirm({
+      title: "결산안을 공개할까요?",
+      description: `공개하면 모든 학우가 ${
+        target ? `'${target.title}' ` : ""
+      }결산 내역을 열람할 수 있습니다. 공개 후에는 되돌릴 수 없습니다.`,
+      confirmLabel: "공개하기",
+      tone: "danger",
+    });
+
+    if (!confirmed) return;
+
     try {
       setPublishingSettlementId(settlementId);
       await postPublishSettlementOnce(settlementId);
