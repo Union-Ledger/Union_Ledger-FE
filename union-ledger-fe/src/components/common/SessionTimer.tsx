@@ -2,7 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@router/constant/router";
 import { getAccessTokenExpiry } from "@/utils/token";
-import { SESSION_EXPIRED_FLAG } from "@/hooks/useApi";
+import {
+  RETURN_TO_KEY,
+  SESSION_EXPIRED_FLAG,
+  refreshAccessToken,
+} from "@/hooks/useApi";
 import useAuthApi from "@/hooks/useAuthApi";
 import { useConfirm } from "@/shared/components/feedback/confirm/ConfirmProvider";
 import * as styles from "./SessionTimer.css";
@@ -25,12 +29,13 @@ const computeRemaining = () => {
 const SessionTimer = () => {
   const navigate = useNavigate();
   const confirm = useConfirm();
-  const { postRefresh, logout } = useAuthApi();
+  const { logout } = useAuthApi();
 
   const [remaining, setRemaining] = useState<number | null>(computeRemaining);
   const warnedRef = useRef(false);
   const promptOpenRef = useRef(false);
   const expiredRef = useRef(false);
+  const silentRefreshingRef = useRef(false);
 
   const handleExpired = useCallback(() => {
     if (expiredRef.current) return;
@@ -38,6 +43,10 @@ const SessionTimer = () => {
     logout();
     localStorage.removeItem("organizationId");
     sessionStorage.setItem(SESSION_EXPIRED_FLAG, "1");
+    const returnTo = window.location.pathname + window.location.search;
+    if (returnTo.startsWith("/") && returnTo !== ROUTES.LOGIN) {
+      sessionStorage.setItem(RETURN_TO_KEY, returnTo);
+    }
     navigate(ROUTES.LOGIN, { replace: true });
   }, [logout, navigate]);
 
@@ -56,22 +65,33 @@ const SessionTimer = () => {
     });
     promptOpenRef.current = false;
     if (!ok) return;
-    try {
-      await postRefresh();
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
       warnedRef.current = false;
       setRemaining(computeRemaining());
-    } catch {
+    } else {
       handleExpired();
     }
-  }, [confirm, postRefresh, handleExpired]);
+  }, [confirm, handleExpired]);
 
   useEffect(() => {
-    const tick = () => {
+    const tick = async () => {
       const rem = computeRemaining();
       setRemaining(rem);
       if (rem == null) return;
       if (rem <= 0) {
-        handleExpired();
+        // 액세스 토큰 만료 — refresh로 조용히 갱신 시도, 실패할 때만 만료 처리
+        // (클라이언트 시계 오차로 멀쩡한 세션을 끊지 않도록 서버에 위임)
+        if (silentRefreshingRef.current || expiredRef.current) return;
+        silentRefreshingRef.current = true;
+        const refreshed = await refreshAccessToken();
+        silentRefreshingRef.current = false;
+        if (refreshed) {
+          warnedRef.current = false;
+          setRemaining(computeRemaining());
+        } else {
+          handleExpired();
+        }
         return;
       }
       if (rem > WARN_THRESHOLD_SEC) {
@@ -84,7 +104,7 @@ const SessionTimer = () => {
         void promptExtend();
       }
     };
-    const id = window.setInterval(tick, 1000);
+    const id = window.setInterval(() => void tick(), 1000);
     return () => window.clearInterval(id);
   }, [handleExpired, promptExtend]);
 

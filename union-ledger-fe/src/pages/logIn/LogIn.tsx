@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthApi from "@/hooks/useAuthApi";
-import { SESSION_EXPIRED_FLAG } from "@/hooks/useApi";
+import { RETURN_TO_KEY, SESSION_EXPIRED_FLAG } from "@/hooks/useApi";
 import { ROUTES } from "@/router/constant/router";
 import { getApiErrorMessage } from "@/utils/apiError";
 import { getDashboardRouteByUser } from "./authRoute";
@@ -9,6 +9,16 @@ import eyeGray from "@/assets/eye-gray.svg";
 import * as styles from "./Auth.css";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// 세션 만료로 저장된 복귀 경로를 꺼내 검증 (오픈 리다이렉트 방지: 내부 경로만 허용)
+const consumeReturnTo = (): string | null => {
+  const raw = sessionStorage.getItem(RETURN_TO_KEY);
+  if (raw) sessionStorage.removeItem(RETURN_TO_KEY);
+  if (!raw) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  if (raw === ROUTES.LOGIN) return null;
+  return raw;
+};
 
 const Login = () => {
   const navigate = useNavigate();
@@ -59,7 +69,8 @@ const Login = () => {
 
     try {
       const me = await getMe();
-      navigate(getDashboardRouteByUser(me));
+      const returnTo = consumeReturnTo();
+      navigate(returnTo ?? getDashboardRouteByUser(me));
     } catch (error) {
       console.error("내 정보 조회 실패", error);
       setErrorMessage("로그인은 성공했지만 사용자 정보를 불러오지 못했습니다.");
