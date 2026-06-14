@@ -204,6 +204,16 @@ const PresidentInvite = () => {
       return;
     }
 
+    const alreadyInvited = sentInvitations.some(
+      (invitation) =>
+        invitation.invited_email.toLowerCase() === trimmedEmail.toLowerCase() &&
+        invitation.status === "pending",
+    );
+    if (alreadyInvited) {
+      toast.error("이미 초대장을 보낸 이메일입니다. 발송 목록에서 확인하세요.");
+      return;
+    }
+
     try {
       setIsSending(true);
       const invitation = await postInvitationOnce({
@@ -295,6 +305,17 @@ const PresidentInvite = () => {
       toast.error("초대 회수에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setDeletingInvitationId(null);
+    }
+  };
+
+  const handleCopyTransferCode = async () => {
+    if (!transferCode) return;
+
+    try {
+      await navigator.clipboard.writeText(transferCode);
+      toast.success("인계 코드를 복사했습니다.");
+    } catch {
+      toast.error("복사에 실패했습니다. 코드를 길게 눌러 직접 복사해주세요.");
     }
   };
 
@@ -409,7 +430,23 @@ const PresidentInvite = () => {
               wordBreak: "break-all",
             }}
           >
-            인계 코드: <strong>{transferCode}</strong>
+            인계 코드: <strong>{transferCode}</strong>{" "}
+            <button
+              type="button"
+              onClick={handleCopyTransferCode}
+              style={{
+                marginLeft: 8,
+                padding: "2px 10px",
+                borderRadius: 6,
+                border: "1px solid #C4B5FD",
+                background: "#FFFFFF",
+                color: "#6D28D9",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              복사
+            </button>
             <br />
             후임자에게 이 코드를 전달하면 코드로도 수락할 수 있습니다.
           </div>
