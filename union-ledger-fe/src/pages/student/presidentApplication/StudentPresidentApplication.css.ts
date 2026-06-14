@@ -280,3 +280,18 @@ export const submitButton = style({
     cursor: "not-allowed",
   },
 });
+
+// 승인 현황 카드의 회장 대시보드 이동 버튼 (컴팩트)
+export const statusActionButton = style({
+  ...vars.font.body_medium_14,
+  alignSelf: "flex-start",
+  height: "44px",
+  marginTop: "12px",
+  padding: "0 20px",
+  border: "none",
+  borderRadius: "10px",
+  background: `linear-gradient(90deg, ${vars.color.gradient.brandFrom} 0%, ${vars.color.gradient.brandTo} 100%)`,
+  color: vars.color.surface,
+  cursor: "pointer",
+  fontWeight: 800,
+});

@@ -171,9 +171,16 @@ const StudentPresidentApplication = () => {
             </strong>
             <span className={styles.statusMeta}>
               승인일: {formatDate(approvedApplication.reviewed_at)} — 이미 회장
-              권한이 부여되었습니다. 사이드바에서 회장 영역으로 전환해보세요.
+              권한이 부여되었습니다.
             </span>
           </div>
+          <button
+            type="button"
+            className={styles.statusActionButton}
+            onClick={() => navigate(ROUTES.PRESIDENT_DASHBOARD)}
+          >
+            회장 대시보드로 이동 →
+          </button>
         </section>
       )}
 

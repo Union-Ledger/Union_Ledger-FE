@@ -11,6 +11,7 @@ import PresidentSettlementStatus from "@/components/president/PresidentSettlemen
 import PresidentAuditorActivity from "@/components/president/PresidentAuditorActivity";
 import PresidentTeamMembers from "@/components/president/PresidentTeamMembers";
 import PresidentOrganizationInfo from "@/components/president/PresidentOrganizationInfo";
+import PresidentOnboarding from "@/components/president/PresidentOnboarding";
 import * as styles from "./PresidentDashboard.css";
 
 const PresidentDashboard = () => {
@@ -112,6 +113,8 @@ const PresidentDashboard = () => {
           {dashboard.organization.name}의 결산 업무 진행 상황을 확인하세요
         </p>
       </header>
+
+      {dashboard.team_member_count === 0 && <PresidentOnboarding />}
 
       <PresidentDashboardCards
         teamMemberCount={dashboard.team_member_count}
