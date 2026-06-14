@@ -92,11 +92,55 @@ export interface StudentRecentAuditResult {
   summary_comment: string | null;
 }
 
+export interface StudentProgressStep {
+  key: string;
+  label: string;
+  state: string;
+  completed_at: string | null;
+}
+
+export interface StudentCurrentPeriod {
+  settlement_id: string | null;
+  academic_year: number;
+  semester: string;
+  label: string;
+  status: string | null;
+  status_label: string;
+  is_published: boolean;
+  total_amount: string;
+  evidence_count: number;
+  submitted_at: string | null;
+  audited_at: string | null;
+  published_at: string | null;
+  steps: StudentProgressStep[];
+}
+
+// 같은 학기, 같은 단과대 내 모든 학생회 카드 (우리 학과가 먼저). 비교 차트용.
+export interface PeriodSettlementCard {
+  id: string | null;
+  organization_id: string;
+  is_my_organization: boolean;
+  organization_name: string;
+  college_name: string;
+  department_name: string;
+  academic_year: number;
+  semester: string;
+  label: string;
+  status: string | null;
+  status_label: string;
+  is_published: boolean;
+  audited_at: string | null;
+  published_at: string | null;
+  total_amount: string | null;
+  evidence_count: number | null;
+  view_count: number | null;
+}
+
 export interface StudentDashboardResponse {
   organization: StudentDashboardOrganization;
   summary: StudentDashboardSummary;
-  current_period: Record<string, unknown>;
-  college_period_overview: Record<string, unknown>[];
+  current_period: StudentCurrentPeriod;
+  college_period_overview: PeriodSettlementCard[];
   recent_results: StudentRecentAuditResult[];
 }
 

@@ -8,6 +8,7 @@ import StudentDashboardCards from "@/components/student/StudentDashboardCards";
 import StudentDashboardAuditResult, {
   type StudentAuditResultItem,
 } from "@/components/student/StudentDashboardAuditResult";
+import StudentDashboardComparison from "@/components/student/StudentDashboardComparison";
 import StudentDashboardQuestion from "@/components/student/StudentDashboardQuestion";
 import { ROUTES } from "@/router/constant/router";
 import { ErrorState, Skeleton } from "@/shared/components/feedback";
@@ -147,6 +148,11 @@ const StudentDashboard = () => {
             )}
             recentApprovedAt={summary?.last_published_at ?? null}
             viewCount={summary?.total_view_count ?? 0}
+          />
+
+          <StudentDashboardComparison
+            cards={dashboardData?.college_period_overview ?? []}
+            periodLabel={dashboardData?.current_period?.label}
           />
 
           <div className={styles.contentContainer}>
