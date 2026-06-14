@@ -44,6 +44,35 @@ export const description = style({
   color: vars.color.description,
 });
 
+export const inputLabel = style({
+  ...vars.font.body_medium_14,
+  display: "block",
+  marginTop: vars.space.xl,
+  marginBottom: vars.space.sm,
+  color: vars.color.summaryTitle,
+  fontWeight: 700,
+});
+
+export const textarea = style({
+  ...vars.font.body_regular_14,
+  width: "100%",
+  minHeight: "9rem",
+  padding: vars.space.md,
+  border: `1px solid ${vars.color.ItemBorder}`,
+  borderRadius: vars.radius.md,
+  background: vars.color.surface,
+  color: vars.color.summaryTitle,
+  resize: "vertical",
+  outline: "none",
+  ":focus": {
+    borderColor: vars.color.primary,
+    boxShadow: `0 0 0 3px ${vars.color.focusRing}`,
+  },
+  "::placeholder": {
+    color: vars.color.description,
+  },
+});
+
 export const buttonRow = style({
   display: "flex",
   justifyContent: "flex-end",
@@ -88,4 +117,10 @@ export const confirmButton = recipe({
       },
     },
   },
+});
+
+export const confirmButtonDisabled = style({
+  opacity: 0.5,
+  cursor: "not-allowed",
+  pointerEvents: "none",
 });

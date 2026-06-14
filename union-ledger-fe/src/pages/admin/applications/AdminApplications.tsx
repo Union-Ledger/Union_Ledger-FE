@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import useAdminApplicationApi from "@/hooks/useAdminApplicationApi";
 import type { AdminApplication } from "@/hooks/useStudentApi";
-import { useConfirm, useToast } from "@shared/components/feedback";
+import { useConfirm, usePrompt, useToast } from "@shared/components/feedback";
 import * as styles from "./AdminApplications.css";
 
 type ApplicationStatus = "pending" | "approved" | "rejected";
@@ -47,6 +47,7 @@ const AdminApplications = () => {
   } = useAdminApplicationApi();
   const toast = useToast();
   const confirm = useConfirm();
+  const prompt = usePrompt();
   const [applications, setApplications] = useState<AdminApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -98,24 +99,25 @@ const AdminApplications = () => {
     applicationId: string,
     status: Exclude<ApplicationStatus, "pending">,
   ) => {
-    const defaultNote =
-      status === "approved"
-        ? "회장 신청을 승인했습니다."
-        : "회장 신청을 반려했습니다.";
-
     const target = applications.find(
       (application) => application.id === applicationId,
     );
 
+    let rejectNote = "";
     if (status === "rejected") {
-      const ok = await confirm({
+      const reason = await prompt({
         title: "이 신청을 반려하시겠습니까?",
-        description: "신청자가 다시 제출해야 합니다.",
+        description:
+          "입력한 사유는 신청자에게 그대로 전달됩니다. 신청자는 사유를 확인한 뒤 다시 제출할 수 있습니다.",
+        inputLabel: "반려 사유",
+        placeholder: "예: 제출하신 재학증명서가 흐릿해 학과 확인이 어렵습니다.",
+        required: true,
         confirmLabel: "반려",
         tone: "danger",
       });
 
-      if (!ok) return;
+      if (reason === null) return;
+      rejectNote = reason.trim();
     } else {
       const ok = await confirm({
         title: "회장 신청을 승인할까요?",
@@ -132,13 +134,16 @@ const AdminApplications = () => {
       setProcessingApplicationId(applicationId);
 
       if (status === "approved") {
-        const response = await approveAdminApplication(applicationId, defaultNote);
+        const response = await approveAdminApplication(
+          applicationId,
+          "회장 신청을 승인했습니다.",
+        );
         replaceApplication(response.application);
         toast.success("회장 신청을 승인했습니다.");
         return;
       }
 
-      const response = await rejectAdminApplication(applicationId, defaultNote);
+      const response = await rejectAdminApplication(applicationId, rejectNote);
       replaceApplication(response);
       toast.success("회장 신청을 반려했습니다.");
     } catch (error) {
