@@ -203,6 +203,13 @@ export const helperText = style({
   color: vars.color.description,
 });
 
+export const fieldError = style({
+  ...vars.font.caption_regular_12,
+  marginTop: "4px",
+  color: vars.color.semantic.danger.strong,
+  fontWeight: 700,
+});
+
 export const uploadBox = style({
   minHeight: "180px",
   display: "flex",

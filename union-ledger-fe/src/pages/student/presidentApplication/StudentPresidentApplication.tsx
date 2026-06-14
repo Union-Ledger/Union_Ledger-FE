@@ -29,6 +29,12 @@ const StudentPresidentApplication = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [myApplications, setMyApplications] = useState<AdminApplication[]>([]);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState<{
+    org?: string;
+    college?: string;
+    dept?: string;
+    docs?: string;
+  }>({});
 
   useEffect(() => {
     let active = true;
@@ -79,15 +85,17 @@ const StudentPresidentApplication = () => {
     const trimmedCollegeName = collegeName.trim();
     const trimmedDepartmentName = departmentName.trim();
 
-    if (!trimmedOrganizationName || !trimmedCollegeName || !trimmedDepartmentName) {
-      toast.error("조직 이름, 단과대학, 학과를 입력해주세요.");
-      return;
-    }
+    const nextErrors: typeof fieldErrors = {};
+    if (!trimmedOrganizationName) nextErrors.org = "조직 이름을 입력해주세요.";
+    if (!trimmedCollegeName) nextErrors.college = "단과대학을 입력해주세요.";
+    if (!trimmedDepartmentName) nextErrors.dept = "학과를 입력해주세요.";
+    if (documents.length === 0) nextErrors.docs = "증빙 서류를 업로드해주세요.";
 
-    if (documents.length === 0) {
-      toast.error("증빙 서류를 업로드해주세요.");
+    if (Object.keys(nextErrors).length > 0) {
+      setFieldErrors(nextErrors);
       return;
     }
+    setFieldErrors({});
 
     try {
       setIsSubmitting(true);
@@ -230,11 +238,20 @@ const StudentPresidentApplication = () => {
               className={styles.input}
               value={organizationName}
               placeholder="예: 컴퓨터공학과 학생회"
-              onChange={(event) => setOrganizationName(event.target.value)}
+              onChange={(event) => {
+                setOrganizationName(event.target.value);
+                setFieldErrors((prev) => ({ ...prev, org: undefined }));
+              }}
             />
-            <span className={styles.helperText}>
-              관리하려는 학생회의 공식 명칭을 입력해주세요
-            </span>
+            {fieldErrors.org ? (
+              <span className={styles.fieldError} role="alert">
+                {fieldErrors.org}
+              </span>
+            ) : (
+              <span className={styles.helperText}>
+                관리하려는 학생회의 공식 명칭을 입력해주세요
+              </span>
+            )}
           </label>
 
           <div className={styles.grid}>
@@ -244,8 +261,16 @@ const StudentPresidentApplication = () => {
                 className={styles.input}
                 value={collegeName}
                 placeholder="예: 공과대학"
-                onChange={(event) => setCollegeName(event.target.value)}
+                onChange={(event) => {
+                  setCollegeName(event.target.value);
+                  setFieldErrors((prev) => ({ ...prev, college: undefined }));
+                }}
               />
+              {fieldErrors.college && (
+                <span className={styles.fieldError} role="alert">
+                  {fieldErrors.college}
+                </span>
+              )}
             </label>
 
             <label className={styles.field}>
@@ -254,8 +279,16 @@ const StudentPresidentApplication = () => {
                 className={styles.input}
                 value={departmentName}
                 placeholder="예: 컴퓨터공학과"
-                onChange={(event) => setDepartmentName(event.target.value)}
+                onChange={(event) => {
+                  setDepartmentName(event.target.value);
+                  setFieldErrors((prev) => ({ ...prev, dept: undefined }));
+                }}
               />
+              {fieldErrors.dept && (
+                <span className={styles.fieldError} role="alert">
+                  {fieldErrors.dept}
+                </span>
+              )}
             </label>
           </div>
 
@@ -282,11 +315,44 @@ const StudentPresidentApplication = () => {
               multiple
               onChange={(event) => {
                 const selectedFiles = Array.from(event.target.files ?? []);
+                const MAX_BYTES = 10 * 1024 * 1024;
+                const allowedExt = [".pdf", ".jpg", ".jpeg", ".png"];
+
+                const overLimit = selectedFiles.some(
+                  (file) => file.size > MAX_BYTES,
+                );
+                const wrongType = selectedFiles.some(
+                  (file) =>
+                    !allowedExt.some((ext) =>
+                      file.name.toLowerCase().endsWith(ext),
+                    ),
+                );
+
+                if (overLimit) {
+                  toast.error("10MB를 초과하는 파일은 업로드할 수 없습니다.");
+                  event.target.value = "";
+                  return;
+                }
+                if (wrongType) {
+                  toast.error("PDF, JPG, PNG 형식만 업로드할 수 있습니다.");
+                  event.target.value = "";
+                  return;
+                }
 
                 setDocuments(selectedFiles);
                 setFileName(selectedFiles.map((file) => file.name).join(", "));
+                setFieldErrors((prev) => ({ ...prev, docs: undefined }));
               }}
             />
+            {fieldErrors.docs && (
+              <span className={styles.fieldError} role="alert">
+                {fieldErrors.docs}
+              </span>
+            )}
+            <span className={styles.helperText}>
+              신분 서류는 회장 자격 확인 용도로만 사용되며, 검토 후 관련 정책에 따라
+              관리됩니다.
+            </span>
           </div>
 
           <div className={styles.divider} />
