@@ -103,12 +103,26 @@ const AdminApplications = () => {
         ? "회장 신청을 승인했습니다."
         : "회장 신청을 반려했습니다.";
 
+    const target = applications.find(
+      (application) => application.id === applicationId,
+    );
+
     if (status === "rejected") {
       const ok = await confirm({
         title: "이 신청을 반려하시겠습니까?",
         description: "신청자가 다시 제출해야 합니다.",
         confirmLabel: "반려",
         tone: "danger",
+      });
+
+      if (!ok) return;
+    } else {
+      const ok = await confirm({
+        title: "회장 신청을 승인할까요?",
+        description: target
+          ? `${target.applicant_name} 님에게 '${target.organization_name}' 회장 권한이 부여됩니다.`
+          : "신청자에게 회장 권한이 부여됩니다.",
+        confirmLabel: "승인",
       });
 
       if (!ok) return;

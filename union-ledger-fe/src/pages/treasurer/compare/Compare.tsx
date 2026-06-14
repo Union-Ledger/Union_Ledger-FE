@@ -3,7 +3,7 @@ import UploadCard from "@/components/common/UploadCard";
 import useSettlementApi, {
   type BankStatementUploadResponse,
 } from "@/hooks/useSettlementApi";
-import { useToast } from "@shared/components/feedback";
+import { useConfirm, useToast } from "@shared/components/feedback";
 import * as styles from "@/pages/treasurer/compare/Compare.css";
 
 const BANK_STATEMENT_EXTENSIONS = [".xlsm", ".xlsx"];
@@ -20,6 +20,7 @@ const Compare = () => {
   const { postBankStatement, getBankStatements, deleteBankStatement } =
     useSettlementApi();
   const toast = useToast();
+  const confirm = useConfirm();
   const [currentSettlementId] = useState(() =>
     localStorage.getItem("currentSettlementId"),
   );
@@ -96,6 +97,17 @@ const Compare = () => {
 
   const handleDeleteStatement = async (item: BankStatementUploadResponse) => {
     if (deletingUploadIds.has(item.id)) return;
+
+    const ok = await confirm({
+      title: "거래내역서를 삭제할까요?",
+      description: `'${item.source_file_name}'의 거래 ${item.parsed_rows_count.toLocaleString(
+        "ko-KR",
+      )}건이 삭제되며 되돌릴 수 없습니다.`,
+      confirmLabel: "삭제",
+      tone: "danger",
+    });
+
+    if (!ok) return;
 
     setDeletingUploadIds((prevIds) => {
       const nextIds = new Set(prevIds);

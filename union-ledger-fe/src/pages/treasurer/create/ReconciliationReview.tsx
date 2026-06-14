@@ -7,7 +7,7 @@ import useSettlementApi, {
   type ReconciliationStatus,
   type SettlementArtifact,
 } from "@/hooks/useSettlementApi";
-import { useToast } from "@shared/components/feedback";
+import { useConfirm, useToast } from "@shared/components/feedback";
 
 type ReviewFilter = "all" | "matched" | "issue";
 
@@ -92,6 +92,7 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
   const [postGenerateArtifactsOnce] = useState(() => postGenerateArtifacts);
   const [downloadArtifactOnce] = useState(() => downloadArtifact);
   const toast = useToast();
+  const confirm = useConfirm();
 
   useEffect(() => {
     const runReconciliation = async () => {
@@ -212,6 +213,15 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
 
   // 불일치/누락 건을 수동으로 '해결됨' 처리 (PATCH /reconciliation/{id})
   const handleResolve = async (item: ReconciliationResult) => {
+    const ok = await confirm({
+      title: "수동으로 해결 처리할까요?",
+      description:
+        "감사위원에게 '수동 해결'로 표시됩니다. 실제 불일치가 남아 있지 않은지 다시 확인해주세요.",
+      confirmLabel: "해결 처리",
+    });
+
+    if (!ok) return;
+
     try {
       setResolvingId(item.id);
 

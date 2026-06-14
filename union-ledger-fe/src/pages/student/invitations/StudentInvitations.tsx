@@ -84,6 +84,21 @@ const StudentInvitations = () => {
   }, [getMyInvitationsOnce]);
 
   const handleAccept = async (invitationId: string) => {
+    const target = invitations.find(
+      (invitation) => invitation.id === invitationId,
+    );
+    const ok = await confirm({
+      title: "초대를 수락하시겠습니까?",
+      description: target
+        ? `'${target.organization_name}'의 ${getRoleLabel(
+            target,
+          )}(으)로 합류하며, 해당 조직의 결산 업무 권한을 갖게 됩니다.`
+        : "이 역할로 합류하면 해당 조직의 결산 업무 권한을 갖게 됩니다.",
+      confirmLabel: "수락",
+    });
+
+    if (!ok) return;
+
     try {
       setProcessingInvitationId(invitationId);
       const acceptedInvitation = await postAcceptInvitationOnce(invitationId);

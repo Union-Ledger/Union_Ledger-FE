@@ -275,6 +275,15 @@ const PresidentInvite = () => {
       return;
     }
 
+    const ok = await confirm({
+      title: "초대를 회수할까요?",
+      description: "회수하면 상대방은 더 이상 이 초대를 수락할 수 없습니다.",
+      confirmLabel: "회수",
+      tone: "danger",
+    });
+
+    if (!ok) return;
+
     try {
       setDeletingInvitationId(invitationId);
       await deleteInvitationOnce(organizationId, invitationId);
