@@ -44,6 +44,22 @@ const formatDate = (date: string | null) => {
   return parsedDate.toLocaleDateString("ko-KR");
 };
 
+// 미해결 대조 문제 건수 (수동해결·매칭 제외)
+const getIssueCount = (item: AuditSettlementListItem) => {
+  const r = item.reconciliation;
+  return (
+    r.amount_mismatch +
+    r.date_mismatch +
+    r.missing_bank_transaction +
+    r.missing_evidence
+  );
+};
+
+type StatusGroup = "pending" | "done";
+
+const getStatusGroup = (status: string): StatusGroup =>
+  status === "approved" || status === "rejected" ? "done" : "pending";
+
 const createSubmission = (
   item: AuditSettlementListItem,
 ): StudentCouncilSubmission => {
@@ -59,8 +75,17 @@ const createSubmission = (
     statusLabel: statusMeta.statusLabel,
     totalAmount: parseAmount(item.total_evidence_amount),
     receiptCount: item.evidence_count,
+    issueCount: getIssueCount(item),
   };
 };
+
+type ReviewFilter = "all" | "pending" | "done";
+
+const FILTER_TABS: { key: ReviewFilter; label: string }[] = [
+  { key: "all", label: "전체" },
+  { key: "pending", label: "검토 대기" },
+  { key: "done", label: "완료" },
+];
 
 const Review = () => {
   const { getAuditSettlements } = useAuditApi();
@@ -68,6 +93,7 @@ const Review = () => {
   const [settlements, setSettlements] = useState<AuditSettlementListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [filter, setFilter] = useState<ReviewFilter>("all");
   const [getAuditSettlementsOnce] = useState(() => getAuditSettlements);
 
   useEffect(() => {
@@ -89,9 +115,31 @@ const Review = () => {
     loadSettlements();
   }, [getAuditSettlementsOnce]);
 
-  const reviewItems = useMemo(() => {
-    return settlements.map(createSubmission);
+  const counts = useMemo(() => {
+    const pending = settlements.filter(
+      (item) => getStatusGroup(item.status) === "pending",
+    ).length;
+    return {
+      all: settlements.length,
+      pending,
+      done: settlements.length - pending,
+    };
   }, [settlements]);
+
+  const reviewItems = useMemo(() => {
+    const filtered =
+      filter === "all"
+        ? settlements
+        : settlements.filter(
+            (item) => getStatusGroup(item.status) === filter,
+          );
+    return filtered.map(createSubmission);
+  }, [settlements, filter]);
+
+  const reviewIds = useMemo(
+    () => reviewItems.map((item) => item.id),
+    [reviewItems],
+  );
 
   return (
     <div className={styles.container}>
@@ -101,19 +149,43 @@ const Review = () => {
           제출된 결산안을 검토하고 승인 또는 반려하세요
         </span>
       </div>
+      {!isLoading && !errorMessage && settlements.length > 0 && (
+        <div className={styles.filterRow}>
+          {FILTER_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={`${styles.filterButton} ${
+                filter === tab.key ? styles.filterButtonActive : ""
+              }`}
+              onClick={() => setFilter(tab.key)}
+            >
+              {tab.label} {counts[tab.key]}
+            </button>
+          ))}
+        </div>
+      )}
       <div className={styles.contentContainer}>
         {isLoading ? (
           <div className={styles.emptyBox}>결산안 목록을 불러오는 중입니다.</div>
         ) : errorMessage ? (
           <div className={styles.emptyBox}>{errorMessage}</div>
         ) : reviewItems.length === 0 ? (
-          <div className={styles.emptyBox}>검토할 결산안이 없습니다.</div>
+          <div className={styles.emptyBox}>
+            {filter === "all"
+              ? "검토할 결산안이 없습니다."
+              : "해당 상태의 결산안이 없습니다."}
+          </div>
         ) : (
           reviewItems.map((data, index) => (
             <ReviewCard
               key={data.id}
               data={data}
-              queue={{ index: index + 1, total: reviewItems.length }}
+              queue={{
+                index: index + 1,
+                total: reviewItems.length,
+                ids: reviewIds,
+              }}
             />
           ))
         )}

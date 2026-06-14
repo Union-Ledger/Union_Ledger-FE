@@ -76,6 +76,30 @@ export const statusVariant = styleVariants({
   },
 });
 
+const badgeBase = {
+  ...vars.font.caption_regular_12,
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "2px 8px",
+  borderRadius: "8px",
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+} as const;
+
+export const issueBadge = style({
+  ...badgeBase,
+  color: vars.color.semantic.warning.text,
+  background: vars.color.semantic.warning.bg,
+  border: `1px solid ${vars.color.semantic.warning.border}`,
+});
+
+export const cleanBadge = style({
+  ...badgeBase,
+  color: vars.color.semantic.success.text,
+  background: vars.color.semantic.success.bg,
+  border: `1px solid ${vars.color.semantic.success.border}`,
+});
+
 export const button = style({
   ...vars.font.body_medium_14,
   color: "white",

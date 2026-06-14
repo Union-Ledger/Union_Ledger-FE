@@ -17,12 +17,14 @@ export interface StudentCouncilSubmission {
   statusLabel: SubmissionStatusLabel;
   totalAmount: number;
   receiptCount: number;
+  /** 미해결 대조 문제(금액/날짜 불일치·누락) 건수 — 트리아지용 */
+  issueCount: number;
 }
 
 interface ReviewCardProps {
   data: StudentCouncilSubmission;
-  /** 검토 큐 위치 — 상세 화면의 "검토 N / M" 표시에 사용 */
-  queue?: { index: number; total: number };
+  /** 검토 큐 위치·순서 — 상세의 "검토 N / M" 및 이전/다음 이동에 사용 */
+  queue?: { index: number; total: number; ids?: string[] };
 }
 
 const ReviewCard = ({ data, queue }: ReviewCardProps) => {
@@ -39,13 +41,23 @@ const ReviewCard = ({ data, queue }: ReviewCardProps) => {
           >
             {data.statusLabel}
           </div>
+          {(data.status === "SUBMITTED" || data.status === "REVIEWING") &&
+            (data.issueCount > 0 ? (
+              <span className={styles.issueBadge}>문제 {data.issueCount}건</span>
+            ) : (
+              <span className={styles.cleanBadge}>이상 없음</span>
+            ))}
         </div>
         <button
           className={`${styles.button} ${isApproved ? styles.resultButton : ""}`}
           onClick={() =>
             navigate(`/auditor/review/detail/${data.id}`, {
               state: queue
-                ? { reviewIndex: queue.index, reviewTotal: queue.total }
+                ? {
+                    reviewIndex: queue.index,
+                    reviewTotal: queue.total,
+                    reviewIds: queue.ids,
+                  }
                 : undefined,
             })
           }

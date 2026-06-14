@@ -627,6 +627,28 @@ export const queueBadge = style({
   whiteSpace: "nowrap",
 });
 
+export const queueNav = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+});
+
+export const queueNavButton = style({
+  ...vars.font.body_medium_14,
+  padding: "6px 12px",
+  borderRadius: vars.radius.md,
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: vars.color.surface,
+  color: vars.color.foreground,
+  cursor: "pointer",
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+  ":disabled": {
+    opacity: 0.4,
+    cursor: "not-allowed",
+  },
+});
+
 export const loadingBox = style({
   ...vars.font.body_regular_16,
   width: "100%",

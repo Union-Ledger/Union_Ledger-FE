@@ -159,11 +159,29 @@ const ReviewDetail = () => {
   const { id } = useParams<{ id: string }>();
   const toast = useToast();
   const confirm = useConfirm();
-  // 목록에서 넘어온 검토 큐 위치 (직접 URL 진입 시 없음)
+  // 목록에서 넘어온 검토 큐 위치·순서 (직접 URL 진입 시 없음)
   const queueState = (location.state ?? null) as {
     reviewIndex?: number;
     reviewTotal?: number;
+    reviewIds?: string[];
   } | null;
+  const reviewIds = queueState?.reviewIds ?? [];
+  const currentQueuePos = id ? reviewIds.indexOf(id) : -1;
+  const prevId = currentQueuePos > 0 ? reviewIds[currentQueuePos - 1] : null;
+  const nextId =
+    currentQueuePos >= 0 && currentQueuePos < reviewIds.length - 1
+      ? reviewIds[currentQueuePos + 1]
+      : null;
+
+  const goToReview = (targetId: string, targetIndex: number) => {
+    navigate(`/auditor/review/detail/${targetId}`, {
+      state: {
+        reviewIndex: targetIndex + 1,
+        reviewTotal: reviewIds.length,
+        reviewIds,
+      },
+    });
+  };
   const {
     getAuditSettlementDetail,
     postAuditComment,
@@ -603,11 +621,31 @@ const ReviewDetail = () => {
         >
           ← 목록으로
         </button>
-        {queueState?.reviewIndex && queueState?.reviewTotal ? (
-          <span className={styles.queueBadge}>
-            검토 {queueState.reviewIndex} / {queueState.reviewTotal}
-          </span>
-        ) : null}
+        {(prevId || nextId || queueState?.reviewIndex) && (
+          <div className={styles.queueNav}>
+            <button
+              type="button"
+              className={styles.queueNavButton}
+              disabled={!prevId}
+              onClick={() => prevId && goToReview(prevId, currentQueuePos - 1)}
+            >
+              ← 이전
+            </button>
+            {queueState?.reviewIndex && queueState?.reviewTotal ? (
+              <span className={styles.queueBadge}>
+                검토 {queueState.reviewIndex} / {queueState.reviewTotal}
+              </span>
+            ) : null}
+            <button
+              type="button"
+              className={styles.queueNavButton}
+              disabled={!nextId}
+              onClick={() => nextId && goToReview(nextId, currentQueuePos + 1)}
+            >
+              다음 →
+            </button>
+          </div>
+        )}
       </div>
 
       <div className={styles.headerContainer}>

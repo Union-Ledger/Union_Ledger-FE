@@ -41,6 +41,30 @@ export const desc = style({
   color: vars.color.gray,
 });
 
+export const filterRow = style({
+  display: "flex",
+  gap: "8px",
+  flexWrap: "wrap",
+});
+
+export const filterButton = style({
+  ...vars.font.body_medium_14,
+  padding: "8px 16px",
+  borderRadius: vars.radius.full,
+  border: `1px solid ${vars.color.ItemBorder}`,
+  background: "rgba(255, 255, 255, 0.80)",
+  color: vars.color.gray,
+  cursor: "pointer",
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+});
+
+export const filterButtonActive = style({
+  background: vars.color.primary,
+  borderColor: vars.color.primary,
+  color: "#FFFFFF",
+});
+
 export const contentContainer = style({
   width: "100%",
   display: "flex",
