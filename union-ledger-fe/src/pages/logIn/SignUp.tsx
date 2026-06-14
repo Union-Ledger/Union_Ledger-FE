@@ -75,6 +75,19 @@ const SignUp = () => {
     collegeName &&
     departmentName;
 
+  // 비활성 버튼이 '왜' 막혀 있는지 — 첫 번째 미충족 항목을 안내
+  const signupHint = !name
+    ? "이름을 입력해주세요."
+    : password.length < 8
+      ? "비밀번호를 8자 이상 입력해주세요."
+      : password !== passwordConfirm
+        ? "비밀번호 확인이 일치하지 않습니다."
+        : !collegeName
+          ? "단과대학을 입력해주세요."
+          : !departmentName
+            ? "학과를 입력해주세요."
+            : "";
+
   // 초대 코드 인증 대기 모달 ESC 닫기
   useEffect(() => {
     if (!modalVisible) return;
@@ -501,6 +514,11 @@ const SignUp = () => {
                   {isSubmitting ? "가입 중" : "회원가입 완료"}
                 </button>
               </div>
+              {!canSubmitSignup && signupHint && (
+                <p className={styles.helperText} role="status">
+                  {signupHint}
+                </p>
+              )}
             </>
           )}
 
