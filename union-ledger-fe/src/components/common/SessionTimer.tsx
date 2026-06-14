@@ -113,19 +113,21 @@ const SessionTimer = () => {
   const isWarning = remaining <= WARN_THRESHOLD_SEC;
 
   return (
-    <button
-      type="button"
-      className={isWarning ? styles.chipWarning : styles.chip}
-      onClick={() => void promptExtend()}
-      title="클릭하면 세션을 연장할 수 있습니다"
-      aria-label={`세션 남은 시간 ${formatTime(remaining)}. 클릭하면 연장합니다.`}
-    >
-      <span
-        className={isWarning ? styles.dotWarning : styles.dot}
-        aria-hidden="true"
-      />
-      세션 {formatTime(remaining)}
-    </button>
+    <div className={styles.wrapper}>
+      <button
+        type="button"
+        className={isWarning ? styles.chipWarning : styles.chip}
+        onClick={() => void promptExtend()}
+        title="클릭하면 세션을 연장할 수 있습니다"
+        aria-label={`세션 남은 시간 ${formatTime(remaining)}. 클릭하면 연장합니다.`}
+      >
+        <span
+          className={isWarning ? styles.dotWarning : styles.dot}
+          aria-hidden="true"
+        />
+        세션 {formatTime(remaining)}
+      </button>
+    </div>
   );
 };
 

@@ -6,41 +6,40 @@ const pulse = keyframes({
   "50%": { opacity: 0.5 },
 });
 
+// 사이드바(알림벨·프로필과 같은 계정 영역) 안에 배치 — 페이지 헤더/토스트와 겹치지 않음
+export const wrapper = style({
+  width: "256px",
+  padding: "8px 16px",
+  "@media": {
+    "(max-width: 768px)": {
+      width: "100%",
+    },
+  },
+});
+
 const base = style({
-  position: "fixed",
-  top: "16px",
-  right: "16px",
-  zIndex: 40,
-  display: "inline-flex",
+  display: "flex",
+  width: "100%",
   alignItems: "center",
+  justifyContent: "center",
   gap: "8px",
   padding: "8px 14px",
-  borderRadius: "9999px",
+  borderRadius: "10px",
   fontSize: "13px",
   fontWeight: 700,
   fontVariantNumeric: "tabular-nums",
   cursor: "pointer",
-  boxShadow: "0 4px 14px rgba(15, 23, 42, 0.12)",
   border: `1px solid ${vars.color.ItemBorder}`,
   backgroundColor: vars.color.surface,
   color: vars.color.description,
-  transition: "transform 0.12s ease, box-shadow 0.12s ease",
+  transition: "box-shadow 0.12s ease",
   selectors: {
     "&:hover": {
-      transform: "translateY(-1px)",
-      boxShadow: "0 6px 18px rgba(15, 23, 42, 0.16)",
+      boxShadow: "0 2px 8px rgba(15, 23, 42, 0.10)",
     },
     "&:focus-visible": {
       outline: `2px solid ${vars.color.primary}`,
       outlineOffset: "2px",
-    },
-  },
-  "@media": {
-    "(max-width: 768px)": {
-      top: "12px",
-      right: "12px",
-      padding: "6px 12px",
-      fontSize: "12px",
     },
   },
 });

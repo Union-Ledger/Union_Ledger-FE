@@ -157,7 +157,6 @@ const AppLayout = () => {
 
   return (
     <div className={styles.container}>
-      {me && <SessionTimer />}
       <button
         type="button"
         className={styles.mobileMenuButton}
@@ -237,6 +236,7 @@ const AppLayout = () => {
         </nav>
         <div className={styles.divider}></div>
 
+        {me && <SessionTimer />}
         <NotificationBell />
         <div className={styles.divider}></div>
 
