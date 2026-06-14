@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/router/constant/router";
 import * as styles from "./Create.css";
 import { fileData } from "./fileData.ts";
 import { checklistItems } from "./checklist.ts";
@@ -60,6 +62,7 @@ const RejectedSettlementNotice = ({
   onMessageChange,
   onResubmit,
 }: RejectedSettlementNoticeProps) => {
+  const navigate = useNavigate();
   const primaryComment =
     comments[0]?.comment ??
     "감사위원의 검토 결과 일부 수정이 필요합니다. 수정 후 재제출해주세요.";
@@ -104,7 +107,7 @@ const RejectedSettlementNotice = ({
                 <span className={styles.rejectedIssueIcon}>△</span>
                 <div>
                   <div className={styles.rejectedIssueTitle}>
-                    증빙 ID: {comment.evidence_id?.slice(0, 8)}
+                    수정이 필요한 증빙
                   </div>
                   <div className={styles.rejectedIssueDescription}>
                     {comment.comment}
@@ -142,6 +145,13 @@ const RejectedSettlementNotice = ({
         </div>
 
         <div className={styles.rejectedActionRow}>
+          <button
+            type="button"
+            className={styles.rejectedOutlineButton}
+            onClick={() => navigate(ROUTES.UPLOAD)}
+          >
+            증빙 수정하러 가기
+          </button>
           <button
             type="button"
             className={styles.rejectedOutlineButton}

@@ -649,6 +649,19 @@ export const queueNavButton = style({
   },
 });
 
+// 재제출본임을 알리는 배지 — 감사위원이 변경분을 다시 검토하도록 유도
+export const resubmitBadge = style({
+  ...vars.font.caption_regular_12,
+  marginLeft: "8px",
+  padding: "2px 10px",
+  borderRadius: vars.radius.full,
+  background: vars.color.semantic.warning.bg,
+  border: `1px solid ${vars.color.semantic.warning.border}`,
+  color: vars.color.semantic.warning.text,
+  fontWeight: 700,
+  whiteSpace: "nowrap",
+});
+
 export const loadingBox = style({
   ...vars.font.body_regular_16,
   width: "100%",

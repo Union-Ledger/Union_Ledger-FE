@@ -11,6 +11,7 @@ import {
   useToast,
 } from "@shared/components/feedback";
 import { getApiErrorMessage } from "@/utils/apiError";
+import { formatDate } from "@/utils/format";
 import * as styles from "@/pages/auditor/review/ReviewDetail.css";
 
 const parseAmount = (amount: string) => {
@@ -654,6 +655,14 @@ const ReviewDetail = () => {
           <p className={styles.desc}>
             {reviewData.settlement.academic_year}-
             {reviewData.settlement.semester}
+            {reviewData.settlement.submitted_at && (
+              <> · 제출일 {formatDate(reviewData.settlement.submitted_at)}</>
+            )}
+            {reviewData.settlement.status === "resubmitted" && (
+              <span className={styles.resubmitBadge}>
+                🔁 재제출 — 변경 사항을 다시 확인하세요
+              </span>
+            )}
             {isApproved && (
               <span className={styles.approvedStatusBadge}>
                 ✓ {getAuditStatusLabel(reviewData.settlement.status)}
