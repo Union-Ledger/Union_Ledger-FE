@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { callender, eye, trendingUp } from "@assets/dashboard";
 import usePublicSettlementApi, {
   type PublicSettlementArtifact,
@@ -146,8 +147,6 @@ const StudentSettlementLookup = () => {
   const [settlements, setSettlements] = useState<PublicSettlementListItem[]>([]);
   const [selectedSemester, setSelectedSemester] = useState("전체");
   const [settlementSearch, setSettlementSearch] = useState("");
-  const [selectedSettlement, setSelectedSettlement] =
-    useState<PublicSettlementListItem | null>(null);
   const [detail, setDetail] = useState<PublicSettlementDetail | null>(null);
   const [items, setItems] = useState<PublicSettlementItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -160,6 +159,35 @@ const StudentSettlementLookup = () => {
   const [itemSearch, setItemSearch] = useState("");
   const [itemsPage, setItemsPage] = useState(1);
   const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // 선택된 결산안을 URL(?settlement=)로 관리 — 링크 공유 가능 + 뒤로가기로 모달 닫힘
+  const selectedId = searchParams.get("settlement");
+  const selectedSettlement = useMemo(
+    () => settlements.find((item) => item.id === selectedId) ?? null,
+    [settlements, selectedId],
+  );
+
+  const openSettlement = useCallback(
+    (id: string) => {
+      setItemSearch("");
+      setItemsPage(1);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("settlement", id);
+        return next;
+      });
+    },
+    [setSearchParams],
+  );
+
+  const closeSettlement = useCallback(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("settlement");
+      return next;
+    });
+  }, [setSearchParams]);
 
   const loadSettlements = useCallback(async () => {
     try {
@@ -183,13 +211,13 @@ const StudentSettlementLookup = () => {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setSelectedSettlement(null);
+        closeSettlement();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [selectedSettlement]);
+  }, [selectedSettlement, closeSettlement]);
 
   useEffect(() => {
     if (!selectedSettlement) {
@@ -486,11 +514,7 @@ const StudentSettlementLookup = () => {
                 <button
                   className={styles.detailButton}
                   type="button"
-                  onClick={() => {
-                    setSelectedSettlement(settlement);
-                    setItemSearch("");
-                    setItemsPage(1);
-                  }}
+                  onClick={() => openSettlement(settlement.id)}
                 >
                   <img className={styles.buttonIcon} src={eye} alt="" />
                   상세 보기
@@ -524,7 +548,7 @@ const StudentSettlementLookup = () => {
       </aside>
 
       {selectedSettlement && (
-        <div className={styles.overlay} role="presentation" onMouseDown={() => setSelectedSettlement(null)}>
+        <div className={styles.overlay} role="presentation" onMouseDown={closeSettlement}>
           <section
             className={styles.modal}
             role="dialog"
@@ -540,7 +564,7 @@ const StudentSettlementLookup = () => {
                 className={styles.closeButton}
                 type="button"
                 aria-label="결산 상세 닫기"
-                onClick={() => setSelectedSettlement(null)}
+                onClick={closeSettlement}
               >
                 ×
               </button>
@@ -692,6 +716,60 @@ const StudentSettlementLookup = () => {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  <div className={styles.mobileCards}>
+                    {pagedItems.length === 0 ? (
+                      <p className={styles.mobileEmpty}>
+                        {itemSearch.trim()
+                          ? "검색 결과가 없습니다."
+                          : "거래 내역이 없습니다."}
+                      </p>
+                    ) : (
+                      pagedItems.map((item) => (
+                        <article
+                          className={styles.mobileItem}
+                          key={item.evidence_id}
+                        >
+                          <div className={styles.mobileItemTop}>
+                            <span className={styles.mobileMerchant}>
+                              {item.merchant_name || "-"}
+                            </span>
+                            <span className={styles.mobileAmount}>
+                              {formatAmount(item.amount)}
+                            </span>
+                          </div>
+                          <div className={styles.mobileItemMeta}>
+                            <span>{getDateText(item.evidence_date)}</span>
+                            <span aria-hidden="true">·</span>
+                            <span>{getPaymentMethodLabel(item.payment_method)}</span>
+                          </div>
+                          <div className={styles.mobileItemFooter}>
+                            <span className={styles.categoryChip}>
+                              {item.group_name || "미분류"}
+                            </span>
+                            <button
+                              className={styles.evidenceButton}
+                              type="button"
+                              disabled={
+                                !item.has_evidence_file ||
+                                activeEvidenceId === item.evidence_id
+                              }
+                              onClick={() => handleEvidenceFileOpen(item)}
+                            >
+                              {activeEvidenceId === item.evidence_id
+                                ? "여는 중"
+                                : "증빙 보기"}
+                            </button>
+                          </div>
+                          {item.budget_category && (
+                            <div className={styles.budgetSub}>
+                              {item.budget_category}
+                            </div>
+                          )}
+                        </article>
+                      ))
+                    )}
                   </div>
                   {totalItemPages > 1 && (
                     <div className={styles.pagination}>

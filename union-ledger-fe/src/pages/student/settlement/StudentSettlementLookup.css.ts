@@ -638,9 +638,76 @@ export const tableWrap = style({
   overflow: "hidden",
   "@media": {
     "screen and (max-width: 768px)": {
-      overflowX: "auto",
+      display: "none",
     },
   },
+});
+
+// 모바일: 6열 표 대신 항목별 카드 (가로 스크롤·텍스트 잘림 방지)
+export const mobileCards = style({
+  display: "none",
+  "@media": {
+    "screen and (max-width: 768px)": {
+      display: "flex",
+      flexDirection: "column",
+      gap: "12px",
+    },
+  },
+});
+
+export const mobileItem = style({
+  display: "flex",
+  flexDirection: "column",
+  gap: "8px",
+  padding: "16px",
+  border: "1px solid #E2E8F0",
+  borderRadius: "12px",
+  background: "#FFFFFF",
+});
+
+export const mobileItemTop = style({
+  display: "flex",
+  alignItems: "baseline",
+  justifyContent: "space-between",
+  gap: "12px",
+});
+
+export const mobileMerchant = style({
+  ...vars.font.body_medium_14,
+  color: "#0F172A",
+  fontWeight: 800,
+});
+
+export const mobileAmount = style({
+  fontWeight: 800,
+  color: "#0F172A",
+  whiteSpace: "nowrap",
+  fontVariantNumeric: "tabular-nums",
+});
+
+export const mobileItemMeta = style({
+  ...vars.font.caption_regular_12,
+  display: "flex",
+  alignItems: "center",
+  gap: "6px",
+  color: "#64748B",
+});
+
+export const mobileItemFooter = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+});
+
+export const mobileEmpty = style({
+  ...vars.font.body_medium_14,
+  padding: "18px",
+  textAlign: "center",
+  color: "#64748B",
+  border: "1px solid #E2E8F0",
+  borderRadius: "12px",
+  background: "#FFFFFF",
 });
 
 export const table = style({
