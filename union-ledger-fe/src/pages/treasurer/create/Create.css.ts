@@ -754,6 +754,17 @@ export const reconciliationStatsItem = style({
   background: vars.color.surface,
 });
 
+// 생성≠제출 — 산출물이 만들어졌지만 아직 제출 전임을 명확히 알림
+export const submitNotice = style({
+  ...vars.font.body_medium_14,
+  marginTop: "20px",
+  padding: "14px 18px",
+  borderRadius: vars.radius.md,
+  border: `1px solid ${vars.color.semantic.warning.border}`,
+  background: vars.color.semantic.warning.bg,
+  color: vars.color.semantic.warning.text,
+});
+
 export const reconciliationFooter = style({
   display: "flex",
   justifyContent: "flex-end",

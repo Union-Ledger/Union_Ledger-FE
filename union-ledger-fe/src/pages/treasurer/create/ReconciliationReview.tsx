@@ -470,6 +470,13 @@ const ReconciliationReview = ({ onBack }: ReconciliationReviewProps) => {
         </div>
       )}
 
+      {artifacts && !submittedSettlementId && (
+        <div className={styles.submitNotice}>
+          ✓ 산출물이 생성되었습니다. <strong>아직 제출되지 않았습니다.</strong> 감사를 받으려면 아래
+          ‘감사위원에게 제출’ 버튼을 눌러 제출을 완료해주세요.
+        </div>
+      )}
+
       <div className={styles.reconciliationFooter}>
         <button
           type="button"

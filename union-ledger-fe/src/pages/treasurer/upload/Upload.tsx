@@ -81,6 +81,24 @@ const findReusableSettlementId = (
   )?.settlement_id;
 };
 
+// 현재 날짜로 학년도·학기 추정 (3~8월=1학기, 9~12월=2학기, 1~2월=전년도 2학기)
+const getCurrentAcademicPeriod = (): {
+  academicYear: number;
+  semester: "1" | "2";
+} => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  if (month >= 3 && month <= 8) {
+    return { academicYear: year, semester: "1" };
+  }
+  if (month >= 9) {
+    return { academicYear: year, semester: "2" };
+  }
+  return { academicYear: year - 1, semester: "2" };
+};
+
 const Upload = () => {
   const toast = useToast();
   const confirm = useConfirm();
@@ -190,12 +208,13 @@ const Upload = () => {
 
         const templateId = activeTemplate?.id ?? templates[0].id;
 
+        const { academicYear, semester } = getCurrentAcademicPeriod();
         const settlement = await postSettlementOnce({
           organizationId,
           templateId,
-          title: "2024년도 2학기 결산안",
-          academicYear: 2024,
-          semester: "2",
+          title: `${academicYear}년도 ${semester}학기 결산안`,
+          academicYear,
+          semester,
         });
 
         if (!settlement?.id) return null;
