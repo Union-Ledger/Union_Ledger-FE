@@ -24,7 +24,9 @@ const Login = () => {
   const navigate = useNavigate();
   const { postLogin, getMe } = useAuthApi();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(
+    () => localStorage.getItem("lastLoginEmail") ?? "",
+  );
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
@@ -69,6 +71,7 @@ const Login = () => {
 
     try {
       const me = await getMe();
+      localStorage.setItem("lastLoginEmail", trimmedEmail);
       const returnTo = consumeReturnTo();
       navigate(returnTo ?? getDashboardRouteByUser(me));
     } catch (error) {
@@ -103,7 +106,7 @@ const Login = () => {
               autoComplete="email"
               autoFocus
               onChange={(event) => {
-                setEmail(event.target.value.trim());
+                setEmail(event.target.value);
                 setEmailHint("");
               }}
               onBlur={(event) => {

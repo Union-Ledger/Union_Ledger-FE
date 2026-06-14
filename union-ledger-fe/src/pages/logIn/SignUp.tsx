@@ -59,6 +59,7 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
+  const [emailHint, setEmailHint] = useState("");
 
   const isKonkukEmail = useMemo(() => {
     return email.trim().endsWith(KONKUK_EMAIL_DOMAIN);
@@ -214,6 +215,15 @@ const SignUp = () => {
                       setEmail(event.target.value);
                       setCodeSent(false);
                       setErrorMessage("");
+                      setEmailHint("");
+                    }}
+                    onBlur={(event) => {
+                      const value = event.target.value.trim();
+                      setEmailHint(
+                        value && !value.endsWith(KONKUK_EMAIL_DOMAIN)
+                          ? "건국대학교 이메일(@konkuk.ac.kr)만 가입할 수 있습니다."
+                          : "",
+                      );
                     }}
                     onKeyDown={(event) => {
                       if (event.key !== "Enter") return;
@@ -239,6 +249,11 @@ const SignUp = () => {
                   </button>
                 </div>
               </label>
+              {emailHint && (
+                <p className={styles.fieldErrorText} role="alert">
+                  {emailHint}
+                </p>
+              )}
               <p className={styles.helperText}>
                 건국대학교 이메일(@konkuk.ac.kr)만 가입 가능합니다.
               </p>
