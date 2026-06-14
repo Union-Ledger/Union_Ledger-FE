@@ -8,6 +8,7 @@ import useSettlementApi, {
   type SettlementArtifact,
 } from "@/hooks/useSettlementApi";
 import { useConfirm, useToast } from "@shared/components/feedback";
+import { formatDate } from "@/utils/format";
 
 type ReviewFilter = "all" | "matched" | "issue";
 
@@ -22,16 +23,6 @@ const statusLabelMap: Record<ReconciliationStatus, string> = {
   missing_bank_transaction: "거래내역 누락",
   missing_evidence: "증빙 누락",
   manually_resolved: "수동 해결",
-};
-
-const formatDate = (date: string) => {
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-";
-  }
-
-  return parsedDate.toLocaleDateString("ko-KR");
 };
 
 const formatShortId = (id: string | null) => {

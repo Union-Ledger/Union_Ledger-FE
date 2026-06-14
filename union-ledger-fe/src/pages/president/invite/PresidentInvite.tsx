@@ -4,6 +4,7 @@ import useOrganizationApi, {
   type OrganizationInvitation,
 } from "@/hooks/useOrginizationApi";
 import { useToast, useConfirm } from "@shared/components/feedback";
+import { formatDate } from "@/utils/format";
 import * as styles from "./PresidentInvite.css";
 
 type InviteRole = "재정담당자" | "감사위원";
@@ -36,16 +37,6 @@ const getStatusLabel = (status: OrganizationInvitation["status"]) => {
   };
 
   return statusMap[status] ?? status;
-};
-
-const formatDate = (date: string) => {
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-";
-  }
-
-  return parsedDate.toISOString().slice(0, 10);
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {

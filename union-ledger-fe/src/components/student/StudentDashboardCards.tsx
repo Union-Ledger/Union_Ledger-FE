@@ -1,4 +1,5 @@
 import { receipt, trendingUp, callender } from "@assets/dashboard";
+import { formatDate } from "@/utils/format";
 import * as styles from "@/components/student/StudentDashboardCards.css";
 
 interface StudentDashboardCardsProps {
@@ -34,22 +35,6 @@ type StudentDashboardCardItem = {
 
 const formatMoney = (amount: number) => {
   return `₩${amount.toLocaleString("ko-KR")}`;
-};
-
-const formatDate = (date?: string | null) => {
-  if (!date) return "-";
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return date;
-  }
-
-  return parsedDate.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
 };
 
 const StudentDashboardCards = ({

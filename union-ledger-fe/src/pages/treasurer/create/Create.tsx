@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/router/constant/router";
+import { formatDate } from "@/utils/format";
 import * as styles from "./Create.css";
 import { fileData } from "./fileData.ts";
 import { checklistItems } from "./checklist.ts";
@@ -21,14 +22,6 @@ const formatMoney = (amount: string) => {
   }
 
   return `₩${Math.round(parsedAmount).toLocaleString("ko-KR")}`;
-};
-
-const formatDate = (date: string | null | undefined) => {
-  if (!date) {
-    return "-";
-  }
-
-  return date.slice(0, 10);
 };
 
 const formatSummaryDate = (date: string) => date.replaceAll("-", ".");

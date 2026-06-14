@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import useAdminApplicationApi from "@/hooks/useAdminApplicationApi";
 import type { AdminApplication } from "@/hooks/useStudentApi";
 import { useConfirm, usePrompt, useToast } from "@shared/components/feedback";
+import { formatDate } from "@/utils/format";
 import * as styles from "./AdminApplications.css";
 
 type ApplicationStatus = "pending" | "approved" | "rejected";
@@ -18,12 +19,6 @@ const normalizeStatus = (status: string): ApplicationStatus => {
   }
 
   return "pending";
-};
-
-const formatDate = (date: string | null) => {
-  if (!date) return "-";
-
-  return date.slice(0, 10);
 };
 
 const saveBlob = (blob: Blob, fileName: string) => {

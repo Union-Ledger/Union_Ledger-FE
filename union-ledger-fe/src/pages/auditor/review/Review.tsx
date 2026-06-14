@@ -5,6 +5,7 @@ import ReviewCard, {
 import useAuditApi, {
   type AuditSettlementListItem,
 } from "@/hooks/useAuditApi";
+import { formatDate } from "@/utils/format";
 import * as styles from "@/pages/auditor/review/Review.css";
 
 const parseAmount = (amount: string) => {
@@ -30,18 +31,6 @@ const getStatusMeta = (status: string) => {
   };
 
   return statusMap[status] ?? { status: "SUBMITTED", statusLabel: "제출됨" };
-};
-
-const formatDate = (date: string | null) => {
-  if (!date) return "-";
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-";
-  }
-
-  return parsedDate.toLocaleDateString("ko-KR");
 };
 
 // 미해결 대조 문제 건수 (수동해결·매칭 제외)

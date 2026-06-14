@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useStudentApi, { type AdminApplication } from "@/hooks/useStudentApi";
 import { ROUTES } from "@/router/constant/router";
+import { formatDate } from "@/utils/format";
 import { Spinner, useToast } from "@shared/components/feedback";
 import { getApiErrorMessage } from "@/utils/apiError";
 import * as styles from "./StudentPresidentApplication.css";
@@ -9,9 +10,6 @@ import * as styles from "./StudentPresidentApplication.css";
 // BE의 반려 후 재신청 대기 기간과 동일하게 유지
 const REAPPLY_COOLDOWN_DAYS = 7;
 const DAY_MS = 86_400_000;
-
-const formatDate = (value: string | null | undefined) =>
-  value ? value.slice(0, 10) : "-";
 
 const StudentPresidentApplication = () => {
   const navigate = useNavigate();

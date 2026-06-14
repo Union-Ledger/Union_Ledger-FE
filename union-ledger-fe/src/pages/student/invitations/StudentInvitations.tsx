@@ -4,6 +4,7 @@ import useStudentApi, {
   type StudentInvitationStatus,
 } from "@/hooks/useStudentApi";
 import { useConfirm, useToast } from "@shared/components/feedback";
+import { formatDate } from "@/utils/format";
 import * as styles from "./StudentInvitations.css";
 
 const completedStatusLabel = (status: StudentInvitationStatus) => {
@@ -19,16 +20,6 @@ const completedStatusLabel = (status: StudentInvitationStatus) => {
     default:
       return status;
   }
-};
-
-const formatDate = (date: string) => {
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "-";
-  }
-
-  return parsedDate.toISOString().slice(0, 10);
 };
 
 // 만료까지 남은 시간을 상대 표기로 — 임박(2일 이내/오늘/만료)이면 urgent
