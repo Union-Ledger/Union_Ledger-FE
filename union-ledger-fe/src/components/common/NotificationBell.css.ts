@@ -69,6 +69,30 @@ export const panel = style({
   },
 });
 
+export const panelHeader = style({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "8px",
+  padding: "4px 6px 8px",
+  borderBottom: `1px solid ${vars.color.ItemBorder}`,
+});
+
+export const panelHeaderTitle = style({
+  ...vars.font.title_bold_14,
+  color: vars.color.summaryTitle,
+});
+
+export const markAllButton = style({
+  ...vars.font.caption_regular_12,
+  border: "none",
+  background: "transparent",
+  color: vars.color.primary,
+  cursor: "pointer",
+  fontWeight: 700,
+  padding: "2px 4px",
+});
+
 export const empty = style({
   ...vars.font.body_regular_14,
   padding: "16px",

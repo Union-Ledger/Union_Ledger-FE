@@ -44,6 +44,24 @@ export const activityContainer = style({
   gap: "16px",
 });
 
+// 클릭 가능한 활동 행 (딥링크) — 버튼 기본 스타일 리셋 + 호버
+export const activityButton = style({
+  width: "100%",
+  display: "flex",
+  gap: "16px",
+  padding: "4px",
+  margin: "-4px",
+  border: "none",
+  background: "transparent",
+  borderRadius: "8px",
+  cursor: "pointer",
+  textAlign: "left",
+  font: "inherit",
+  ":hover": {
+    background: "rgba(15, 23, 42, 0.04)",
+  },
+});
+
 export const activityCircle = style({
   position: "relative",
   width: "8px",

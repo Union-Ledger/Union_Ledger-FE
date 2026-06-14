@@ -25,7 +25,7 @@ const getStatusLabel = (status: string) => {
 };
 
 const getTimeText = (dateString: string | null) => {
-  if (!dateString) return "방금 전";
+  if (!dateString) return "시간 정보 없음";
 
   const targetTime = new Date(dateString).getTime();
   const now = Date.now();
@@ -106,6 +106,7 @@ const createActivityData = (
           ? `${organizationLabel} 대조 문제 ${issueCount}건`
           : `${organizationLabel} ${getStatusLabel(settlement.status)}`,
       time: getTimeText(settlement.submitted_at ?? settlement.audited_at),
+      to: `/auditor/review/detail/${settlement.settlement_id}`,
     };
   });
 };

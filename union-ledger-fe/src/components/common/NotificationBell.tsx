@@ -14,7 +14,6 @@ const POLL_INTERVAL_MS = 60_000;
 const getNotificationRoute = (
   type: NotificationType,
   roles: string[],
-  isOperator: boolean,
 ): string | null => {
   switch (type) {
     case "settlement_submitted":
@@ -30,10 +29,19 @@ const getNotificationRoute = (
       }
       return null;
     case "settlement_published":
-      return isOperator ? null : ROUTES.STUDENT_SETTLEMENTS;
+      return ROUTES.STUDENT_SETTLEMENTS;
     default:
       return null;
   }
+};
+
+// 유형별 라우트가 없을 때라도 막다른 길이 되지 않도록 역할 홈으로 보낸다
+const getFallbackRoute = (roles: string[], isOperator: boolean): string => {
+  if (isOperator) return ROUTES.ADMIN_APPLICATIONS;
+  if (roles.includes("president")) return ROUTES.PRESIDENT_DASHBOARD;
+  if (roles.includes("treasurer")) return ROUTES.TREASURER_DASHBOARD;
+  if (roles.includes("auditor")) return ROUTES.AUDITOR_DASHBOARD;
+  return ROUTES.STUDENT_DASHBOARD;
 };
 
 const formatTimestamp = (iso: string) => {
@@ -104,11 +112,42 @@ const NotificationBell = () => {
     refresh();
   }, [refresh, location.pathname]);
 
-  // 주기 폴링으로 미읽음 뱃지를 최신 상태로 유지
+  // 주기 폴링으로 미읽음 뱃지를 최신 상태로 유지 — 탭이 숨겨지면 폴링 중단(배터리·요청 절약)
   useEffect(() => {
-    const timer = window.setInterval(refresh, POLL_INTERVAL_MS);
-    return () => window.clearInterval(timer);
+    const timer = window.setInterval(() => {
+      if (!document.hidden) refresh();
+    }, POLL_INTERVAL_MS);
+
+    const handleVisibility = () => {
+      if (!document.hidden) refresh();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [refresh]);
+
+  const handleMarkAllRead = async () => {
+    const unreadItems = items.filter((item) => !item.read_at);
+    if (unreadItems.length === 0) return;
+
+    // 낙관적 업데이트 — 실패하면 다음 폴링/refresh에서 정정
+    const readAt = new Date().toISOString();
+    setItems((prev) =>
+      prev.map((item) => (item.read_at ? item : { ...item, read_at: readAt })),
+    );
+    setUnread(0);
+
+    try {
+      await Promise.all(
+        unreadItems.map((item) => markNotificationReadOnce(item.id)),
+      );
+    } catch {
+      refresh();
+    }
+  };
 
   const handleToggle = () => {
     setIsOpen((prev) => {
@@ -122,15 +161,11 @@ const NotificationBell = () => {
 
   const handleItemClick = async (item: NotificationItem) => {
     // 관련 화면이 있으면 바로 이동하고 패널을 닫는다
-    const route = getNotificationRoute(
-      item.notification_type,
-      me?.roles ?? [],
-      Boolean(me?.is_operator),
-    );
-    if (route) {
-      setIsOpen(false);
-      navigate(route);
-    }
+    const route =
+      getNotificationRoute(item.notification_type, me?.roles ?? []) ??
+      getFallbackRoute(me?.roles ?? [], Boolean(me?.is_operator));
+    setIsOpen(false);
+    navigate(route);
 
     if (item.read_at) {
       return;
@@ -166,6 +201,18 @@ const NotificationBell = () => {
 
       {isOpen && (
         <div className={styles.panel}>
+          <div className={styles.panelHeader}>
+            <span className={styles.panelHeaderTitle}>알림</span>
+            {unread > 0 && (
+              <button
+                type="button"
+                className={styles.markAllButton}
+                onClick={handleMarkAllRead}
+              >
+                모두 읽음
+              </button>
+            )}
+          </div>
           {items.length === 0 ? (
             <div className={styles.empty}>새 알림이 없습니다.</div>
           ) : (
