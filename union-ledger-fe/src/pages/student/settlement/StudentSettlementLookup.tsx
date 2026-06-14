@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { callender, eye, trendingUp } from "@assets/dashboard";
 import usePublicSettlementApi, {
   type PublicSettlementArtifact,
@@ -6,7 +6,7 @@ import usePublicSettlementApi, {
   type PublicSettlementItem,
   type PublicSettlementListItem,
 } from "@/hooks/usePublicSettlementApi";
-import { useToast } from "@shared/components/feedback";
+import { EmptyState, ErrorState, useToast } from "@shared/components/feedback";
 import DonutChart from "@shared/components/charts/DonutChart";
 import { CHART_PALETTE } from "@shared/components/charts/chartPalette";
 import MonthlyBarChart from "@shared/components/charts/MonthlyBarChart";
@@ -161,34 +161,22 @@ const StudentSettlementLookup = () => {
   const [itemsPage, setItemsPage] = useState(1);
   const toast = useToast();
 
-  useEffect(() => {
-    let ignore = false;
-
-    const fetchSettlements = async () => {
-      try {
-        setIsLoading(true);
-        setErrorMessage("");
-        const response = await getPublicSettlements();
-
-        if (ignore) return;
-        setSettlements(response);
-      } catch {
-        if (!ignore) {
-          setErrorMessage("공개된 결산안 목록을 불러오지 못했습니다.");
-        }
-      } finally {
-        if (!ignore) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchSettlements();
-
-    return () => {
-      ignore = true;
-    };
+  const loadSettlements = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+      const response = await getPublicSettlements();
+      setSettlements(response);
+    } catch {
+      setErrorMessage("공개된 결산안 목록을 불러오지 못했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
   }, [getPublicSettlements]);
+
+  useEffect(() => {
+    loadSettlements();
+  }, [loadSettlements]);
 
   useEffect(() => {
     if (!selectedSettlement) return;
@@ -445,13 +433,23 @@ const StudentSettlementLookup = () => {
       </section>
 
       {isLoading && <p className={styles.stateMessage}>공개 결산안을 불러오는 중입니다.</p>}
-      {!isLoading && errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
+      {!isLoading && errorMessage && (
+        <ErrorState description={errorMessage} onRetry={loadSettlements} />
+      )}
       {!isLoading && !errorMessage && filteredSettlements.length === 0 && (
-        <p className={styles.stateMessage}>
-          {hasActiveListFilter
-            ? "선택한 조건에 맞는 공개 결산안이 없습니다."
-            : "공개된 결산안이 없습니다."}
-        </p>
+        <EmptyState
+          icon="📭"
+          title={
+            hasActiveListFilter
+              ? "선택한 조건에 맞는 공개 결산안이 없습니다."
+              : "공개된 결산안이 없습니다."
+          }
+          description={
+            hasActiveListFilter
+              ? "다른 학기나 검색어로 다시 찾아보세요."
+              : "감사가 완료되어 공개된 결산안이 아직 없습니다."
+          }
+        />
       )}
 
       {!isLoading && !errorMessage && filteredSettlements.length > 0 && (
@@ -550,7 +548,7 @@ const StudentSettlementLookup = () => {
 
             {isDetailLoading && <p className={styles.stateMessage}>결산안 상세 정보를 불러오는 중입니다.</p>}
             {!isDetailLoading && detailErrorMessage && (
-              <p className={styles.errorMessage}>{detailErrorMessage}</p>
+              <ErrorState description={detailErrorMessage} />
             )}
 
             {!isDetailLoading && !detailErrorMessage && (

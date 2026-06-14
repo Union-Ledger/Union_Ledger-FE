@@ -3,6 +3,7 @@ import rightArrow from "@/assets/review/right-arrow.svg";
 import eye from "@/assets/review/eye.svg";
 import * as styles from "./ReviewCard.css";
 import { useNavigate } from "react-router-dom";
+import { formatKrw } from "@/utils/format";
 
 type SubmissionStatus = "SUBMITTED" | "REVIEWING" | "APPROVED" | "REJECTED";
 
@@ -86,7 +87,7 @@ const ReviewCard = ({ data, queue }: ReviewCardProps) => {
           <span
             className={`${styles.infoContent} ${styles.infoContentVariant.amount}`}
           >
-            {data.totalAmount.toLocaleString()}원
+            {formatKrw(data.totalAmount)}
           </span>
         </div>
 
