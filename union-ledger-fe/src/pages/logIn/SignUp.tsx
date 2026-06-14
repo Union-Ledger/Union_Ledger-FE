@@ -60,6 +60,7 @@ const SignUp = () => {
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [isCapsLockOn, setIsCapsLockOn] = useState(false);
   const [emailHint, setEmailHint] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const isKonkukEmail = useMemo(() => {
     return email.trim().endsWith(KONKUK_EMAIL_DOMAIN);
@@ -87,6 +88,17 @@ const SignUp = () => {
           : !departmentName
             ? "학과를 입력해주세요."
             : "";
+
+  // 인증 코드 재발송 쿨다운 카운트다운
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+
+    const timer = window.setTimeout(() => {
+      setResendCooldown((prev) => Math.max(prev - 1, 0));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [resendCooldown]);
 
   // 초대 코드 인증 대기 모달 ESC 닫기
   useEffect(() => {
@@ -118,6 +130,7 @@ const SignUp = () => {
       setErrorMessage("");
       await postSendVerificationCode({ email });
       setCodeSent(true);
+      setResendCooldown(60);
       showToast();
     } catch (error) {
       console.error("인증 코드 발송 실패", error);
@@ -336,9 +349,11 @@ const SignUp = () => {
                   className={styles.secondaryButton}
                   type="button"
                   onClick={handleSendCode}
-                  disabled={isSendingCode}
+                  disabled={isSendingCode || resendCooldown > 0}
                 >
-                  인증 코드 재발송
+                  {resendCooldown > 0
+                    ? `재발송 (${resendCooldown}s)`
+                    : "인증 코드 재발송"}
                 </button>
                 <button
                   className={styles.primaryButton}
