@@ -31,6 +31,21 @@ const formatDate = (date: string) => {
   return parsedDate.toISOString().slice(0, 10);
 };
 
+// 만료까지 남은 시간을 상대 표기로 — 임박(2일 이내/오늘/만료)이면 urgent
+const getExpiryInfo = (expiresAt: string): { text: string; urgent: boolean } => {
+  const expiry = new Date(expiresAt).getTime();
+  if (Number.isNaN(expiry)) return { text: "", urgent: false };
+
+  const diffMs = expiry - Date.now();
+  if (diffMs <= 0) return { text: "만료됨", urgent: true };
+
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffHours < 24) return { text: "오늘 만료", urgent: true };
+
+  const diffDays = Math.ceil(diffHours / 24);
+  return { text: `${diffDays}일 후 만료`, urgent: diffDays <= 2 };
+};
+
 const getRoleLabel = (invitation: StudentInvitation) => {
   if (invitation.invitation_type === "treasurer_invite") {
     return "재정담당자";
@@ -178,8 +193,8 @@ const StudentInvitations = () => {
       <div className={styles.noticeBox}>
         <span className={styles.noticeIcon}>□</span>
         <span>
-          {pendingInvitations.length}건의 초대가 대기 중입니다. 초대는 7일 후
-          만료됩니다.
+          {pendingInvitations.length}건의 초대가 대기 중입니다. 만료일이 지나면
+          초대가 자동으로 만료됩니다.
         </span>
       </div>
 
@@ -215,8 +230,15 @@ const StudentInvitations = () => {
 
                 <div className={styles.metaGrid}>
                   <span>초대일: {formatDate(invitation.created_at)}</span>
-                  <span className={styles.expireText}>
-                    만료일: {formatDate(invitation.expires_at)}
+                  <span
+                    className={
+                      getExpiryInfo(invitation.expires_at).urgent
+                        ? styles.expireText
+                        : styles.expireNormal
+                    }
+                  >
+                    {getExpiryInfo(invitation.expires_at).text || "만료일"} ·{" "}
+                    {formatDate(invitation.expires_at)}
                   </span>
                 </div>
 

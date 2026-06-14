@@ -1,5 +1,4 @@
 import { receipt, trendingUp, callender } from "@assets/dashboard";
-import eye from "@assets/dashboard/eye.svg";
 import * as styles from "@/components/student/StudentDashboardCards.css";
 
 interface StudentDashboardCardsProps {
@@ -9,7 +8,7 @@ interface StudentDashboardCardsProps {
   unmatchedCount?: number;
   progressPercent?: number;
   recentApprovedAt?: string | null;
-  viewCount?: number;
+  periodLabel?: string;
 }
 
 type StudentDashboardCardId =
@@ -57,7 +56,7 @@ const StudentDashboardCards = ({
   totalEvidenceCount,
   totalEvidenceAmount,
   recentApprovedAt,
-  viewCount = 0,
+  periodLabel,
 }: StudentDashboardCardsProps) => {
   const dashboardCardData: StudentDashboardCardItem[] = [
     {
@@ -87,10 +86,10 @@ const StudentDashboardCards = ({
     {
       id: "viewCount",
       variant: "viewCount",
-      icon: eye,
-      title: "조회수",
-      content: `${viewCount.toLocaleString("ko-KR")}회`,
-      description: "학생들이 확인한 누적 열람",
+      icon: callender,
+      title: "공개 학기",
+      content: periodLabel || "-",
+      description: "현재 조회 중인 결산 학기",
     },
   ];
 

@@ -147,7 +147,7 @@ const StudentDashboard = () => {
               summary?.current_period_total_amount ?? "0",
             )}
             recentApprovedAt={summary?.last_published_at ?? null}
-            viewCount={summary?.total_view_count ?? 0}
+            periodLabel={dashboardData?.current_period?.label}
           />
 
           <StudentDashboardComparison

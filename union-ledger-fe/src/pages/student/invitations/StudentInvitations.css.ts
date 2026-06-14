@@ -140,6 +140,12 @@ export const expireText = style({
   fontWeight: "700",
 });
 
+// 만료가 임박하지 않은 초대 — 중립 색상
+export const expireNormal = style({
+  color: vars.color.gray,
+  fontWeight: "600",
+});
+
 export const descriptionBox = style({
   padding: "12px 14px",
   borderRadius: "6px",
